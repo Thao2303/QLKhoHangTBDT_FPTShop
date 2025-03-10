@@ -1,0 +1,71 @@
+﻿/* Navbar.css */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 229px; /* Để tránh bị sidebar che mất */
+    width: calc(100% - 250px); /* Để vừa với phần còn lại */
+    height: 50px;
+    background-color: #b5c5d3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: black;
+    padding: 0 20px;
+    z-index: 1000; /* Đảm bảo Navbar luôn nổi trên */
+    border-radius: 3px;
+    
+}
+
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 100px;
+    margin-right: 20px;
+}
+
+.search-box {
+    display: block;
+    align-items: center;
+    background: white;
+    border-radius: 20px;
+    padding: 5px 70px;
+    margin-left: 550px;
+}
+
+.search-icon {
+    color: gray;
+    margin-right: 5px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 250px;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.icon {
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}

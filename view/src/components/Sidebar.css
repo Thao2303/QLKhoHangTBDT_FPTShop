@@ -1,0 +1,33 @@
+﻿/* Sidebar.css */
+.sidebar {
+    width: 15%; /* Điều chỉnh độ rộng phù hợp */
+    height: 100vh; /* Chiếm toàn bộ chiều cao */
+    position: fixed; /* Giữ sidebar cố định */
+    top: 0;
+    left: 0;
+    background-color: white;
+    padding: 10px 0;
+    border-radius: 7px;
+}
+
+    .sidebar ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .sidebar .logo {
+        width: 80%;
+        margin: 20px auto;
+        display: block;
+    }
+
+    .sidebar ul li {
+        padding: 16px 10px;
+        cursor: pointer;
+        color: #5D7285;
+        font-family: 'Segoe UI';
+    }
+
+        .sidebar ul li:hover {
+            background: #bbcfe3;
+        }
