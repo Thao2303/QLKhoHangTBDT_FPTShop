@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using System.Text.Json.Serialization;
 namespace QuanLyKhoHangFPTShop.Models
 {
     public class TaiKhoan
@@ -27,6 +27,8 @@ namespace QuanLyKhoHangFPTShop.Models
         public int idChucVu { get; set; }
 
         [ForeignKey("idChucVu")]
+        [JsonIgnore] // ✅ Thêm dòng này
         public ChucVu ChucVu { get; set; }
+
     }
 }

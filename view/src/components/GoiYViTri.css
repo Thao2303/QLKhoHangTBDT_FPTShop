@@ -1,0 +1,33 @@
+﻿.main-layout {
+    display: flex;
+}
+
+.sidebar {
+    width: 250px; /* ví dụ: Sidebar rộng 250px */
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.content-area {
+    margin-left: 250px; /* bằng với Sidebar */
+    width: calc(100% - 250px);
+    padding: 20px;
+}
+
+.navbar {
+    height: 60px;
+    position: fixed;
+    top: 0;
+    left: 250px; /* đẩy sau Sidebar */
+    right: 0;
+    z-index: 10;
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+
+.goi-y-container {
+    padding-top: 80px; /* tránh bị Navbar đè */
+}

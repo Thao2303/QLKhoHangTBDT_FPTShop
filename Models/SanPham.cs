@@ -23,7 +23,10 @@ namespace QuanLyKhoHangFPTShop.Models
         public decimal chieuRong { get; set; }
         public decimal chieuCao { get; set; }
         public int idViTri { get; set; }
+        public int idDonViTinh {  get; set; }
 
+        [ForeignKey("idDonViTinh")]
+        public DonViTinh DonViTinh { get; set; }
         [ForeignKey("idViTri")]
         public ViTri ViTri { get; set; }
         [ForeignKey("idDanhMuc")]

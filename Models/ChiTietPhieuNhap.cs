@@ -1,21 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuanLyKhoHangFPTShop.Models;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace QuanLyKhoHangFPTShop.Models
+
+public class ChiTietPhieuNhap
 {
-    public class ChiTietPhieuNhap
-    {
-        [Key]
-        public int idPhieuNhap { get; set; }
-        [Key]
-        public int idSanPham { get; set; }
-        public decimal tongTien { get; set; }
-        public string trangThai { get; set; }
+    public int idPhieuNhap { get; set; }
+    public int idSanPham { get; set; }
+    public decimal tongTien { get; set; }
+    public int trangThai { get; set; }
+    public int soLuongTheoChungTu { get; set; }
+    public int soLuongThucNhap { get; set; }
 
-        [ForeignKey("idPhieuNhap")]
-        public PhieuNhap? PhieuNhap { get; set; } 
+    [ForeignKey("idPhieuNhap")]
+    public PhieuNhap PhieuNhap { get; set; }
 
-        [ForeignKey("idSanPham")]
-        public SanPham SanPham { get; set; }
-    }
+    [ForeignKey("idSanPham")]
+    public SanPham SanPham { get; set; }
 }
+

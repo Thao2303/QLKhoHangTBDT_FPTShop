@@ -38,35 +38,33 @@ namespace QLKhoHangFPTShop.Controllers
             }
             return taiKhoan;
         }
-
-        // Đảm bảo mật khẩu được mã hóa trước khi lưu vào cơ sở dữ liệu
         [HttpPost]
-        public async Task<ActionResult<TaiKhoan>> PostTaiKhoan(TaiKhoan taiKhoan)
+        public async Task<ActionResult<TaiKhoan>> PostTaiKhoan(TaiKhoanCreateDto dto)
+
         {
             try
             {
-                // Nếu idChucVu không có giá trị, gán giá trị mặc định (ví dụ: 0)
-                if (taiKhoan.idChucVu == 0)
+                var chucVuTonTai = await _context.ChucVu.AnyAsync(cv => cv.idChucVu == dto.idChucVu);
+                if (!chucVuTonTai)
                 {
-                    // Gán giá trị mặc định cho idChucVu (nếu cần)
-                    taiKhoan.idChucVu = 0;
-                }
-                else
-                {
-                    // Kiểm tra xem idChucVu có hợp lệ không trước khi thêm
-                    var chucVu = await _context.ChucVu.FindAsync(taiKhoan.idChucVu);
-                    if (chucVu == null)
-                    {
-                        return BadRequest("Chức vụ không tồn tại.");
-                    }
+                    return BadRequest("Chức vụ không tồn tại.");
                 }
 
-                // Mã hóa mật khẩu trước khi lưu vào cơ sở dữ liệu
+                var taiKhoan = new TaiKhoan
+                {
+                    tenTaiKhoan = dto.tenTaiKhoan,
+                    email = dto.email,
+                    idChucVu = dto.idChucVu,
+                    ngayCap = dto.ngayCap,
+                    trangThai = dto.trangThai
+                };
+
                 var passwordHasher = new PasswordHasher<TaiKhoan>();
-                taiKhoan.matKhau = passwordHasher.HashPassword(taiKhoan, taiKhoan.matKhau);
+                taiKhoan.matKhau = passwordHasher.HashPassword(taiKhoan, dto.matKhau);
 
                 _context.TaiKhoan.Add(taiKhoan);
                 await _context.SaveChangesAsync();
+
                 return CreatedAtAction(nameof(GetTaiKhoan), new { id = taiKhoan.idTaiKhoan }, taiKhoan);
             }
             catch (Exception ex)
@@ -74,6 +72,7 @@ namespace QLKhoHangFPTShop.Controllers
                 return StatusCode(500, $"Lỗi khi tạo tài khoản: {ex.Message}");
             }
         }
+
 
 
 
@@ -110,33 +109,32 @@ namespace QLKhoHangFPTShop.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<TaiKhoan>> Login([FromBody] LoginRequest request)
         {
-            try
+            var taiKhoan = await _context.TaiKhoan
+                .Include(t => t.ChucVu) // Bao gồm thông tin ChucVu
+                .FirstOrDefaultAsync(t => t.tenTaiKhoan == request.Username);
+
+            if (taiKhoan == null)
             {
-                // Kiểm tra xem tên tài khoản có tồn tại không
-                var taiKhoan = await _context.TaiKhoan
-                    .FirstOrDefaultAsync(t => t.tenTaiKhoan == request.Username);
-
-                if (taiKhoan == null)
-                {
-                    return Unauthorized("Tên tài khoản không tồn tại.");
-                }
-
-                // Kiểm tra mật khẩu (so sánh mật khẩu đã mã hóa với mật khẩu nhập vào)
-                var passwordHasher = new PasswordHasher<TaiKhoan>();
-                var result = passwordHasher.VerifyHashedPassword(taiKhoan, taiKhoan.matKhau, request.Password);
-                if (result == PasswordVerificationResult.Failed)
-                {
-                    return Unauthorized("Mật khẩu không đúng.");
-                }
-
-                // Trả về thông tin tài khoản nếu đăng nhập thành công
-                return Ok(taiKhoan);
+                return Unauthorized("Tên tài khoản không tồn tại.");
             }
-            catch (Exception ex)
+
+            var passwordHasher = new PasswordHasher<TaiKhoan>();
+            var result = passwordHasher.VerifyHashedPassword(taiKhoan, taiKhoan.matKhau, request.Password);
+            if (result == PasswordVerificationResult.Failed)
             {
-                // Log lỗi hoặc trả về thông tin chi tiết
-                return StatusCode(500, $"Lỗi khi xử lý đăng nhập: {ex.Message}");
+                return Unauthorized("Mật khẩu không đúng.");
             }
+
+            // Trả về thông tin người dùng cùng với vai trò (chucVu)
+            return Ok(new
+            {
+                taiKhoan.idTaiKhoan,
+                taiKhoan.tenTaiKhoan,
+                taiKhoan.email,
+                taiKhoan.ChucVu.tenChucVu  // Trả về thông tin chức vụ
+            });
         }
+
+
     }
 }
