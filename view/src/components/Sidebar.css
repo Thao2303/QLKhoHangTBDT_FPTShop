@@ -1,6 +1,6 @@
 ﻿/* Sidebar.css */
 .sidebar {
-    width: 15%; /* Điều chỉnh độ rộng phù hợp */
+    width: 250px; /* Đảm bảo độ rộng sidebar đủ để chứa logo */
     height: 100vh; /* Chiếm toàn bộ chiều cao */
     position: fixed; /* Giữ sidebar cố định */
     top: 0;
@@ -10,16 +10,23 @@
     border-radius: 7px;
 }
 
-    .sidebar ul {
-        list-style: none;
-        padding: 0;
-    }
+.logo-container {
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .sidebar .logo {
-        width: 80%;
-        margin: 20px auto;
-        display: block;
-    }
+.sidebar-logo {
+    max-width: 80%; /* Đảm bảo logo có kích thước hợp lý */
+    height: auto;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+}
 
     .sidebar ul li {
         padding: 16px 10px;
@@ -31,3 +38,27 @@
         .sidebar ul li:hover {
             background: #bbcfe3;
         }
+.logout-button {
+    background-color: #f44336; /* Màu đỏ */
+    color: white;
+    border: none;
+    padding: 12px;
+    text-align: center;
+    width: 100%;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: auto; /* Đẩy nút xuống dưới cùng */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+}
+
+    .logout-button:hover {
+        background-color: #d32f2f; /* Màu khi hover */
+    }
+
+    .logout-button .icon {
+        margin-right: 10px;
+    }
+

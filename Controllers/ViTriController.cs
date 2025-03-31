@@ -18,7 +18,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             _context = context;
         }
 
-        // 📌 1️⃣ Lấy danh sách vị trí
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ViTri>>> GetViTri()
         {
@@ -47,7 +46,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
         }
 
 
-        // 📌 3️⃣ Thêm vị trí mới
         [HttpPost]
         public async Task<ActionResult<ViTri>> PostViTri(ViTri viTri)
         {
@@ -56,7 +54,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return CreatedAtAction(nameof(GetViTri), new { id = viTri.idViTri }, viTri);
         }
 
-        // 📌 4️⃣ Cập nhật vị trí
         [HttpPut("{id}")]
         public async Task<IActionResult> PutViTri(int id, ViTri viTri)
         {
@@ -86,7 +83,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return NoContent();
         }
 
-        // 📌 5️⃣ Xóa vị trí
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteViTri(int id)
         {
@@ -102,7 +98,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return NoContent();
         }
 
-        // 📌 6️⃣ Kiểm tra vị trí có tồn tại không
         private bool ViTriExists(int id)
         {
             return _context.ViTri.Any(v => v.idViTri == id);

@@ -1,45 +1,54 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
+import "./Dashboard.css"; // Thêm file CSS mới
 
 const Dashboard = () => {
-    const [taiKhoanList, setTaiKhoanList] = useState([]);
+    const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
-        const fetchTaiKhoan = async () => {
-            try {
-                const response = await axios.get('https://localhost:5288/api/TaiKhoan');
-                setTaiKhoanList(response.data);
-            } catch (error) {
-                console.error("Lỗi khi lấy danh sách tài khoản:", error);
-            }
-        };
+        if (!user) {
+            navigate("/login");
+        }
+    }, [user, navigate]);
 
-        fetchTaiKhoan();
-    }, []);
+    if (!user) return null;
+
+    const { role } = user;
 
     return (
-        <div>
-            <h2>Danh sách tài khoản</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên tài khoản</th>
-                        <th>Email</th>
-                        <th>Trạng thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {taiKhoanList.map((taiKhoan) => (
-                        <tr key={taiKhoan.idTaiKhoan}>
-                            <td>{taiKhoan.idTaiKhoan}</td>
-                            <td>{taiKhoan.tenTaiKhoan}</td>
-                            <td>{taiKhoan.email}</td>
-                            <td>{taiKhoan.trangThai ? "Kích hoạt" : "Vô hiệu hóa"}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+        <div className="dashboard-container">
+            <Sidebar />
+            <div className="dashboard-content">
+                <Navbar />
+                <div className="main-content">
+                    {role === 'Nhân viên' && (
+                        <div>
+                            <h2>Giao diện cho Nhân viên kho</h2>
+                        </div>
+                    )}
+
+                    {role === 'Thủ kho' && (
+                        <div>
+                            <h2>Giao diện cho Thủ kho</h2>
+                        </div>
+                    )}
+
+                    {role === 'Admin' && (
+                        <div>
+                            <h2>Giao diện cho Admin</h2>
+                        </div>
+                    )}
+
+                    {role === 'Đại lý bán hàng' && (
+                        <div>
+                            <h2>Giao diện cho Đại lý bán hàng</h2>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

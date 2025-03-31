@@ -37,7 +37,7 @@ namespace QuanLyKhoHangFPTShop.Data
 
             // Định nghĩa khóa chính cho ChiTietPhieuNhap
             modelBuilder.Entity<ChiTietPhieuNhap>()
-                .HasKey(c => new { c.idPhieuNhap, c.idSanPham });
+       .HasKey(c => new { c.idPhieuNhap, c.idSanPham });
 
             // Định nghĩa khóa chính cho ChiTietPhieuXuat
             modelBuilder.Entity<ChiTietPhieuXuat>()
@@ -97,7 +97,7 @@ namespace QuanLyKhoHangFPTShop.Data
 
             // Định nghĩa khóa chính cho PhieuNhap
             modelBuilder.Entity<PhieuNhap>()
-                .HasKey(p => p.idPhieuNhap); // Primary Key cho bảng PhieuNhap
+                .ToTable("PhieuNhap");
 
 
             modelBuilder.Entity<PhieuXuat>()

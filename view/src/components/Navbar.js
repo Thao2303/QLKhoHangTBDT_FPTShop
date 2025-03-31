@@ -1,8 +1,12 @@
 ﻿import React from "react";
 import { FaSearch, FaBell, FaEnvelope } from "react-icons/fa";
-import "./Navbar.css"; // Import CSS riêng cho Navbar
+import "./Navbar.css";
 
 const Navbar = () => {
+    // Lấy thông tin người dùng từ localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+    const username = user ? user.tenTaiKhoan : 'Người dùng'; // Nếu không có người dùng, hiển thị 'Người dùng'
+
     return (
         <nav className="navbar">
             <div className="navbar-left">
@@ -16,8 +20,8 @@ const Navbar = () => {
                 <FaBell className="icon" />
                 <FaEnvelope className="icon" />
                 <div className="user-info">
-                    <img src="/user.png" alt="User" className="user-avatar" />
-                    <span>NV Nhập kho</span>
+                    {/* Hiển thị tên người dùng */}
+                    <span>{username}</span>
                 </div>
             </div>
         </nav>
