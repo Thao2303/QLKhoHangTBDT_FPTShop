@@ -17,9 +17,9 @@ namespace QuanLyKhoHangFPTShop.Data
         public DbSet<NhaCungCap> NhaCungCap { get; set; }
         public DbSet<SanPham> SanPham { get; set; }
         public DbSet<ViTri> ViTri { get; set; }
-        public DbSet<Day> Day { get; set; }
-        public DbSet<Tang> Tang { get; set; }
-        public DbSet<Cot> Cot { get; set; }
+        public DbSet<ChiTietLuuTru> ChiTietLuuTru { get; set; }
+
+
         public DbSet<ThongSoKyThuat> ThongSoKyThuat { get; set; }
         public DbSet<SanPham_ThongSo> SanPham_ThongSo { get; set; }
         public DbSet<DaiLy> DaiLy { get; set; }
@@ -30,7 +30,7 @@ namespace QuanLyKhoHangFPTShop.Data
         public DbSet<ChiTietYeuCauXuatKho> ChiTietYeuCauXuatKho { get; set; }
         public DbSet<PhieuXuat> PhieuXuat { get; set; }
         public DbSet<ChiTietPhieuXuat> ChiTietPhieuXuat { get; set; }
-
+       
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -103,35 +103,12 @@ namespace QuanLyKhoHangFPTShop.Data
             modelBuilder.Entity<PhieuXuat>()
             .HasKey(c => new { c.idPhieuXuat });
 
-            modelBuilder.Entity<Day>()
-                .HasKey(c => new {c.idDay});
-
-
+         
             modelBuilder.Entity<DaiLy>()
             .HasKey(c => new { c.idDaiLy });
 
 
-            modelBuilder.Entity<ViTri>()
-                .HasOne(v => v.Tang)
-                .WithMany()
-                .HasForeignKey(v => v.idTang);
-
-            modelBuilder.Entity<ViTri>()
-                .HasOne(v => v.Tang)
-                .WithMany() // Nếu Tang có nhiều ViTri
-                .HasForeignKey(v => v.idTang)
-                .OnDelete(DeleteBehavior.Restrict); // Để tránh lỗi xóa quan hệ
-
-            modelBuilder.Entity<Tang>()
-                .HasOne(t => t.Cot)
-                .WithMany()  // Nếu mỗi Cột có nhiều Tầng, sửa lại thành .WithMany(c => c.Tangs)
-                .HasForeignKey(t => t.idCot)
-                .OnDelete(DeleteBehavior.Restrict); // Tránh lỗi khi xóa dữ liệu
-
-            modelBuilder.Entity<Cot>()
-                .HasOne(c => c.Day)
-                .WithMany()
-                .HasForeignKey(c => c.idDay);
+            
 
 
 

@@ -7,8 +7,9 @@ import Login from "./components/Login"; // Import trang Login
 import QuanLyPhieuNhapKho from "./components/QuanLyPhieuNhapKho";
 import FormTaoPhieuNhap from './components/FormTaoPhieuNhap';
 import QuanLyTaiKhoan from './components/QuanLyTaiKhoan';
-import GoiYViTriUI from './components/GoiYViTriUI'; // 👈 Import thêm
+import GoiYViTriUI from './components/GoiyViTri'; // 👈 Import thêm
 import "./App.css";
+
 
 const App = () => {
     return (

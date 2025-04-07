@@ -88,12 +88,18 @@ const FormTaoPhieuNhap = () => {
                 const message = `✅ Phiếu nhập đã được tạo thành công!\n\n👤 Người tạo: ${username}\n🕒 Ngày tạo: ${new Date().toLocaleString()}`;
                 alert(message);
 
-                const sanPhams = addedProducts.map(p => ({
-                    idSanPham: parseInt(p.product),
-                    soLuong: parseInt(p.quantity)
-                }));
-
+                const sanPhams = addedProducts.map(p => {
+                    const sp = productsList.find(s => s.idSanPham === parseInt(p.product));
+                    return {
+                        idSanPham: parseInt(p.product),
+                        soLuong: parseInt(p.quantity),
+                        chieuDai: sp?.chieuDai || 1,
+                        chieuRong: sp?.chieuRong || 1,
+                        chieuCao: sp?.chieuCao || 1
+                    };
+                });
                 navigate('/goiyvitri', { state: { sanPhams } });
+
             })
             .catch(error => {
                 console.error("Lỗi khi lưu phiếu nhập kho", error);
