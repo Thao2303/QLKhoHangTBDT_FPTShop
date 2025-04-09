@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Services\" />
     <Folder Include="view\src\imgs\" />
     <Folder Include="view\src\img\" />
     <Folder Include="view\src\styles\" />

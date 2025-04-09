@@ -2,6 +2,8 @@
 import "./QuanLyPhieuNhapKho.css";
 // QuanLyPhieuNhapKho.js
 import { useNavigate } from 'react-router-dom';
+import Navbar from "./Navbar.js"
+import Sidebar from "./Sidebar.js";
 
 
 const PhieuNhapList = () => {
@@ -58,6 +60,11 @@ const PhieuNhapList = () => {
     });
 
     return (
+        <div className="layout-wrapper">
+            <Sidebar />
+            <div className="content-area">
+                <div className="main-layout">
+                    <Navbar />
         <div className="container">
             <h1 className="title">Quản lý phiếu nhập kho</h1>
 
@@ -166,6 +173,9 @@ const PhieuNhapList = () => {
                     })}
                 </tbody>
             </table>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };

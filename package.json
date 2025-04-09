@@ -1,6 +1,14 @@
 {
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.7",
     "axios": "^1.8.2",
-    "react-router-dom": "^7.3.0"
+    "class-variance-authority": "^0.7.1",
+    "lucide-react": "^0.487.0",
+    "react-router-dom": "^7.3.0",
+    "react-tooltip": "^5.28.0",
+    "tailwind-variants": "^1.0.0"
+  },
+  "devDependencies": {
+    "worker-loader": "^3.0.8"
   }
 }

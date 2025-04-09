@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.Data;
 using QuanLyKhoHangFPTShop.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace QuanLyKhoHangFPTShop.Controllers
@@ -18,24 +19,19 @@ namespace QuanLyKhoHangFPTShop.Controllers
             _context = context;
         }
 
+        // GET: api/vitri
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ViTri>>> GetViTri()
         {
-            return await _context.ViTri
-                .Include(v => v.Tang) // ViTri có Tang
-                .ThenInclude(t => t.Cot) // Tang có Cot
-                .ThenInclude(c => c.Day) // Cot có Day
-                .ToListAsync();
+            return await _context.ViTri.ToListAsync();
         }
 
+
+        // GET: api/vitri/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ViTri>> GetViTri(int id)
         {
-            var viTri = await _context.ViTri
-                .Include(v => v.Tang)
-                .ThenInclude(t => t.Cot)
-                .ThenInclude(c => c.Day)
-                .FirstOrDefaultAsync(v => v.idViTri == id);
+            var viTri = await _context.ViTri.FindAsync(id);
 
             if (viTri == null)
             {
@@ -45,19 +41,21 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return viTri;
         }
 
-
+        // POST: api/vitri
         [HttpPost]
         public async Task<ActionResult<ViTri>> PostViTri(ViTri viTri)
         {
             _context.ViTri.Add(viTri);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetViTri), new { id = viTri.idViTri }, viTri);
+
+            return CreatedAtAction(nameof(GetViTri), new { id = viTri.IdViTri }, viTri);
         }
 
+        // PUT: api/vitri/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutViTri(int id, ViTri viTri)
         {
-            if (id != viTri.idViTri)
+            if (id != viTri.IdViTri)
             {
                 return BadRequest();
             }
@@ -83,6 +81,14 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return NoContent();
         }
 
+        // DELETE: api/vitri/5
+        [HttpDelete("{id}")]
+        private bool ViTriExists(int id)
+        {
+            return _context.ViTri.Any(v => v.IdViTri == id); // Kiểm tra sự tồn tại của vị trí theo ID
+        }
+
+        // DELETE: api/vitri/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteViTri(int id)
         {
@@ -96,11 +102,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool ViTriExists(int id)
-        {
-            return _context.ViTri.Any(v => v.idViTri == id);
         }
     }
 }

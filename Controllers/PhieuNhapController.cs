@@ -103,5 +103,60 @@ namespace QuanLyKhoHangFPTShop.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        // Controller: PhieuNhapController.cs
+        [HttpPost("luu-vi-tri")]
+        public async Task<IActionResult> LuuViTriLuuTru([FromBody] List<ChiTietLuuTruDto> ds)
+
+        {
+            if (ds == null || !ds.Any())
+                return BadRequest("❌ Payload gửi lên rỗng hoặc sai định dạng!");
+
+            foreach (var item in ds)
+            {
+                var entity = new ChiTietLuuTru
+                {
+                    idSanPham = item.idSanPham,
+                    idViTri = item.idViTri,
+                    soLuong = item.soLuong,
+                    thoiGianLuu = item.thoiGianLuu
+                };
+                _context.ChiTietLuuTru.Add(entity);
+            }
+
+            await _context.SaveChangesAsync();
+
+            using var connection = _context.Database.GetDbConnection();
+            await connection.OpenAsync();
+            using var command = connection.CreateCommand();
+
+            command.CommandText = @"
+        UPDATE V
+        SET V.daDung = T.tongTheTich
+        FROM ViTri V
+        JOIN (
+            SELECT 
+                C.idViTri,
+                SUM(SP.chieuDai * SP.chieuRong * SP.chieuCao * C.soLuong) AS tongTheTich
+            FROM ChiTietLuuTru C
+            JOIN SanPham SP ON C.idSanPham = SP.idSanPham
+            GROUP BY C.idViTri
+        ) T ON V.idViTri = T.idViTri;
+    ";
+
+            await command.ExecuteNonQueryAsync();
+
+            return Ok(new { message = "✅ Lưu vào kho và cập nhật daDung thành công!" });
+        }
+
+        [HttpGet("luu-tru")]
+        public async Task<IActionResult> GetChiTietLuuTru()
+        {
+            var result = await _context.ChiTietLuuTru
+                .Include(ct => ct.SanPham) // ✅ Lấy kèm thông tin sản phẩm
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
     }
 }
