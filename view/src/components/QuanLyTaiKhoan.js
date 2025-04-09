@@ -1,5 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 
 const QuanLyTaiKhoan = () => {
     const [taiKhoans, setTaiKhoans] = useState([]);
@@ -82,6 +84,8 @@ const QuanLyTaiKhoan = () => {
 
     return (
         <div style={{ padding: '20px', maxWidth: '800px', margin: 'auto' }}>
+            <Sidebar />
+            <Navbar />
             <h2>📋 Quản lý tài khoản</h2>
 
             <div style={{ marginBottom: '20px' }}>

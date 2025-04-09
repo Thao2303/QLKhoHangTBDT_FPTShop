@@ -22,11 +22,17 @@ namespace QuanLyKhoHangFPTShop.Models
         public string TrangThai { get; set; } = "Trống";
 
         public int SucChua { get; set; } = 100;
-        public decimal DaDung { get; set; } = 0;
+        public int DaDung { get; set; } = 0;
 
-        public decimal? ChieuDai { get; set; }
-        public decimal? ChieuRong { get; set; }
-        public decimal? ChieuCao { get; set; }
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal chieuDai { get; set; }
+
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal chieuRong { get; set; }
+
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal chieuCao { get; set; }
+
 
 
     }

@@ -108,9 +108,10 @@ const FormTaoPhieuNhap = () => {
     };
 
     return (
-        <div className="main-layout">
+        <div className="layout-wrapper">
             <Sidebar />
             <div className="content-area">
+        <div className="main-layout">
                 <Navbar />
                 <div className="form-container">
                     <h2>Tạo Phiếu Nhập Kho</h2>
@@ -193,7 +194,9 @@ const FormTaoPhieuNhap = () => {
                     </form>
                 </div>
             </div>
-        </div>
+                </div>
+            </div>
+       
     );
 };
 

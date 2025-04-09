@@ -26,6 +26,7 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return await _context.ViTri.ToListAsync();
         }
 
+
         // GET: api/vitri/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ViTri>> GetViTri(int id)

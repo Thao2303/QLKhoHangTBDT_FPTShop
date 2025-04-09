@@ -2,6 +2,8 @@
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "./GoiyViTri.css";
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 
 const GoiyViTri = () => {
     const location = useLocation();
@@ -129,7 +131,11 @@ const GoiyViTri = () => {
     };
 
     return (
-        <div className="container">
+        <div className="layout-wrapper">
+            <Sidebar />
+            <div className="content-area">
+                <div className="main-layout">
+                    <Navbar />
             <h2 className="title">🧬 Gợi ý vị trí lưu trữ sản phẩm (tối ưu bằng GA)</h2>
             {loading && <p>⏳ Đang chạy thuật toán GA...</p>}
             {error && <p style={{ color: 'red' }}>{error}</p>}
@@ -169,7 +175,10 @@ const GoiyViTri = () => {
             {!loading && (
                 <button className="save-btn" onClick={handleSave}>💾 Lưu vào kho</button>
             )}
-        </div>
+                </div>
+            </div>
+            </div>
+       
     );
 };
 

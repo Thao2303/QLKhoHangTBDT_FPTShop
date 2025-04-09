@@ -1,73 +1,112 @@
-﻿import React from "react";
-import { FaHome, FaClipboardList, FaHistory, FaMapMarkedAlt, FaSignOutAlt } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom'; // Thêm import useNavigate
+﻿import React, { useState } from "react";
+import {
+    FaHome, FaClipboardList, FaHistory, FaMapMarkedAlt, FaSignOutAlt,
+    FaBoxes, FaSearch, FaWarehouse, FaUsers, FaBoxOpen, FaList, FaBars
+} from "react-icons/fa";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import "./Sidebar.css";
-import { Link } from "react-router-dom";
-import { Route } from 'react-router-dom';
 
-
-const Sidebar = () => {
-    const user = JSON.parse(localStorage.getItem('user'));  // Lấy thông tin người dùng từ localStorage
-    const role = user ? user.tenChucVu : '';  // Lấy vai trò của người dùng từ tenChucVu
-    const navigate = useNavigate();  // Khởi tạo useNavigate
-
-    // Hàm xử lý đăng xuất
-    const handleLogout = () => {
-        localStorage.removeItem('user');  // Xóa dữ liệu người dùng trong localStorage
-        navigate('/login');  // Chuyển hướng về trang login
-    };
+const MenuItem = ({ to, icon, label, isCollapsed }) => {
+    const location = useLocation();
+    const isActive = location.pathname === to;
 
     return (
-        <div className="sidebar">
-            <div className="logo-container">
-                <img src="/img/logo-fpt-shop.png" alt="Logo" className="sidebar-logo" />
+        <li className={`sidebar-item ${isActive ? "active" : ""}`}>
+            <Link
+                to={to}
+                className="menu-link"
+                data-tooltip={isCollapsed ? label : ""}
+            >
+                <div className="icon">{icon}</div>
+                {!isCollapsed && <span className="label">{label}</span>}
+            </Link>
+        </li>
+    );
+};
+
+const Sidebar = () => {
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const user = JSON.parse(localStorage.getItem("user"));
+    const role = user ? user.tenChucVu : "";
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("user");
+        navigate("/login");
+    };
+
+    const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+    return (
+        <div className={`sidebar-wrapper ${isCollapsed ? "collapsed" : ""}`}>
+            <div className="sidebar">
+                <div className="top-section">
+                    <div className="logo">
+                        <img
+                            src="/img/logo-fpt-shop.png"
+                            alt="Logo"
+                            className={`sidebar-logo ${isCollapsed ? "collapsed" : ""}`}
+                        />
+                    </div>
+                    <button className="toggle-btn" onClick={toggleSidebar}>
+                        <FaBars />
+                    </button>
+                </div>
+
+                <ul className="sidebar-menu">
+                    {role === "Thủ kho" && (
+                        <>
+                            <MenuItem to="/dashboard" icon={<FaHome />} label="Dashboard" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyphieunhap" icon={<FaClipboardList />} label="Phiếu nhập" isCollapsed={isCollapsed} />
+                            <MenuItem to="/xuatkho" icon={<FaBoxOpen />} label="Xuất kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/lichsunhap" icon={<FaHistory />} label="Lịch sử nhập" isCollapsed={isCollapsed} />
+                            <MenuItem to="/lichsuxuat" icon={<FaHistory />} label="Lịch sử xuất" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-tai-khoan" icon={<FaUsers />} label="Tài khoản" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyvitri" icon={<FaBoxes />} label="Vị trí hàng" isCollapsed={isCollapsed} />
+                            <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm" isCollapsed={isCollapsed} />
+                            <MenuItem to="/kiemke" icon={<FaWarehouse />} label="Kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyncc" icon={<FaUsers />} label="Nhà cung cấp" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlydaily" icon={<FaUsers />} label="Đại lý" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlysanpham" icon={<FaBoxOpen />} label="Sản phẩm" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlydanhmuc" icon={<FaList />} label="Danh mục" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyvitri-kho" icon={<FaWarehouse />} label="Vị trí kho" isCollapsed={isCollapsed} />
+                        </>
+                    )}
+
+                    {role === "Nhân viên kho" && (
+                        <>
+                            <MenuItem to="/dashboard" icon={<FaHome />} label="Dashboard" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyphieunhap" icon={<FaClipboardList />} label="Phiếu nhập" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-tai-khoan" icon={<FaUsers />} label="Tài khoản kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/xuatkho" icon={<FaBoxOpen />} label="Xuất kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/lichsunhap" icon={<FaHistory />} label="Lịch sử nhập" isCollapsed={isCollapsed} />
+                            <MenuItem to="/lichsuxuat" icon={<FaHistory />} label="Lịch sử xuất" isCollapsed={isCollapsed} />
+                            <MenuItem to="/vitritrong" icon={<FaBoxes />} label="Vị trí trống" isCollapsed={isCollapsed} />
+                            <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm" isCollapsed={isCollapsed} />
+                            <MenuItem to="/kiemke" icon={<FaWarehouse />} label="Kiểm kê" isCollapsed={isCollapsed} />
+                        </>
+                    )}
+
+                    {role === "Admin" && (
+                        <MenuItem to="/admin/quanlytaikhoan" icon={<FaUsers />} label="QL tài khoản" isCollapsed={isCollapsed} />
+                    )}
+
+                    {role === "Nhà cung cấp" && (
+                        <MenuItem to="/ncc/quanly" icon={<FaClipboardList />} label="Quản lý NCC" isCollapsed={isCollapsed} />
+                    )}
+
+                    {role === "Đại lý bán hàng" && (
+                        <MenuItem to="/daily/quanly" icon={<FaClipboardList />} label="Quản lý đại lý" isCollapsed={isCollapsed} />
+                    )}
+                </ul>
+
+                <button className="logout-button" onClick={handleLogout}>
+                    <FaSignOutAlt className="icon" />
+                    {!isCollapsed && "Đăng xuất"}
+                </button>
             </div>
-            <ul>
-                {role === 'Nhân viên kho' && (
-                    <>
-                        <li>Dashboard</li>
-                        <li><Link to="/quanlyphieunhap">Quản lý phiếu nhập kho</Link></li>
-                        <li><Link to="/quan-ly-tai-khoan">Quản lý tk kho</Link></li>
-                        <li>Quản lý xuất kho</li>
-                        <li>Lịch sử nhập kho</li>
-                        <li>Lịch sử xuất kho</li>
-                        <li>Vị trí trống trong kho</li>
-                        <li>Sơ đồ kho</li>
-                        <li>Tìm kiếm vị trí hàng hóa</li>
-                        <li>Kiểm kê hàng hóa</li>
-                    </>
-                )}
-
-                {role === 'Admin' && <li>Quản lý tài khoản người dùng</li>}
-                {role === 'Nhà cung cấp' && <li>Quản lý</li>}
-                {role === 'Đại lý bán hàng' && <li>Quản lý</li>}
-                {role === 'Thủ kho' && (
-                    <>
-                        <li>Dashboard</li>
-                        <li><Link to="/quanlyphieunhap">Quản lý phiếu nhập kho</Link></li>
-
-                        <li>Quản lý xuất kho</li>
-                        <li>Lịch sử nhập kho</li>
-                        <li>Lịch sử xuất kho</li>
-                        <li><Link to="/quan-ly-tai-khoan">Quản lý tk</Link></li>
-                       
-
-                        <li>Sơ đồ kho</li>
-                        <li>Tìm kiếm vị trí hàng hóa</li>
-                        <li>Kiểm kê hàng hóa</li>
-                        <li>Quản lý NCC</li>
-                        <li>Quản lý đại lý</li>
-                        <li>Quản lý sản phẩm</li>
-                        <li>Quản lý danh mục</li>
-                        <li>Quản lý vị trí kho</li>
-                    </>
-                )}
-
-                {/* Các mục khác cho các vai trò khác */}
-            </ul>
-            <button className="logout-button" onClick={handleLogout}>
-                <FaSignOutAlt className="icon" /> Đăng xuất
-            </button>
         </div>
     );
 };

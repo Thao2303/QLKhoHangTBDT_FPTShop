@@ -148,6 +148,15 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return Ok(new { message = "✅ Lưu vào kho và cập nhật daDung thành công!" });
         }
 
+        [HttpGet("luu-tru")]
+        public async Task<IActionResult> GetChiTietLuuTru()
+        {
+            var result = await _context.ChiTietLuuTru
+                .Include(ct => ct.SanPham) // ✅ Lấy kèm thông tin sản phẩm
+                .ToListAsync();
+
+            return Ok(result);
+        }
 
     }
 }
