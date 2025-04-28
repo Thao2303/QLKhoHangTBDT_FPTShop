@@ -11,7 +11,7 @@ namespace QuanLyKhoHangFPTShop.Models
         public string tenSanPham { get; set; }
         public string moTa { get; set; }
         public decimal khoiLuong { get; set; }
-        public decimal donGia { get; set; }
+        
         public int idDanhMuc { get; set; }
         public int idThuongHieu { get; set; }
         public int idNhaCungCap { get; set; }

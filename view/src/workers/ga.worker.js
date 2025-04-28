@@ -1,12 +1,15 @@
-﻿// ga.worker.js - không dùng import ngoài, gộp toàn bộ logic GA bên trong
+﻿// ================================
+// 🔍 ga.worker.js (Bản sửa)
+// ================================
+
 /* eslint-disable no-restricted-globals */
 
-function runGeneticAlgorithm(products, locations, generations = 30, populationSize = 20) {
+function runGeneticAlgorithm(products, locations, generations = 30, populationSize = 20, oldPositions = {}) {
     const getVolume = (sp) => (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
-    const population = Array.from({ length: populationSize }, () => generateRandomSolution(products, locations));
+    const population = Array.from({ length: populationSize }, () => generateRandomSolution(products, locations, oldPositions));
 
     for (let g = 0; g < generations; g++) {
-        population.sort((a, b) => fitness(b, products, locations) - fitness(a, products, locations));
+        population.sort((a, b) => fitness(b, products, locations, oldPositions) - fitness(a, products, locations, oldPositions));
         const parents = population.slice(0, 5);
         const children = [];
         while (children.length < populationSize - parents.length) {
@@ -18,64 +21,100 @@ function runGeneticAlgorithm(products, locations, generations = 30, populationSi
     }
 
     return population[0];
+}
 
-    function generateRandomSolution(products, locations) {
-        const solution = {};
-        const used = {};
-        for (const sp of products) {
-            const vol = getVolume(sp);
-            let qtyLeft = sp.soLuong;
-            solution[sp.idSanPham] = [];
+function generateRandomSolution(products, locations, oldPositions) {
+    const solution = {};
+    const used = {};
 
-            const shuffled = [...locations].sort(() => Math.random() - 0.5);
-            for (const loc of shuffled) {
-                const free = (loc.sucChua || 0) - (loc.daDung || 0) - (used[loc.idViTri] || 0);
-                const fitQty = Math.min(Math.floor(free / vol), qtyLeft);
-                if (fitQty > 0) {
-                    solution[sp.idSanPham].push({ viTri: loc.idViTri, soLuong: fitQty });
-                    used[loc.idViTri] = (used[loc.idViTri] || 0) + fitQty * vol;
-                    qtyLeft -= fitQty;
-                    if (qtyLeft <= 0) break;
-                }
+    for (const sp of products) {
+        const vol = (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
+        let qtyLeft = sp.soLuong;
+        solution[sp.idSanPham] = [];
+
+        const oldLocIds = oldPositions[sp.idSanPham] || [];
+        const oldLocObjects = oldLocIds.map(id => locations.find(l => l.idViTri === id)).filter(Boolean);
+
+        // Xác định zone gốc từ vị trí cũ
+        let targetZone = "";
+        if (oldLocObjects.length > 0) {
+            targetZone = oldLocObjects[0].day.trim().toUpperCase();
+        }
+
+        // Các vị trí khác (không nằm trong oldPositions)
+        const remainingLocs = locations.filter(loc => !oldLocIds.includes(loc.idViTri));
+
+        // Tách thành:
+        const sameZoneLocs = remainingLocs
+            .filter(loc => loc.day.trim().toUpperCase() === targetZone)
+            .sort((a, b) => {
+                if (a.cot !== b.cot) return a.cot - b.cot;
+                return a.tang - b.tang;
+            });
+
+        const otherLocs = remainingLocs
+            .filter(loc => loc.day.trim().toUpperCase() !== targetZone)
+            .sort((a, b) => {
+                if (a.day !== b.day) return a.day.localeCompare(b.day);
+                if (a.cot !== b.cot) return a.cot - b.cot;
+                return a.tang - b.tang;
+            });
+
+        const combined = [...oldLocObjects, ...sameZoneLocs, ...otherLocs];
+
+        for (const loc of combined) {
+            if (!loc) continue;
+            const free = (loc.sucChua || 0) - (loc.daDung || 0) - (used[loc.idViTri] || 0);
+            const fitQty = Math.min(Math.floor(free / vol), qtyLeft);
+            if (fitQty > 0) {
+                solution[sp.idSanPham].push({ viTri: loc.idViTri, soLuong: fitQty });
+                used[loc.idViTri] = (used[loc.idViTri] || 0) + fitQty * vol;
+                qtyLeft -= fitQty;
+                if (qtyLeft <= 0) break;
             }
         }
-        return solution;
     }
+    return solution;
+}
 
-    function fitness(solution, products, locations) {
-        let totalUsed = 0, totalWaste = 0;
-        const locMap = Object.fromEntries(locations.map(l => [l.idViTri, l]));
-        const used = {};
-        for (const sp of products) {
-            const vol = getVolume(sp);
-            for (const alloc of solution[sp.idSanPham] || []) {
-                const vt = alloc.viTri;
-                const qty = alloc.soLuong;
-                const loc = locMap[vt];
-                if (!loc) continue;
-                const cap = (loc.sucChua || 0) - (loc.daDung || 0);
-                const usedVol = qty * vol;
-                totalUsed += usedVol;
-                used[vt] = (used[vt] || 0) + usedVol;
-                if (used[vt] > cap) totalWaste += used[vt] - cap;
-            }
-        }
-        return totalUsed - totalWaste;
-    }
 
-    function crossover(a, b) {
-        const child = {};
-        for (const key in a) {
-            child[key] = Math.random() < 0.5 ? a[key] : b[key];
+
+
+function fitness(solution, products, locations, oldPositions) {
+    let totalUsed = 0, totalWaste = 0, bonus = 0;
+    const locMap = Object.fromEntries(locations.map(l => [l.idViTri, l]));
+    const used = {};
+
+    for (const sp of products) {
+        const vol = (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
+        for (const alloc of solution[sp.idSanPham] || []) {
+            const vt = alloc.viTri;
+            const qty = alloc.soLuong;
+            const loc = locMap[vt];
+            if (!loc) continue;
+            const cap = (loc.sucChua || 0) - (loc.daDung || 0);
+            const usedVol = qty * vol;
+            totalUsed += usedVol;
+            used[vt] = (used[vt] || 0) + usedVol;
+            if (used[vt] > cap) totalWaste += used[vt] - cap;
+            if ((oldPositions[sp.idSanPham] || []).includes(vt)) bonus += 10; // Thưởng điểm nếu đặt vị trí cũ
         }
-        return child;
     }
+    return totalUsed - totalWaste + bonus;
+}
+
+function crossover(a, b) {
+    const child = {};
+    for (const key in a) {
+        child[key] = Math.random() < 0.5 ? a[key] : b[key];
+    }
+    return child;
 }
 
 self.onmessage = function (e) {
-    const { products, locations } = e.data;
+    const { products, locations, oldPositions } = e.data;
     try {
-        const result = runGeneticAlgorithm(products, locations);
+        const result = runGeneticAlgorithm(products, locations, 30, 20, oldPositions);
         self.postMessage({ success: true, data: result });
     } catch (err) {
         self.postMessage({ success: false, error: err.message });

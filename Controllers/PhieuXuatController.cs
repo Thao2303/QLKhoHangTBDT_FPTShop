@@ -19,18 +19,16 @@ namespace QuanLyKhoHangFPTShop.Controllers
             _context = context;
         }
 
-        // 📌 1️⃣ Lấy danh sách phiếu xuất
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PhieuXuat>>> GetPhieuXuat()
         {
             return await _context.PhieuXuat
-                .Include(px => px.YeuCauXuatKho) // Load yêu cầu xuất kho
-                .Include(px => px.ChiTietPhieuXuats) // Load chi tiết phiếu xuất
-                .ThenInclude(ct => ct.SanPham) // Load sản phẩm xuất
+                .Include(px => px.YeuCauXuatKho)
+                .Include(px => px.ChiTietPhieuXuats)
+                .ThenInclude(ct => ct.SanPham)
                 .ToListAsync();
         }
 
-        // 📌 2️⃣ Lấy phiếu xuất theo ID
         [HttpGet("{id}")]
         public async Task<ActionResult<PhieuXuat>> GetPhieuXuat(int id)
         {
@@ -48,17 +46,42 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return phieuXuat;
         }
 
-        // 📌 3️⃣ Thêm phiếu xuất mới
+        [HttpPost("kiemtra-tonkho")]
+        public async Task<IActionResult> KiemTraTonKho([FromBody] List<ChiTietPhieuXuat> ds)
+        {
+            foreach (var item in ds)
+            {
+                var sp = await _context.SanPham.FindAsync(item.idSanPham);
+                if (sp == null || sp.soLuongHienCon < item.soLuong)
+                {
+                    return BadRequest($"Sản phẩm {item.idSanPham} không đủ tồn kho.");
+                }
+            }
+            return Ok();
+        }
+
         [HttpPost]
         public async Task<ActionResult<PhieuXuat>> PostPhieuXuat(PhieuXuat phieuXuat)
         {
+            foreach (var ct in phieuXuat.ChiTietPhieuXuats)
+            {
+                var sp = await _context.SanPham.FindAsync(ct.idSanPham);
+                if (sp != null) sp.soLuongHienCon -= ct.soLuong;
+            }
+
             _context.PhieuXuat.Add(phieuXuat);
             await _context.SaveChangesAsync();
+
+            var yc = await _context.YeuCauXuatKho.FindAsync(phieuXuat.idYeuCauXuatKho);
+            if (yc != null)
+            {
+                yc.idTrangThaiXacNhan = 3;
+                await _context.SaveChangesAsync();
+            }
 
             return CreatedAtAction(nameof(GetPhieuXuat), new { id = phieuXuat.idPhieuXuat }, phieuXuat);
         }
 
-        // 📌 4️⃣ Cập nhật phiếu xuất
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPhieuXuat(int id, PhieuXuat phieuXuat)
         {
@@ -88,7 +111,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return NoContent();
         }
 
-        // 📌 5️⃣ Xóa phiếu xuất
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhieuXuat(int id)
         {

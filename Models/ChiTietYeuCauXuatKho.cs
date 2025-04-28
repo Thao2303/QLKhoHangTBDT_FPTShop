@@ -7,13 +7,16 @@ namespace QuanLyKhoHangFPTShop.Models
     {
         [Key]
         public int idYeuCauXuatKho { get; set; }
+
         [Key]
         public int idSanPham { get; set; }
+
         public int soLuong { get; set; }
 
         [ForeignKey("idYeuCauXuatKho")]
-        public YeuCauXuatKho YeuCauXuatKho { get; set; }
+        public YeuCauXuatKho? YeuCauXuatKho { get; set; }
+
         [ForeignKey("idSanPham")]
-        public SanPham SanPham { get; set; }
+        public SanPham? SanPham { get; set; }
     }
 }

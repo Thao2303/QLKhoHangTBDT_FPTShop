@@ -11,6 +11,37 @@
     flex: 1;
     padding: 24px;
     overflow-x: hidden;
+    margin-top: 15px;
+    max-width: 100%;
+    background-color: #f5f6f9;
+}
+
+.content-area2 {
+    flex: 1;
+    padding: 24px;
+    overflow-x: hidden;
+    margin-top: 15px;
+    margin-left: 20%;
+    max-width: 58%;
+    background-color: #f5f6f9;
+}
+
+.content-area3 {
+    flex: 1;
+    padding: 24px;
+    overflow-x: hidden;
+    margin-top: 15px;
+    margin-left: 10%;
+    max-width: 58%;
+    background-color: #f5f6f9;
+}
+
+.content-area4 {
+    flex: 1;
+    padding: 0px;
+    overflow-x: hidden;
+    margin-top: 15px;
+    margin-left: 0%;
     max-width: 100%;
     background-color: #f5f6f9;
 }
@@ -31,6 +62,7 @@ h2 {
 
 .form-section {
     margin-bottom: 15px;
+    margin-right: 2%;
 }
 
     .form-section label {
@@ -120,3 +152,77 @@ h2 {
         text-align: center;
         font-size: 14px;
     }
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    z-index: 9999;
+    animation: fadeInOut 3s ease;
+}
+
+.toast-success {
+    background-color: #4caf50;
+    color: white;
+}
+
+.toast-fail {
+    background-color: #f44336;
+    color: white;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+.popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.popup-inner {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.close-btn {
+    margin-top: 10px;
+}
+
+.pagination button {
+    margin: 4px;
+}
+
+.active-page {
+    font-weight: bold;
+    border-bottom: 2px solid blue;
+}

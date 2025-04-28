@@ -54,5 +54,42 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return Ok(result);
         }
 
+        [HttpGet("sanpham/{ten}")]
+        public async Task<IActionResult> GetByTenSanPham(string ten)
+        {
+            var danhSach = await _context.ChiTietLuuTru
+                .Include(c => c.SanPham)
+                .Include(c => c.ViTri)
+                .Where(c => c.SanPham.tenSanPham.Contains(ten))
+                .Select(c => new {
+                    c.ViTri.IdViTri,
+                    c.ViTri.Day,
+                    c.ViTri.Cot,
+                    c.ViTri.Tang,
+                    c.SanPham.tenSanPham,
+                    c.soLuong
+                })
+                .ToListAsync();
+
+            return Ok(danhSach);
+        }
+
+        [HttpGet("chitietluutru/sanpham/{idSanPham}")]
+        public async Task<ActionResult<IEnumerable<object>>> GetViTriTheoSanPham(int idSanPham)
+        {
+            var result = await _context.ChiTietLuuTru
+                .Include(ct => ct.ViTri)
+                .Where(ct => ct.idSanPham == idSanPham)
+                .GroupBy(ct => ct.idViTri)
+                .Select(g => new {
+                    idViTri = g.Key,
+                    soLuong = g.Sum(x => x.soLuong),
+                    vitri = g.Select(x => x.ViTri).FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
     }
 }

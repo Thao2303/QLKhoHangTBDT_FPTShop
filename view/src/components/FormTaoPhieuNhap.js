@@ -111,6 +111,7 @@ const FormTaoPhieuNhap = () => {
         <div className="layout-wrapper">
             <Sidebar />
             <div className="content-area">
+                <div className="content-area2">
         <div className="main-layout">
                 <Navbar />
                 <div className="form-container">
@@ -194,6 +195,7 @@ const FormTaoPhieuNhap = () => {
                     </form>
                 </div>
             </div>
+                </div>
                 </div>
             </div>
        

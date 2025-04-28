@@ -1,16 +1,17 @@
 ﻿.sidebar-wrapper {
-    width: 240px;
+  
     transition: width 0.3s ease;
     flex-shrink: 0;
 }
-.sidebar-wrapper2 {
 
+.sidebar-wrapper2 {
     transition: width 0.3s ease;
     flex-shrink: 0;
 }
-    .sidebar-wrapper.collapsed {
-        width: 80px;
-    }
+
+.sidebar-wrapper.collapsed {
+    width: 80px;
+}
 
 .sidebar {
     width: 100%;
@@ -61,7 +62,6 @@
     flex-grow: 1;
     overflow-y: auto;
     padding-right: 4px;
-
 }
 
 .sidebar-item {
@@ -156,4 +156,3 @@
             transform: translateX(-100%);
         }
 }
-

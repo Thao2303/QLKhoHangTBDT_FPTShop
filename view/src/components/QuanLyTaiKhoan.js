@@ -1,156 +1,157 @@
-﻿import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
+﻿// ✅ QUẢN LÝ TÀI KHOẢN - Giao diện giống quản lý phiếu nhập (UI đồng bộ hóa layout, style)
+import React, { useEffect, useState } from "react";
+import FormTaiKhoan from "./FormTaiKhoan";
+import ChiTietTaiKhoan from "./ChiTietTaiKhoan";
+import Pagination from "./Pagination";
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
+import "./QuanLyPhieuNhapKho.css"; // sử dụng lại style đã chuẩn hóa
 
 const QuanLyTaiKhoan = () => {
-    const [taiKhoans, setTaiKhoans] = useState([]);
-    const [chucVus, setChucVus] = useState([]);
-    const [newTaiKhoan, setNewTaiKhoan] = useState({
-        tenTaiKhoan: '',
-        matKhau: '',
-        email: '',
-        idChucVu: ''
-    });
-    const [errorMsg, setErrorMsg] = useState('');
+    const [danhSach, setDanhSach] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [searchKeyword, setSearchKeyword] = useState("");
+    const [filterChucVu, setFilterChucVu] = useState("");
+    const [filterNgayTu, setFilterNgayTu] = useState("");
+    const [filterNgayDen, setFilterNgayDen] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedData, setSelectedData] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+    const [showDetail, setShowDetail] = useState(false);
+
+    const currentUser = { chucVu: "Admin" };
+    const itemsPerPage = 10;
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch("https://localhost:5288/api/taikhoan");
+            const data = await res.json();
+            setDanhSach(data);
+        } catch (error) {
+            alert("Lỗi khi tải danh sách tài khoản");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        fetchTaiKhoanList();
-        fetchChucVuList();
+        fetchData();
     }, []);
 
-    const fetchTaiKhoanList = async () => {
+    const handleFilter = (item) => {
+        const keyword = searchKeyword.toLowerCase();
+        const matchKeyword = item.tenTaiKhoan?.toLowerCase().includes(keyword) || item.email?.toLowerCase().includes(keyword);
+        const matchChucVu = filterChucVu ? item.tenChucVu === filterChucVu : true;
+        const ngay = new Date(item.ngayCap);
+        const matchNgay = (!filterNgayTu || ngay >= new Date(filterNgayTu)) && (!filterNgayDen || ngay <= new Date(filterNgayDen));
+        return matchKeyword && matchChucVu && matchNgay;
+    };
+
+    const handleToggleTrangThai = async (id, isActive) => {
+        const msg = isActive ? "Bạn có chắc chắn muốn KHÓA tài khoản này?" : "Bạn có muốn MỞ lại tài khoản này?";
+        if (!window.confirm(msg)) return;
         try {
-            const response = await axios.get('https://localhost:5288/api/taikhoan');
-            setTaiKhoans(response.data);
-        } catch (error) {
-            console.error('Lỗi lấy danh sách tài khoản:', error);
+            const res = await fetch(`https://localhost:5288/api/taikhoan/khoataikhoan/${id}`, { method: "PUT" });
+            res.ok ? alert("✅ Cập nhật thành công") : alert("❌ Thất bại");
+            fetchData();
+        } catch {
+            alert("Lỗi mạng hoặc server");
         }
     };
 
-    const fetchChucVuList = async () => {
-        try {
-            const response = await axios.get('https://localhost:5288/api/chucvu');
-            setChucVus(response.data);
-        } catch (error) {
-            console.error('Lỗi lấy danh sách chức vụ:', error);
-        }
-    };
+    const filteredData = danhSach.filter(handleFilter);
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    const currentData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    const handleAddTaiKhoan = async () => {
-        if (!newTaiKhoan.tenTaiKhoan || !newTaiKhoan.matKhau || !newTaiKhoan.email || !newTaiKhoan.idChucVu) {
-            setErrorMsg('Vui lòng điền đầy đủ thông tin.');
-            return;
-        }
-
-        try {
-            const selectedChucVu = chucVus.find(cv => cv.idChucVu === newTaiKhoan.idChucVu);
-
-            const payload = {
-                tenTaiKhoan: newTaiKhoan.tenTaiKhoan,
-                matKhau: newTaiKhoan.matKhau,
-                email: newTaiKhoan.email,
-                idChucVu: newTaiKhoan.idChucVu,
-                ngayCap: new Date().toISOString(),
-                trangThai: true
-            };
-
-
-            await axios.post('https://localhost:5288/api/taikhoan', payload);
-
-            setNewTaiKhoan({ tenTaiKhoan: '', matKhau: '', email: '', idChucVu: '' });
-            setErrorMsg('');
-            fetchTaiKhoanList();
-        } catch (error) {
-            console.error('Lỗi thêm tài khoản:', error);
-            const errData = error.response?.data;
-
-            if (typeof errData === 'string') {
-                setErrorMsg(errData);
-            } else if (errData?.title) {
-                setErrorMsg(errData.title);
-            } else {
-                setErrorMsg('Lỗi không xác định!');
-            }
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xoá tài khoản này?')) {
-            await axios.delete(`https://localhost:5288/api/taikhoan/${id}`);
-            fetchTaiKhoanList();
-        }
+    const handleSubmit = () => {
+        setShowForm(false);
+        setSelectedData(null);
+        fetchData();
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '800px', margin: 'auto' }}>
+        <div className="layout-wrapper">
             <Sidebar />
-            <Navbar />
-            <h2>📋 Quản lý tài khoản</h2>
+            <div className="content-area">
+                <div className="main-layout">
+                    <Navbar />
+                    <div className="container">
+                        <h1 className="title">Quản lý tài khoản</h1>
 
-            <div style={{ marginBottom: '20px' }}>
-                <h3>➕ Thêm tài khoản mới</h3>
-                <input
-                    placeholder="Tên tài khoản"
-                    value={newTaiKhoan.tenTaiKhoan}
-                    onChange={(e) => setNewTaiKhoan({ ...newTaiKhoan, tenTaiKhoan: e.target.value })}
-                /><br />
-                <input
-                    placeholder="Mật khẩu"
-                    type="password"
-                    value={newTaiKhoan.matKhau}
-                    onChange={(e) => setNewTaiKhoan({ ...newTaiKhoan, matKhau: e.target.value })}
-                /><br />
-                <input
-                    placeholder="Email"
-                    value={newTaiKhoan.email}
-                    onChange={(e) => setNewTaiKhoan({ ...newTaiKhoan, email: e.target.value })}
-                /><br />
-                <select
-                    value={newTaiKhoan.idChucVu}
-                    onChange={(e) => setNewTaiKhoan({ ...newTaiKhoan, idChucVu: Number(e.target.value) })}
-                >
-                    <option value="">-- Chọn chức vụ --</option>
-                    {chucVus.map((cv) => (
-                        <option key={cv.idChucVu} value={cv.idChucVu}>
-                            {cv.tenChucVu}
-                        </option>
-                    ))}
-                </select><br />
+                        <div className="search-form">
+                            <input placeholder="Tài khoản / Email" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} className="search-input" />
+                            <select value={filterChucVu} onChange={(e) => setFilterChucVu(e.target.value)} className="filter-select">
+                                <option value="">-- Chức vụ --</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Nhân viên">Nhân viên</option>
+                                <option value="Thủ kho">Thủ kho</option>
+                                <option value="Kế toán">Kế toán</option>
+                            </select>
+                            <div className="date-group">
+                                <label>Từ ngày:</label>
+                                <input type="date" value={filterNgayTu} onChange={(e) => setFilterNgayTu(e.target.value)} className="date-input" />
+                            </div>
+                            <div className="date-group">
+                                <label>Đến ngày:</label>
+                                <input type="date" value={filterNgayDen} onChange={(e) => setFilterNgayDen(e.target.value)} className="date-input" />
+                            </div>
+                            <div style={{ display: "flex", gap: 10 }}>
+                                <button className="search-button">🔍 Tìm kiếm</button>
+                                <button className="reset-button" onClick={() => { setSearchKeyword(""); setFilterChucVu(""); setFilterNgayTu(""); setFilterNgayDen(""); }}>🗑 Xóa tìm kiếm</button>
+                            </div>
+                        </div>
 
-                <button onClick={handleAddTaiKhoan} style={{ marginTop: '10px' }}>Thêm</button>
-                {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
+                        {currentUser.chucVu === 'Admin' && (
+                            <button className="add-button" onClick={() => { setShowForm(true); setSelectedData(null); }}>+ Thêm tài khoản</button>
+                        )}
+
+                        <table className="data-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tài khoản</th>
+                                    <th>Email</th>
+                                    <th>Chức vụ</th>
+                                    <th>Ngày cấp</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {loading ? <tr><td colSpan={7}>Đang tải...</td></tr> : currentData.length === 0 ? <tr><td colSpan={7}>Không có dữ liệu</td></tr> : currentData.map((tk, i) => (
+                                    <tr key={tk.idTaiKhoan}>
+                                        <td>{(currentPage - 1) * itemsPerPage + i + 1}</td>
+                                        <td>{tk.tenTaiKhoan}</td>
+                                        <td>{tk.email}</td>
+                                        <td>{tk.tenChucVu}</td>
+                                        <td>{tk.ngayCap}</td>
+                                        <td>
+                                            <span className={`status-badge ${tk.trangThai ? 'status-approved' : 'status-rejected'}`}>
+                                                {tk.trangThai ? 'Hoạt động' : 'Đã khóa'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button className="edit-btn" onClick={() => setShowDetail(tk)}>👁</button>
+                                            {currentUser.chucVu === 'Admin' && <>
+                                                <button className="edit-btn" onClick={() => { setSelectedData(tk); setShowForm(true); }}>✏</button>
+                                                <button className="delete-btn" onClick={() => handleToggleTrangThai(tk.idTaiKhoan, tk.trangThai)}>
+                                                    {tk.trangThai ? '🛑' : '✅'}
+                                                </button>
+                                            </>}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </div>
+                </div>
             </div>
 
-            <h3>📑 Danh sách tài khoản</h3>
-            <table border="1" cellPadding="10" style={{ width: '100%', marginTop: '10px' }}>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Tài khoản</th>
-                        <th>Email</th>
-                        <th>Ngày cấp</th>
-                        <th>Trạng thái</th>
-                        <th>Chức vụ</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {taiKhoans.map((tk) => (
-                        <tr key={tk.idTaiKhoan}>
-                            <td>{tk.idTaiKhoan}</td>
-                            <td>{tk.tenTaiKhoan}</td>
-                            <td>{tk.email}</td>
-                            <td>{new Date(tk.ngayCap).toLocaleDateString()}</td>
-                            <td>{tk.trangThai ? 'Hoạt động' : 'Vô hiệu'}</td>
-                            <td>{tk.idChucVu}</td>
-                            <td>
-                                <button onClick={() => handleDelete(tk.idTaiKhoan)}>🗑 Xoá</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <FormTaiKhoan visible={showForm} onClose={() => setShowForm(false)} onSubmit={handleSubmit} initialData={selectedData} />
+            <ChiTietTaiKhoan visible={showDetail} onClose={() => setShowDetail(false)} data={selectedData} />
         </div>
     );
 };

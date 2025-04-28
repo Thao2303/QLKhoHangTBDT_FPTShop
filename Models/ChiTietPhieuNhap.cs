@@ -11,7 +11,7 @@ public class ChiTietPhieuNhap
     public int trangThai { get; set; }
     public int soLuongTheoChungTu { get; set; }
     public int soLuongThucNhap { get; set; }
-
+    public decimal donGia { get; set; }
     [ForeignKey("idPhieuNhap")]
     public PhieuNhap PhieuNhap { get; set; }
 

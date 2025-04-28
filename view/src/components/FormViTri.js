@@ -1,4 +1,8 @@
-﻿import React, { useEffect, useState } from "react";
+﻿// ✅ FormViTri - Popup Đẹp Gọn
+import React, { useEffect, useState } from "react";
+import "./popup-style.css"; // tuỳ đường dẫn bạn để
+import { useNavigate } from "react-router-dom";
+
 
 const FormViTri = ({ visible, onClose, onSubmit, initialData }) => {
     const [formData, setFormData] = useState({
@@ -30,7 +34,6 @@ const FormViTri = ({ visible, onClose, onSubmit, initialData }) => {
         }
     }, [initialData]);
 
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -44,11 +47,21 @@ const FormViTri = ({ visible, onClose, onSubmit, initialData }) => {
     if (!visible) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md w-full max-w-lg">
-                <h2 className="text-lg font-semibold mb-4">{initialData ? "Sửa vị trí" : "Thêm vị trí"}</h2>
+        <div className="popup-overlay">
+            <form
+                onSubmit={handleSubmit}
+                className="popup-form"
+            >
+                <h2 className="text-lg font-semibold mb-4">
+                    {initialData ? "Sửa vị trí" : "Thêm vị trí"}
+                </h2>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "16px"
+                }}>
+
                     <div>
                         <label className="block mb-1">Dãy</label>
                         <input type="text" name="day" value={formData.day} onChange={handleChange} className="input" required />
