@@ -30,7 +30,11 @@ namespace QuanLyKhoHangFPTShop.Data
         public DbSet<ChiTietYeuCauXuatKho> ChiTietYeuCauXuatKho { get; set; }
         public DbSet<PhieuXuat> PhieuXuat { get; set; }
         public DbSet<ChiTietPhieuXuat> ChiTietPhieuXuat { get; set; }
-       
+        public DbSet<YeuCauKiemKe> YeuCauKiemKe { get; set; }
+        public DbSet<ChiTietYeuCauKiemKe> ChiTietYeuCauKiemKe { get; set; }
+        public DbSet<KiemKe> KiemKe { get; set; }
+        public DbSet<ChiTietKiemKe> ChiTietKiemKe { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -107,8 +111,15 @@ namespace QuanLyKhoHangFPTShop.Data
             modelBuilder.Entity<DaiLy>()
             .HasKey(c => new { c.idDaiLy });
 
+            modelBuilder.Entity<ChiTietYeuCauKiemKe>()
+         .HasKey(c => new { c.idYeuCauKiemKe, c.idSanPham });
 
-            
+            modelBuilder.Entity<YeuCauKiemKe>()
+                .HasKey(y => y.idYeuCauKiemKe);
+
+            modelBuilder.Entity<ChiTietKiemKe>()
+    .HasKey(c => new { c.idKiemKe, c.idSanPham });
+
 
 
 

@@ -8,7 +8,8 @@
     padding: 0 20px;
     position: fixed;
     top: 0;
-    left: 250px; /* Đảm bảo không bị chồng lên Sidebar */
+    margin-left: 2%;
+    margin-right:1%;/* Đảm bảo không bị chồng lên Sidebar */
     right: 0;
     z-index: 1000;
 }
@@ -30,8 +31,8 @@
     align-items: center;
     background: white;
     border-radius: 20px;
-    padding: 5px 70px;
-    margin-left: 550px;
+    padding: 5px;
+    margin-left: 50px;
 }
 
 .search-icon {
@@ -60,7 +61,7 @@
     align-items: center;
     cursor: pointer;
     margin-left: 30px;
-    margin-right: 20px;
+    margin-right: 100px;
 }
 
 .user-avatar {

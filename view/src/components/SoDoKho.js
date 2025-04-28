@@ -1,4 +1,4 @@
-﻿// src/components/SoDoKho.js
+﻿// ✅ SƠ ĐỒ KHO - Hỗ trợ highlight vị trí theo sản phẩm
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Tooltip } from "react-tooltip";
@@ -6,7 +6,7 @@ import "./SoDoKho.css";
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 
-const SoDoKho = () => {
+const SoDoKho = ({ highlightedIds = [] }) => {
     const [vitri, setVitri] = useState([]);
     const [grouped, setGrouped] = useState({});
     const [sanPhamTheoViTri, setSanPhamTheoViTri] = useState({});
@@ -72,46 +72,56 @@ const SoDoKho = () => {
     `;
     };
 
-
     const sortByCotTang = (a, b) => a.cot - b.cot || a.tang - b.tang;
 
     return (
         <div className="layout-wrapper">
             <Sidebar />
-            <div className="content-area">
+            <div className="content-area4">
                 <div className="main-layout">
+                    <h2>Sơ đồ kho FPT Shop</h2>
                     <Navbar />
-        <div className="sodokho-container">
-           
-            <h2>Sơ đồ kho FPT Shop</h2>
-            <div className="legend">
-                <div><span className="green box" /> Còn &gt; 50%</div>
-                <div><span className="lightblue box" /> Còn 20–50%</div>
-                <div><span className="red box" /> Còn &lt; 20%</div>
-            </div>
-            <div className="area-label">Khu vực soạn hàng</div>
-            <div className="kho-wrapper-horizontal">
-                {Object.entries(grouped).sort().map(([day, items], idx) => (
-                    <div className="kho-row" key={idx}>
-                        <div className="day-label">Dãy {day}</div>
-                        <div className="kho-row-items">
-                            {items.sort(sortByCotTang).map((vt, i) => (
-                                <div
-                                    key={i}
-                                    className={`vitri-cell ${getColor(vt)}`}
-                                    data-tooltip-id={`tooltip-${vt.idViTri}`}
-                                    data-tooltip-html={getTooltipContent(vt)}
-                                >
-                                    {vt.day}-{vt.cot}-{vt.tang}
-                                    <Tooltip id={`tooltip-${vt.idViTri}`} place="top" />
-                                </div>
-                            ))}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div className="note-box">
+                            <h4>📘 Ghi chú sơ đồ</h4>
+                            <div className="legend">
+                                <div><span className="green box" /> Còn &gt; 50%</div>
+                                <div><span className="lightblue box" /> Còn 20–50%</div>
+                                <div><span className="red box" /> Còn &lt; 20%</div>
+                            </div>
+                            <div style={{ textAlign: 'left', fontSize: 13 }}>
+                                <p><strong>Mã vị trí:</strong> A-1-1</p>
+                                <p><strong>Ý nghĩa:</strong> Dãy A - Cột 1 - Tầng 1</p>
+                            </div>
                         </div>
                     </div>
-                ))}
-            </div>
-            <div className="area-label">Khu vực hàng chờ xuất</div>
-            <div className="area-label">Khu vực chờ nhập hàng</div>
+                    <div className="sodokho-container">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <div className="area-label">Khu vực soạn hàng</div>
+                                <div className="kho-wrapper-horizontal">
+                                    {Object.entries(grouped).sort().map(([day, items], idx) => (
+                                        <div className="kho-row" key={idx}>
+                                            <div className="day-label">Dãy {day}</div>
+                                            <div className="kho-row-items">
+                                                {items.sort(sortByCotTang).map((vt, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={`vitri-cell ${getColor(vt)} ${highlightedIds.includes(vt.idViTri) ? 'highlighted' : ''}`}
+                                                        data-tooltip-id={`tooltip-${vt.idViTri}`}
+                                                        data-tooltip-html={getTooltipContent(vt)}
+                                                    >
+                                                        {vt.day}-{vt.cot}-{vt.tang}
+                                                        <Tooltip id={`tooltip-${vt.idViTri}`} place="top" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="area-label">Khu vực hàng chờ xuất</div>
                     </div>
                 </div>
             </div>

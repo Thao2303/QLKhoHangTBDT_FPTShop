@@ -16,6 +16,17 @@ namespace QuanLyKhoHangFPTShop.Controllers
             _context = context;
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPhieuNhapById(int id)
+        {
+            var phieuNhap = await _context.PhieuNhap.FindAsync(id);
+            if (phieuNhap == null)
+            {
+                return NotFound();
+            }
+            return Ok(phieuNhap);
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetPhieuNhap()
         {
@@ -67,6 +78,7 @@ namespace QuanLyKhoHangFPTShop.Controllers
                     {
                         idPhieuNhap = phieuNhap.idPhieuNhap,
                         idSanPham = item.product,
+                        donGia = item.unitPrice, // ✅ THÊM DÒNG NÀY
                         tongTien = item.unitPrice * item.quantity,
                         trangThai = 1,
                         soLuongTheoChungTu = item.quantity,
@@ -75,6 +87,7 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
                     _context.ChiTietPhieuNhap.Add(chiTiet);
                 }
+
 
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Tạo phiếu nhập thành công", id = phieuNhap.idPhieuNhap });
@@ -93,6 +106,44 @@ namespace QuanLyKhoHangFPTShop.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpPut("duyet/{id}")]
+        public async Task<IActionResult> DuyetPhieuNhap(int id)
+        {
+            try
+            {
+                var chiTietList = await _context.ChiTietPhieuNhap
+                    .Where(x => x.idPhieuNhap == id)
+                    .ToListAsync();
+
+                if (!chiTietList.Any())
+                    return NotFound("Không tìm thấy chi tiết phiếu nhập");
+
+                foreach (var ct in chiTietList)
+                {
+                    ct.trangThai = 2; // hoặc = 2 nếu là kiểu số
+                }
+
+                
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi server: {ex.Message}");
+            }
+        }
+
+        [HttpGet("chitiet/{id}")]
+        public async Task<ActionResult<IEnumerable<ChiTietPhieuNhap>>> GetChiTietPhieuNhap(int id)
+        {
+            return await _context.ChiTietPhieuNhap
+                .Where(ct => ct.idPhieuNhap == id)
+                .Include(ct => ct.SanPham)
+                .ToListAsync();
+        }
+
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhieuNhap(int id)

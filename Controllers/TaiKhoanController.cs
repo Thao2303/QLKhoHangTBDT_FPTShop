@@ -23,10 +23,25 @@ namespace QLKhoHangFPTShop.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TaiKhoan>>> GetTaiKhoan()
+        public async Task<IActionResult> GetAll()
         {
-            return await _context.TaiKhoan.ToListAsync();
+            var taiKhoans = await _context.TaiKhoan
+                .Include(t => t.ChucVu)
+                .Select(t => new {
+                    t.idTaiKhoan,
+                    t.tenTaiKhoan,
+                    t.email,
+                    t.ngayCap,
+                    t.trangThai,
+                    t.idChucVu,
+                    TenChucVu = t.ChucVu.tenChucVu
+                })
+                .ToListAsync();
+
+            return Ok(taiKhoans);
         }
+
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<TaiKhoan>> GetTaiKhoan(int id)
@@ -74,6 +89,21 @@ namespace QLKhoHangFPTShop.Controllers
         }
 
 
+        [HttpPut("khoataikhoan/{id}")]
+        public async Task<IActionResult> KhoaTaiKhoan(int id)
+        {
+            var tk = await _context.TaiKhoan.FindAsync(id);
+            if (tk == null)
+            {
+                return NotFound();
+            }
+
+            // Toggle trạng thái
+            tk.trangThai = !tk.trangThai;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
 
 
 
