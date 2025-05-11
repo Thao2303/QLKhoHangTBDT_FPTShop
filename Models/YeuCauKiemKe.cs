@@ -11,25 +11,45 @@ namespace QuanLyKhoHangFPTShop.Models
         [Key]
         public int idYeuCauKiemKe { get; set; }
 
-        [ForeignKey("NguoiTao")]
-        public int idNguoiTao { get; set; }
-        public TaiKhoan? NguoiTao { get; set; }
+        public DateTime ngayTao { get; set; } = DateTime.Now;
 
-        public DateTime thoiGianTao { get; set; }
-        public int trangThai { get; set; } = 1; // 1: Chờ duyệt, 2: Đã duyệt
+        [MaxLength(100)]
+        public string? mucDich { get; set; }
+
+        [MaxLength(100)]
+        public string? viTriKiemKe { get; set; }
+
+        [MaxLength(255)]
         public string? ghiChu { get; set; }
 
-        public List<ChiTietYeuCauKiemKe>? ChiTiet { get; set; }
+        public int trangThai { get; set; } = 0; // 0: Chưa thực hiện, 1: Đã kiểm, 2: Lệch, 3: Đã xử lý
+
+        public int? nguoiTao { get; set; }
+
+        [MaxLength(100)] public string? tenTruongBan { get; set; }
+        [MaxLength(100)] public string? tenUyVien1 { get; set; }
+        [MaxLength(100)] public string? tenUyVien2 { get; set; }
+        [ForeignKey("nguoiTao")]
+        public TaiKhoan? NguoiTaoTaiKhoan { get; set; }
+
+        public ICollection<ChiTietYeuCauKiemKe> ChiTietYeuCau { get; set; } = new List<ChiTietYeuCauKiemKe>();
     }
 
     public class ChiTietYeuCauKiemKe
     {
-        [ForeignKey("YeuCauKiemKe")]
+        [Key]
+        [Column(Order = 0)]
         public int idYeuCauKiemKe { get; set; }
-        public YeuCauKiemKe? YeuCauKiemKe { get; set; }
 
-        [ForeignKey("SanPham")]
+        [Key]
+        [Column(Order = 1)]
         public int idSanPham { get; set; }
-        public SanPham? SanPham { get; set; }
+
+        public SanPham SanPham { get; set; }
+        public YeuCauKiemKe YeuCauKiemKe { get; set; }
     }
+
+
+
+
 }

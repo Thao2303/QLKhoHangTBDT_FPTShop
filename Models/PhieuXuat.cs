@@ -1,17 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QuanLyKhoHangFPTShop.Models;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
-namespace QuanLyKhoHangFPTShop.Models
+public class PhieuXuat
 {
-    public class PhieuXuat
-    {
-        [Key]
-        public int idPhieuXuat { get; set; }
-        public DateTime ngayXuat { get; set; } = DateTime.Now;
-        public int idYeuCauXuatKho { get; set; }
+    [Key]
+    [Column("idPhieuXuat")]
+    public int IdPhieuXuat { get; set; }
 
-        [ForeignKey("idYeuCauXuatKho")]
-        public YeuCauXuatKho YeuCauXuatKho { get; set; }
-        public ICollection<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; }
-    }
+    [Column("maPhieu")]
+    public string? MaPhieu { get; set; }
+
+    [Column("ngayXuat")]
+    public DateTime NgayXuat { get; set; } = DateTime.Now;
+
+    [Column("idYeuCauXuatKho")]
+    public int IdYeuCauXuatKho { get; set; }
+
+    [Column("nguoiXuat")]
+    public string? NguoiXuat { get; set; }
+
+    [Column("ghiChu")]
+    public string? GhiChu { get; set; }
+
+    [ForeignKey("IdYeuCauXuatKho")]
+    public YeuCauXuatKho? YeuCauXuatKho { get; set; }
+
+    public ICollection<ChiTietPhieuXuat> ChiTietPhieuXuats { get; set; } = new List<ChiTietPhieuXuat>();
 }

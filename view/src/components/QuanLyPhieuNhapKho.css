@@ -91,12 +91,11 @@
 /* 🔍 Form tìm kiếm */
 .search-form {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    
     gap: 12px;
     padding: 15px;
     background: #f8f9fc; /* Màu nền */
-    border-radius: 12px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  
     width: 90%;
     max-width: 850px; /* Giới hạn chiều rộng */
     margin: auto;
@@ -203,3 +202,94 @@
         min-width: 70px; /* Định kích thước cố định để 2 dòng thẳng nhau */
     }
 
+.popup-inner h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.popup-inner .info-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 6px;
+    font-size: 15px;
+}
+
+    .popup-inner .info-row label {
+        font-weight: 600;
+        min-width: 110px;
+        color: #374151;
+    }
+
+.sub-table th {
+    background-color: #1f2937;
+    color: white;
+    padding: 10px;
+    font-size: 14px;
+}
+
+.sub-table td {
+    padding: 8px 12px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.popup-inner .close-btn {
+    margin-top: 20px;
+    background-color: #e5e7eb;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.reject-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #dc3545;
+    margin-left: 5px;
+}
+
+/* 📁 QuanLyPhieuNhapKho.css hoặc file css chứa popup */
+
+.data-table th,
+.data-table td {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    vertical-align: top;
+}
+
+    .data-table td[rowspan] {
+        background-color: #f8f9fa;
+        font-weight: 500;
+        text-align: center;
+    }
+
+.popup-inner h4 {
+    margin-top: 20px;
+    color: #c0392b;
+    font-weight: 600;
+}
+.popup-inner {
+    max-width: 900px;
+}
+
+.data-table {
+    width: 100%;
+    table-layout: auto;
+}
+
+    .data-table th, .data-table td {
+        white-space: nowrap;
+        padding: 8px 12px;
+        font-size: 14px;
+        text-align: left;
+    }
+
+        .data-table td[rowspan] {
+            text-align: center;
+            background-color: #f2f2f2;
+            font-weight: 600;
+            vertical-align: middle;
+        }

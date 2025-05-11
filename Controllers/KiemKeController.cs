@@ -1,9 +1,9 @@
-﻿// 📁 KiemKeController.cs
+﻿// 📁 KiemKeController.cs 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.Data;
+using QuanLyKhoHangFPTShop.Dtos;
 using QuanLyKhoHangFPTShop.Models;
-using QuanLyKhoHangFPTShop.DTOs;
 
 namespace QuanLyKhoHangFPTShop.Controllers
 {
@@ -21,46 +21,75 @@ namespace QuanLyKhoHangFPTShop.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var danhSach = await _context.KiemKe
-                .Include(k => k.NguoiThucHien)
-                .Include(k => k.ChiTietKiemKe)
-                    .ThenInclude(ct => ct.SanPham)
-                .OrderByDescending(k => k.ngayKiemKe)
-                .ToListAsync();
+            try
+            {
+                var danhSach = await _context.KiemKe
+                    .Include(k => k.YeuCauKiemKe)
+                    .Include(k => k.ChiTietKiemKe).ThenInclude(ct => ct.SanPham)
+                    .OrderByDescending(k => k.ngayKiemKe)
+                    .Select(k => new {
+                        k.idKiemKe,
+                        k.ngayKiemKe,
+                        nguoiKiemKe = k.idNguoiThucHien,
+                        k.ghiChu,
+                        trangThai = k.YeuCauKiemKe.trangThai,
+                        viTriKiemKe = k.YeuCauKiemKe.viTriKiemKe,
+                        mucDich = k.YeuCauKiemKe.mucDich,
+                        tenTruongBan = k.YeuCauKiemKe.tenTruongBan,
+                        tenUyVien1 = k.YeuCauKiemKe.tenUyVien1,
+                        tenUyVien2 = k.YeuCauKiemKe.tenUyVien2,
+                        chiTietPhieuKiemKes = k.ChiTietKiemKe.Select(ct => new {
+                            ct.idSanPham,
+                            ct.soLuongTheoHeThong,
+                            ct.soLuongThucTe,
+                            tenSanPham = ct.SanPham.tenSanPham,
+                            chenhLech = ct.soLuongThucTe - ct.soLuongTheoHeThong,
+                            ct.phamChat
+                        })
+                    }).ToListAsync();
 
-            return Ok(danhSach);
+                return Ok(danhSach);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"❌ Lỗi server: {ex.Message}");
+            }
         }
-
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var kiemKe = await _context.KiemKe
-                .Include(k => k.NguoiThucHien)
-                .Include(k => k.ChiTietKiemKe)
-                    .ThenInclude(ct => ct.SanPham)
+                .Include(k => k.YeuCauKiemKe)
+                .Include(k => k.ChiTietKiemKe).ThenInclude(ct => ct.SanPham)
                 .FirstOrDefaultAsync(k => k.idKiemKe == id);
 
             if (kiemKe == null) return NotFound();
 
-            return Ok(kiemKe);
+            return Ok(new
+            {
+                kiemKe.idKiemKe,
+                kiemKe.ngayKiemKe,
+                nguoiKiemKe = kiemKe.idNguoiThucHien,
+                kiemKe.ghiChu,
+                trangThai = kiemKe.YeuCauKiemKe.trangThai,
+                viTriKiemKe = kiemKe.YeuCauKiemKe.viTriKiemKe,
+                mucDich = kiemKe.YeuCauKiemKe.mucDich,
+                tenTruongBan = kiemKe.YeuCauKiemKe.tenTruongBan,
+                tenUyVien1 = kiemKe.YeuCauKiemKe.tenUyVien1,
+                tenUyVien2 = kiemKe.YeuCauKiemKe.tenUyVien2,
+                chiTietPhieuKiemKes = kiemKe.ChiTietKiemKe.Select(ct => new
+                {
+                    ct.idSanPham,
+                    tenSanPham = ct.SanPham.tenSanPham,
+                    ct.soLuongTheoHeThong,
+                    ct.soLuongThucTe,
+                    chenhLech = ct.soLuongThucTe - ct.soLuongTheoHeThong,
+                    ct.phamChat
+                })
+            });
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> CapNhat(int id, [FromBody] YeuCauKiemKe capNhat)
-        {
-            var yc = await _context.YeuCauKiemKe.FindAsync(id);
-            if (yc == null) return NotFound();
-
-            yc.ghiChu = capNhat.ghiChu;
-            yc.trangThai = capNhat.trangThai;
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-       
-
-        // ✅ API lấy danh sách tồn kho hiện tại để kiểm kê
         [HttpGet("tonghop")]
         public async Task<ActionResult> GetSanPhamTonKho()
         {
@@ -74,54 +103,124 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             return Ok(result);
         }
-        [HttpPost]
-        public async Task<IActionResult> LuuPhieuKiemKe([FromBody] KiemKeRequestDto dto)
+        // DELETE: api/yeucaukiemke/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var yeuCau = await _context.YeuCauKiemKe.FindAsync(dto.idYeuCauKiemKe);
-            if (yeuCau == null) return NotFound("Không tìm thấy yêu cầu kiểm kê.");
+            var yeuCau = await _context.YeuCauKiemKe
+                .Include(x => x.ChiTietYeuCau)
+                .FirstOrDefaultAsync(x => x.idYeuCauKiemKe == id);
 
-            var phieu = new KiemKe
-            {
-                idYeuCauKiemKe = dto.idYeuCauKiemKe,
-                ngayKiemKe = dto.ngayKiemKe ?? DateTime.Now,
-                thoiGianThucHien = DateTime.Now,
-                ghiChu = dto.ghiChu,
-                mucDich = dto.mucDich,
-                viTriKiemKe = dto.viTriKiemKe,
-                tenTruongBan = dto.tenTruongBan,
-                chucVuTruongBan = dto.chucVuTruongBan,
-                tenUyVien1 = dto.tenUyVien1,
-                chucVuUyVien1 = dto.chucVuUyVien1,
-                tenUyVien2 = dto.tenUyVien2,
-                chucVuUyVien2 = dto.chucVuUyVien2,
-                idNguoiThucHien = 1 // giả định tạm thời cho người thực hiện (có thể lấy từ user login)
-            };
+            if (yeuCau == null)
+                return NotFound();
 
-            _context.KiemKe.Add(phieu);
+            _context.ChiTietYeuCauKiemKe.RemoveRange(yeuCau.ChiTietYeuCau);
+            _context.YeuCauKiemKe.Remove(yeuCau);
+
             await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã xoá yêu cầu kiểm kê." });
+        }
 
-            foreach (var item in dto.chiTiet)
+        [HttpPost("tao")]
+        public async Task<IActionResult> TaoPhieuKiemKe([FromBody] KiemKeTaoRequestDto dto)
+        {
+            try
             {
-                var sanPham = await _context.SanPham.FindAsync(item.idSanPham);
-                if (sanPham == null) continue;
-
-                var chiTiet = new ChiTietKiemKe
+                var phieu = new KiemKe
                 {
-                    idKiemKe = phieu.idKiemKe,
-                    idSanPham = item.idSanPham,
-                    soLuongThucTe = item.soLuongThucTe,
-                    soLuongTheoHeThong = sanPham.soLuongHienCon,
-                    phamChat = item.phamChat
+                    idYeuCauKiemKe = dto.idYeuCauKiemKe,
+                    idNguoiThucHien = dto.idNguoiThucHien,
+                    ngayKiemKe = dto.ngayKiemKe ?? DateTime.Now,
+                    thoiGianThucHien = DateTime.Now,
+                    ghiChu = dto.ghiChu
                 };
 
-                _context.ChiTietKiemKe.Add(chiTiet);
-            }
+                await _context.KiemKe.AddAsync(phieu);
+                await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Lưu phiếu kiểm kê thành công!", id = phieu.idKiemKe });
+                var chiTietGop = dto.chiTiet
+                    .GroupBy(x => new { x.idSanPham, x.idViTri })
+                    .Select(g => new
+                    {
+                        g.Key.idSanPham,
+                        g.Key.idViTri,
+                        soLuongThucTe = g.Sum(x => x.soLuongThucTe),
+                        phamChat = string.Join(", ", g.Select(x => x.phamChat).Where(p => !string.IsNullOrEmpty(p)).Distinct())
+                    });
+
+                var danhSachChiTiet = new List<ChiTietKiemKe>();
+
+                foreach (var item in chiTietGop)
+                {
+                    var sanPham = await _context.SanPham.FindAsync(item.idSanPham);
+                    if (sanPham == null) continue;
+
+                    int soLuongTheoHeThong = await _context.ChiTietLuuTru
+                        .Where(x => x.idSanPham == item.idSanPham && x.idViTri == item.idViTri)
+                        .SumAsync(x => (int?)x.soLuong) ?? 0;
+
+                    danhSachChiTiet.Add(new ChiTietKiemKe
+                    {
+                        idKiemKe = phieu.idKiemKe,
+                        idSanPham = item.idSanPham,
+                        idViTri = item.idViTri,
+                        soLuongThucTe = item.soLuongThucTe,
+                        soLuongTheoHeThong = soLuongTheoHeThong,
+                        phamChat = item.phamChat
+                    });
+                }
+
+                _context.ChiTietKiemKe.AddRange(danhSachChiTiet);
+
+                var yeuCau = await _context.YeuCauKiemKe.FindAsync(dto.idYeuCauKiemKe);
+                if (yeuCau != null)
+                    yeuCau.trangThai = 1;
+
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "✅ Đã lưu kiểm kê theo vị trí", id = phieu.idKiemKe });
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi chi tiết để bắt được nguyên nhân cụ thể
+                return StatusCode(500, new { message = "❌ Lỗi khi tạo phiếu kiểm kaê", error = ex.Message, stackTrace = ex.StackTrace });
+            }
+        }
+
+
+
+
+        [HttpGet("theo-yeucau/{idYeuCau}")]
+        public async Task<IActionResult> GetTheoYeuCau(int idYeuCau)
+        {
+            var kiemKe = await _context.KiemKe
+                .Include(k => k.YeuCauKiemKe)
+                .Include(k => k.ChiTietKiemKe).ThenInclude(ct => ct.SanPham)
+                .FirstOrDefaultAsync(k => k.idYeuCauKiemKe == idYeuCau);
+
+            if (kiemKe == null) return NotFound();
+
+            return Ok(new
+            {
+                kiemKe.idKiemKe,
+                kiemKe.ngayKiemKe,
+                nguoiKiemKe = kiemKe.idNguoiThucHien,
+                kiemKe.ghiChu,
+                viTriKiemKe = kiemKe.YeuCauKiemKe.viTriKiemKe,
+                mucDich = kiemKe.YeuCauKiemKe.mucDich,
+                tenTruongBan = kiemKe.YeuCauKiemKe.tenTruongBan,
+                tenUyVien1 = kiemKe.YeuCauKiemKe.tenUyVien1,
+                tenUyVien2 = kiemKe.YeuCauKiemKe.tenUyVien2,
+                chiTietPhieuKiemKes = kiemKe.ChiTietKiemKe.Select(ct => new
+                {
+                    ct.idSanPham,
+                    tenSanPham = ct.SanPham.tenSanPham,
+                    ct.soLuongTheoHeThong,
+                    ct.soLuongThucTe,
+                    chenhLech = ct.soLuongThucTe - ct.soLuongTheoHeThong,
+                    ct.phamChat
+                })
+            });
         }
 
     }
-
-
 }

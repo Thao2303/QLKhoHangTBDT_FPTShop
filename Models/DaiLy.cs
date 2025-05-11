@@ -6,8 +6,9 @@ namespace QuanLyKhoHangFPTShop.Models
     {
         [Key]
         public int idDaiLy { get; set; }
-        public string tenDaiLy { get; set; }
-        public string diaChi { get; set; }
-        public string sdt { get; set; }
+        public string TenDaiLy { get; set; } = string.Empty;
+        public string DiaChi { get; set; } = string.Empty;
+        public string Sdt { get; set; } = string.Empty;
+
     }
 }

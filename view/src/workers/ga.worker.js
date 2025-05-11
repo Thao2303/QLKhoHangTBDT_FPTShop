@@ -1,5 +1,5 @@
 ﻿// ================================
-// 🔍 ga.worker.js (Bản sửa)
+// 🔍 ga.worker.js (Nâng cấp gợi ý theo danh mục, nhập/xuất)
 // ================================
 
 /* eslint-disable no-restricted-globals */
@@ -35,16 +35,13 @@ function generateRandomSolution(products, locations, oldPositions) {
         const oldLocIds = oldPositions[sp.idSanPham] || [];
         const oldLocObjects = oldLocIds.map(id => locations.find(l => l.idViTri === id)).filter(Boolean);
 
-        // Xác định zone gốc từ vị trí cũ
         let targetZone = "";
         if (oldLocObjects.length > 0) {
             targetZone = oldLocObjects[0].day.trim().toUpperCase();
         }
 
-        // Các vị trí khác (không nằm trong oldPositions)
         const remainingLocs = locations.filter(loc => !oldLocIds.includes(loc.idViTri));
 
-        // Tách thành:
         const sameZoneLocs = remainingLocs
             .filter(loc => loc.day.trim().toUpperCase() === targetZone)
             .sort((a, b) => {
@@ -65,20 +62,21 @@ function generateRandomSolution(products, locations, oldPositions) {
         for (const loc of combined) {
             if (!loc) continue;
             const free = (loc.sucChua || 0) - (loc.daDung || 0) - (used[loc.idViTri] || 0);
-            const fitQty = Math.min(Math.floor(free / vol), qtyLeft);
-            if (fitQty > 0) {
-                solution[sp.idSanPham].push({ viTri: loc.idViTri, soLuong: fitQty });
-                used[loc.idViTri] = (used[loc.idViTri] || 0) + fitQty * vol;
-                qtyLeft -= fitQty;
-                if (qtyLeft <= 0) break;
+
+            if (free > 0) {
+                const fitQty = Math.min(Math.floor(free / vol), qtyLeft);
+                if (fitQty > 0) {
+                    solution[sp.idSanPham].push({ viTri: loc.idViTri, soLuong: fitQty });
+                    used[loc.idViTri] = (used[loc.idViTri] || 0) + fitQty * vol;
+                    qtyLeft -= fitQty;
+                    if (qtyLeft <= 0) break;
+                }
             }
         }
     }
+
     return solution;
 }
-
-
-
 
 function fitness(solution, products, locations, oldPositions) {
     let totalUsed = 0, totalWaste = 0, bonus = 0;
@@ -87,20 +85,35 @@ function fitness(solution, products, locations, oldPositions) {
 
     for (const sp of products) {
         const vol = (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
+
         for (const alloc of solution[sp.idSanPham] || []) {
             const vt = alloc.viTri;
             const qty = alloc.soLuong;
             const loc = locMap[vt];
             if (!loc) continue;
+
             const cap = (loc.sucChua || 0) - (loc.daDung || 0);
             const usedVol = qty * vol;
             totalUsed += usedVol;
             used[vt] = (used[vt] || 0) + usedVol;
             if (used[vt] > cap) totalWaste += used[vt] - cap;
-            if ((oldPositions[sp.idSanPham] || []).includes(vt)) bonus += 10; // Thưởng điểm nếu đặt vị trí cũ
+
+            if ((oldPositions[sp.idSanPham] || []).includes(vt)) bonus += 10;
+            if ((sp.soLanNhap || 0) > 10 && isNearReceivingArea(loc)) bonus += 5;
+            if ((sp.soLanXuat || 0) > 10 && isNearShippingArea(loc)) bonus += 5;
+            if (sp.zoneGoiY && loc.day === sp.zoneGoiY) bonus += 3;
         }
     }
+
     return totalUsed - totalWaste + bonus;
+}
+
+function isNearReceivingArea(loc) {
+    return loc.day === 'A' || loc.cot <= 2;
+}
+
+function isNearShippingArea(loc) {
+    return loc.day === 'D' || loc.cot >= 8;
 }
 
 function crossover(a, b) {

@@ -1,0 +1,46 @@
+﻿@media print {
+    body {
+        font-family: 'Arial', sans-serif;
+        color: #000;
+        background: #fff;
+    }
+
+    .submit-btn,
+    .btn-close,
+    .sidebar,
+    .navbar,
+    .layout-wrapper > .sidebar,
+    .layout-wrapper > .navbar,
+    .form-actions,
+    .print-hide {
+        display: none !important;
+    }
+
+    .kiemke-wrapper {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+        .kiemke-wrapper h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12pt;
+    }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+
+    @page {
+        margin: 1cm;
+    }
+}

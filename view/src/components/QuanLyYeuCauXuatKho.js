@@ -12,6 +12,28 @@ const QuanLyYeuCauXuatKho = () => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const [popupData, setPopupData] = useState(null);
+    const [tonKhoMap, setTonKhoMap] = useState({});
+
+    const loadTonKho = async (chiTietList) => {
+        const map = {};
+        for (const ct of chiTietList) {
+            try {
+                const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
+                const ton = await res.json();
+                map[ct.idSanPham] = ton;
+            } catch {
+                map[ct.idSanPham] = "Lỗi";
+            }
+        }
+        setTonKhoMap(map);
+    };
+
+    useEffect(() => {
+        if (popupData?.chiTietYeuCauXuatKhos?.length > 0) {
+            loadTonKho(popupData.chiTietYeuCauXuatKhos);
+        }
+    }, [popupData]);
+
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -52,16 +74,36 @@ const QuanLyYeuCauXuatKho = () => {
         const confirm = window.confirm("Bạn có chắc muốn duyệt yêu cầu này?");
         if (!confirm) return;
 
+        const user = JSON.parse(localStorage.getItem("user"));
+
         try {
-            await fetch(`https://localhost:5288/api/yeucauxuatkho/duyet/${id}`, {
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/duyet/${id}?chucVu=${user.tenChucVu}`, {
                 method: "PUT"
             });
+
             alert("✅ Đã duyệt yêu cầu!");
+
+            // ✅ Cập nhật trạng thái cho popup và danh sách
+            setPopupData(prev => ({ ...prev, idTrangThaiXacNhan: 2 }));
             fetchData();
+
         } catch (err) {
+            console.error("❌ Lỗi duyệt:", err);
             alert("❌ Duyệt thất bại!");
         }
     };
+
+
+    const handleTaoPhieuXuat = (yeuCau) => {
+        const dsSanPham = yeuCau.chiTietYeuCauXuatKhos.map(ct => ({
+            idSanPham: ct.idSanPham,
+            soLuong: ct.soLuong,
+            tenSanPham: ct.sanPham?.tenSanPham
+        }));
+
+        navigate("/tao-phieu-xuat", { state: { tuYeuCau: yeuCau, dsSanPham } });
+    };
+
 
     const locDanhSach = danhSachYeuCau.filter(yc => {
         const matchMa = yc.idYeuCauXuatKho.toString().includes(searchMaYC);
@@ -77,7 +119,17 @@ const QuanLyYeuCauXuatKho = () => {
     const currentItems = locDanhSach.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(locDanhSach.length / itemsPerPage);
 
-    const handlePopup = (yc) => setPopupData(yc);
+    const handlePopup = async (yc) => {
+        try {
+            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+            const chiTiet = await res.json();
+            setPopupData({ ...yc, chiTietYeuCauXuatKhos: chiTiet });
+        } catch (err) {
+            console.error("❌ Lỗi khi lấy chi tiết:", err);
+            alert("Không thể tải chi tiết sản phẩm.");
+        }
+    };
+
 
     return (
         <div className="layout-wrapper">
@@ -166,6 +218,52 @@ const QuanLyYeuCauXuatKho = () => {
                                     <p><strong>Thời gian:</strong> {new Date(popupData.ngayYeuCau).toLocaleString()}</p>
                                     <p><strong>Ghi chú:</strong> {popupData.ghiChu || 'Không có'}</p>
                                     <p><strong>Trạng thái:</strong> {popupData.idTrangThaiXacNhan === 1 ? 'Chờ duyệt' : popupData.idTrangThaiXacNhan === 2 ? 'Đã duyệt' : 'Đã xuất kho'}</p>
+
+                                    <h4>📦 Sản phẩm trong yêu cầu:</h4>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Tên SP</th>
+                                                <th>SL yêu cầu</th>
+                                                <th>Tồn kho</th>
+                                                <th>Ghi chú</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {popupData.chiTietYeuCauXuatKhos?.map((ct, idx) => {
+                                                const ten = ct.sanPham?.tenSanPham || '---';
+                                                const yc = ct.soLuong;
+                                                const ton = tonKhoMap[ct.idSanPham];
+                                                const ok = typeof ton === 'number' && ton >= yc;
+                                                return (
+                                                    <tr key={idx}>
+                                                        <td>{ten}</td>
+                                                        <td>{yc}</td>
+                                                        <td>{ton}</td>
+                                                        <td style={{ color: !ok ? 'red' : 'green' }}>
+                                                            {ton === 'Lỗi' ? '⚠️ Không lấy được' : !ok ? 'Không đủ' : '✔️ Đủ'}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+
+                                    {isThuKho && popupData.idTrangThaiXacNhan === 1 &&
+                                        popupData.chiTietYeuCauXuatKhos?.every(ct => {
+                                            const ton = tonKhoMap[ct.idSanPham];
+                                            return typeof ton === 'number' && ton >= ct.soLuong;
+                                        }) && (
+                                            <button onClick={() => handleDuyet(popupData.idYeuCauXuatKho)} className="approve-btn">
+                                                ✔️ Duyệt yêu cầu
+                                            </button>
+                                        )}
+                                    {isThuKho && popupData.idTrangThaiXacNhan === 2 && (
+                                        <button onClick={() => handleTaoPhieuXuat(popupData)} className="export-btn">
+                                            📦 Tạo phiếu xuất
+                                        </button>
+                                    )}
+
                                     <button onClick={() => setPopupData(null)} className="close-btn">Đóng</button>
                                 </div>
                             </div>

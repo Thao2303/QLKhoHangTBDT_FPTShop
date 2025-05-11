@@ -1,40 +1,74 @@
-﻿// ✅ Pagination Component đơn giản - dễ xài
-import React from "react";
+﻿// 📁 Pagination.js
+import React, { useState, useEffect } from "react";
+import "./Pagination.css"; // Đảm bảo đã tạo file CSS kèm theo nếu cần
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-    if (totalPages <= 1) return null;
+    const maxVisible = 2;
+    let pages = [];
 
-    const handleClick = (page) => {
-        if (page >= 1 && page <= totalPages) {
-            onPageChange(page);
-        }
-    };
+    if (totalPages <= 7) {
+        pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+    } else {
+        const start = Math.max(2, currentPage - maxVisible);
+        const end = Math.min(totalPages - 1, currentPage + maxVisible);
 
-    const renderPageNumbers = () => {
-        const pages = [];
-        for (let i = 1; i <= totalPages; i++) {
-            pages.push(
-                <button
-                    key={i}
-                    className={`page-btn ${i === currentPage ? "active" : ""}`}
-                    onClick={() => handleClick(i)}
-                >
-                    {i}
-                </button>
-            );
-        }
-        return pages;
-    };
+        pages = [1];
+        if (start > 2) pages.push("...");
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPages - 1) pages.push("...");
+        pages.push(totalPages);
+    }
+
+    const [goToValue, setGoToValue] = useState(currentPage);
+
+    useEffect(() => {
+        setGoToValue(currentPage);
+    }, [currentPage]);
 
     return (
-        <div className="pagination">
-            <button onClick={() => handleClick(currentPage - 1)} disabled={currentPage === 1}>
-                ◀
-            </button>
-            {renderPageNumbers()}
-            <button onClick={() => handleClick(currentPage + 1)} disabled={currentPage === totalPages}>
-                ▶
-            </button>
+        <div className="pagination-advanced">
+            <button disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)}>◀</button>
+
+            {pages.map((p, i) =>
+                p === "..." ? (
+                    <span key={i} className="dots">...</span>
+                ) : (
+                    <button
+                        key={p}
+                        className={p === currentPage ? "active-page" : ""}
+                        onClick={() => onPageChange(p)}
+                    >
+                        {p}
+                    </button>
+                )
+            )}
+
+            <button disabled={currentPage === totalPages} onClick={() => onPageChange(currentPage + 1)}>▶</button>
+
+            <div className="goto-page">
+                Go to page:
+                <input
+                    type="number"
+                    min={1}
+                    max={totalPages}
+                    value={goToValue}
+                    onChange={(e) => setGoToValue(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            const val = parseInt(goToValue);
+                            if (!isNaN(val) && val >= 1 && val <= totalPages) {
+                                onPageChange(val);
+                            }
+                        }
+                    }}
+                    onBlur={() => {
+                        const val = parseInt(goToValue);
+                        if (!isNaN(val) && val >= 1 && val <= totalPages) {
+                            onPageChange(val);
+                        }
+                    }}
+                />
+            </div>
         </div>
     );
 };

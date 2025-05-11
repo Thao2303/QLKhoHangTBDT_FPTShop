@@ -1,178 +1,150 @@
-﻿import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
-import "./FormTaoPhieuNhap.css";
+﻿import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
+import './FormTaoPhieuNhap.css';
 
-const FormSuaPhieuNhap = () => {
+const FormSuaPhieuNhapFull = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [ngayNhap, setNgayNhap] = useState("");
-    const [ghiChu, setGhiChu] = useState("");
-    const [sanPhamList, setSanPhamList] = useState([]);
-    const [selectedSanPham, setSelectedSanPham] = useState("");
-    const [soLuong, setSoLuong] = useState("");
-    const [donGia, setDonGia] = useState("");
-    const [ghiChuCT, setGhiChuCT] = useState("");
-    const [chiTietList, setChiTietList] = useState([]);
-    const [editingIndex, setEditingIndex] = useState(null);
+    const [suppliersList, setSuppliersList] = useState([]);
+    const [productsList, setProductsList] = useState([]);
+    const [supplier, setSupplier] = useState('');
+    const [supplierName, setSupplierName] = useState('');
+    const [ngayNhap, setNgayNhap] = useState('');
+    const [addedProducts, setAddedProducts] = useState([]);
+    const [username, setUsername] = useState('');
 
     useEffect(() => {
-        Promise.all([
-            axios.get(`https://localhost:5288/api/phieunhap/${id}`),
-            axios.get("https://localhost:5288/api/sanpham")
-        ]).then(([phieuRes, spRes]) => {
-            const phieu = phieuRes.data;
-            const dsSanPham = spRes.data;
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user) setUsername(user.tenTaiKhoan);
 
-            setSanPhamList(dsSanPham);
-            setNgayNhap(phieu.ngayNhap?.slice(0, 10));
-            setGhiChu(phieu.ghiChu);
+        axios.get('https://localhost:5288/api/nhacungcap')
+            .then(res => setSuppliersList(res.data));
 
-            const enrichedChiTiet = (phieu.chiTietPhieuNhaps || []).map(item => ({
-                ...item,
-                sanPham: dsSanPham.find(sp => sp.id === item.idSanPham),
-                thanhTien: item.soLuong * item.donGia
-            }));
+        axios.get('https://localhost:5288/api/sanpham')
+            .then(res => setProductsList(res.data));
 
-            setChiTietList(enrichedChiTiet);
-        });
+        axios.get(`https://localhost:5288/api/phieunhap/${id}`)
+            .then(res => {
+                setSupplier(res.data.idNhaCungCap);
+                setNgayNhap(res.data.ngayNhap);
+            });
+
+        axios.get(`https://localhost:5288/api/phieunhap/chitiet/${id}`)
+            .then(res => {
+                const mapped = res.data.map(x => ({
+                    idSanPham: x.idSanPham,
+                    soLuong: x.soLuongThucNhap,
+                    donGia: x.donGia,
+                    ghiChu: x.nguoiGiaoHang || ''
+                }));
+                setAddedProducts(mapped);
+            });
     }, [id]);
 
-    const handleThemHoacCapNhat = () => {
-        if (!selectedSanPham || !soLuong || !donGia) {
-            alert("Vui lòng điền đầy đủ thông tin sản phẩm.");
-            return;
-        }
-
-        const sanPham = sanPhamList.find(sp => sp.id === Number(selectedSanPham));
-        const newItem = {
-            sanPham,
-            idSanPham: Number(selectedSanPham),
-            soLuong: Number(soLuong),
-            donGia: Number(donGia),
-            ghiChu: ghiChuCT,
-            thanhTien: Number(soLuong) * Number(donGia),
-        };
-
-        const isDuplicate = chiTietList.some((ct, i) => ct.idSanPham === newItem.idSanPham && i !== editingIndex);
-        if (isDuplicate) {
-            alert("Sản phẩm đã tồn tại trong phiếu.");
-            return;
-        }
-
-        if (editingIndex !== null) {
-            const updated = [...chiTietList];
-            updated[editingIndex] = newItem;
-            setChiTietList(updated);
-            setEditingIndex(null);
-        } else {
-            setChiTietList([...chiTietList, newItem]);
-        }
-
-        setSelectedSanPham("");
-        setSoLuong("");
-        setDonGia("");
-        setGhiChuCT("");
+    const handleChange = (index, field, value) => {
+        const updated = [...addedProducts];
+        updated[index][field] = value;
+        setAddedProducts(updated);
     };
 
-    const handleChonDong = (index) => {
-        const item = chiTietList[index];
-        setSelectedSanPham(item.idSanPham);
-        setSoLuong(item.soLuong);
-        setDonGia(item.donGia);
-        setGhiChuCT(item.ghiChu);
-        setEditingIndex(index);
-    };
-
-    const handleXoaDong = (index) => {
-        const updated = chiTietList.filter((_, i) => i !== index);
-        setChiTietList(updated);
-        if (editingIndex === index) setEditingIndex(null);
-    };
-
-    const handleLuuPhieu = () => {
-        if (!ngayNhap) {
-            alert("Vui lòng chọn ngày nhập.");
-            return;
-        }
-        if (chiTietList.length === 0) {
-            alert("Phiếu nhập phải có ít nhất một sản phẩm.");
-            return;
-        }
-
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         const payload = {
-            id: Number(id),
+            idPhieuNhap: parseInt(id),
             ngayNhap,
-            ghiChu,
-            chiTietPhieuNhaps: chiTietList.map(ct => ({
-                idSanPham: ct.idSanPham,
-                soLuong: ct.soLuong,
-                donGia: ct.donGia,
-                ghiChu: ct.ghiChu
+            chiTietPhieuNhaps: addedProducts.map(p => ({
+                idSanPham: p.idSanPham,
+                soLuong: parseInt(p.soLuong),
+                donGia: parseFloat(p.donGia),
+                ghiChu: p.ghiChu
             }))
         };
 
-        axios.put(`https://localhost:5288/api/phieunhap/${id}`, payload)
-            .then(() => navigate("/quanlyphieunhap"));
+        try {
+            const res = await axios.put(`https://localhost:5288/api/phieunhap/update-full/${id}`, payload);
+            alert(res.data.message);
+
+            // ✅ Chuyển đến trang sửa vị trí lưu trữ
+            const sanPhams = addedProducts.map(p => {
+                const sp = productsList.find(s => s.idSanPham === p.idSanPham);
+                return {
+                    idSanPham: p.idSanPham,
+                    soLuong: parseInt(p.soLuong),
+                    tenSanPham: sp?.tenSanPham || `SP${p.idSanPham}`,
+                    chieuDai: sp?.chieuDai || 1,
+                    chieuRong: sp?.chieuRong || 1,
+                    chieuCao: sp?.chieuCao || 1
+                };
+            });
+
+            navigate('/sua-vitri-luutru', {
+                state: {
+                    sanPhams: sanPhams.map(sp => ({ ...sp, idPhieuNhap: parseInt(id) }))
+                }
+            });
+
+        } catch (err) {
+            console.error("❌ Lỗi khi cập nhật phiếu nhập:", err);
+            alert("❌ Cập nhật thất bại");
+        }
     };
 
     return (
-        <div className="form-phieu">
-            <h2 className="title">SỬA PHIẾU NHẬP #{id}</h2>
+        <div className="layout-wrapper">
+            <Sidebar />
+            <div className="content-area5">
+                <Navbar />
+                <div className="form-container">
+                    <h2>Sửa Phiếu Nhập #{id}</h2>
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-section">
+                            <label>Nhà cung cấp</label>
+                            <select value={supplier} disabled>
+                                {suppliersList.map(sup => (
+                                    <option key={sup.idNhaCungCap} value={sup.idNhaCungCap}>{sup.tenNhaCungCap}</option>
+                                ))}
+                            </select>
+                        </div>
 
-            <div className="form-group">
-                <label>Ngày nhập:</label>
-                <input type="date" value={ngayNhap} onChange={(e) => setNgayNhap(e.target.value)} />
-            </div>
+                        <div className="form-section">
+                            <label>Ngày nhập</label>
+                            <input type="datetime-local" value={ngayNhap.slice(0, 16)} onChange={(e) => setNgayNhap(e.target.value)} />
+                        </div>
 
-            <div className="form-group">
-                <label>Ghi chú:</label>
-                <textarea value={ghiChu} onChange={(e) => setGhiChu(e.target.value)}></textarea>
-            </div>
+                        <h3>Chi tiết sản phẩm</h3>
+                        <table className="added-products">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>SL</th>
+                                    <th>Đơn giá</th>
+                                    <th>Người giao</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {addedProducts.map((p, index) => (
+                                    <tr key={index}>
+                                        <td>{productsList.find(sp => sp.idSanPham === p.idSanPham)?.tenSanPham || p.idSanPham}</td>
+                                        <td><input type="number" value={p.soLuong} onChange={(e) => handleChange(index, 'soLuong', e.target.value)} /></td>
+                                        <td><input type="number" value={p.donGia} onChange={(e) => handleChange(index, 'donGia', e.target.value)} /></td>
+                                        <td><input type="text" value={p.ghiChu} onChange={(e) => handleChange(index, 'ghiChu', e.target.value)} /></td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
 
-            <div className="form-section">
-                <select value={selectedSanPham} onChange={(e) => setSelectedSanPham(e.target.value)}>
-                    <option value="">-- Chọn sản phẩm --</option>
-                    {sanPhamList.map(sp => (
-                        <option key={sp.id} value={sp.id}>{sp.tenSanPham}</option>
-                    ))}
-                </select>
-                <input type="number" placeholder="Số lượng" value={soLuong} onChange={(e) => setSoLuong(e.target.value)} />
-                <input type="number" placeholder="Đơn giá" value={donGia} onChange={(e) => setDonGia(e.target.value)} />
-                <input type="text" placeholder="Ghi chú" value={ghiChuCT} onChange={(e) => setGhiChuCT(e.target.value)} />
-                <button onClick={handleThemHoacCapNhat}>{editingIndex !== null ? "Cập nhật" : "Thêm"}</button>
-            </div>
-
-            <table className="product-table">
-                <thead>
-                    <tr>
-                        <th>Sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Đơn giá</th>
-                        <th>Thành tiền</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {chiTietList.map((ct, index) => (
-                        <tr key={`${ct.idSanPham}-${index}`}>
-                            <td onClick={() => handleChonDong(index)}>{ct.sanPham?.tenSanPham || ct.idSanPham}</td>
-                            <td>{ct.soLuong}</td>
-                            <td>{ct.donGia}</td>
-                            <td>{ct.thanhTien}</td>
-                            <td><button onClick={() => handleXoaDong(index)}>Xoá</button></td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
-            <div className="actions">
-                <button onClick={() => navigate("/quanlyphieunhap")} className="btn-cancel">Huỷ</button>
-                <button onClick={handleLuuPhieu} className="btn-save">Lưu phiếu</button>
+                        <div className="form-actions full-width">
+                            <button type="submit" className="submit-button">💾 Cập nhật phiếu nhập</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );
 };
 
-export default FormSuaPhieuNhap;
+export default FormSuaPhieuNhapFull;

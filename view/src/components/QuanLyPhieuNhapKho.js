@@ -1,9 +1,9 @@
-﻿// 📁 QuanLyPhieuNhapKho.js
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Navbar from "./Navbar.js"
 import Sidebar from "./Sidebar.js";
 import "./FormTaoPhieuNhap.css";
+import Pagination from './Pagination';
 
 const removeVietnameseTones = (str) => {
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
@@ -95,6 +95,25 @@ const QuanLyPhieuNhapKho = () => {
         setPopupData(phieu);
     };
 
+    const getTongThanhTien = () => {
+        return chiTietSanPham.reduce((sum, ct) => sum + (Number(ct.tongTien) || 0), 0);
+    };
+
+    const handleTuChoi = async (id) => {
+        const xacNhan = window.confirm("Bạn có chắc muốn từ chối phiếu này?");
+        if (!xacNhan) return;
+
+        try {
+            await fetch(`${API_BASE_URL}/phieunhap/tuchoi/${id}`, { method: "PUT" });
+            alert("❌ Đã từ chối!");
+            const res = await fetch(`${API_BASE_URL}/phieunhap`);
+            const data = await res.json();
+            setPhieuNhaps(data);
+        } catch (error) {
+            alert("❌ Từ chối thất bại!");
+        }
+    };
+
     return (
         <div className="layout-wrapper">
             <Sidebar />
@@ -102,7 +121,7 @@ const QuanLyPhieuNhapKho = () => {
                 <div className="main-layout">
                     <Navbar />
                     <div className="container">
-                        <h1 className="title">Quản lý phiếu nhập kho</h1>
+                        <h1 className="title">✉️ Quản lý phiếu nhập kho</h1>
 
                         <div className="search-form">
                             <input type="text" placeholder="Mã phiếu" value={searchMaPhieu} onChange={(e) => setSearchMaPhieu(e.target.value)} className="search-input" />
@@ -148,14 +167,20 @@ const QuanLyPhieuNhapKho = () => {
                                         <td>{new Date(phieu.ngayNhap).toLocaleString()}</td>
                                         <td>{phieu.trangThai === 1 ? "⏳ Chờ duyệt" :
                                             phieu.trangThai === 2 ? "✅ Đã duyệt" :
-                                                phieu.trangThai === 3 ? "❌ Từ chối" :
-                                                    "↩️ Hoàn hàng"}</td>
+                                                phieu.trangThai === 3 ? "❌ Từ chối" : "↩️ Hoàn hàng"}</td>
                                         <td>
                                             <button onClick={() => handlePopup(phieu)}>🔍</button>
-                                            <button className="edit-btn" onClick={() => handleEdit(phieu.idPhieuNhap)}>✏️</button>
-                                            <button className="delete-btn" onClick={() => handleDelete(phieu.idPhieuNhap)}>🗑</button>
+                                            {phieu.trangThai === 1 && (
+                                                <>
+                                                    <button className="edit-btn" onClick={() => handleEdit(phieu.idPhieuNhap)}>✏️</button>
+                                                    <button className="delete-btn" onClick={() => handleDelete(phieu.idPhieuNhap)}>🗑</button>
+                                                </>
+                                            )}
                                             {isThuKho && phieu.trangThai === 1 && (
-                                                <button className="approve-btn" onClick={() => handleDuyet(phieu.idPhieuNhap)}>✔️ Duyệt</button>
+                                                <>
+                                                    <button className="approve-btn" onClick={() => handleDuyet(phieu.idPhieuNhap)}>✔️ Duyệt</button>
+                                                    <button className="reject-btn" onClick={() => handleTuChoi(phieu.idPhieuNhap)}>❌ Từ chối</button>
+                                                </>
                                             )}
                                         </td>
                                     </tr>
@@ -163,25 +188,25 @@ const QuanLyPhieuNhapKho = () => {
                             </tbody>
                         </table>
 
-                        <div className="pagination">
-                            {[...Array(totalPages).keys()].map(n => (
-                                <button
-                                    key={n}
-                                    className={n + 1 === currentPage ? "active-page" : ""}
-                                    onClick={() => setCurrentPage(n + 1)}>{n + 1}</button>
-                            ))}
-                        </div>
+                        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} />
 
                         {popupData && (
                             <div className="popup">
-                                <div className="popup-inner" style={{ maxWidth: "90vw", overflowX: "auto" }}>
-                                    <h3>Chi tiết phiếu nhập #{popupData.idPhieuNhap}</h3>
-                                    <p><strong>Nhà cung cấp:</strong> {popupData.nhaCungCap?.tenNhaCungCap}</p>
-                                    <p><strong>Người tạo:</strong> {popupData.nguoiTao || 'Không rõ'}</p>
-                                    <p><strong>Ngày nhập:</strong> {new Date(popupData.ngayNhap).toLocaleString()}</p>
-                                    <p><strong>Ghi chú:</strong> {popupData.ghiChu || 'Không có'}</p>
-                                    <p><strong>Trạng thái:</strong> {popupData.trangThai === 1 ? 'Chờ duyệt' : popupData.trangThai === 2 ? 'Đã duyệt' : 'Khác'}</p>
-                                    <h4>Danh sách sản phẩm:</h4>
+                                <div className="popup-inner">
+                                    <h3>📦 Chi tiết phiếu nhập #{popupData.idPhieuNhap}</h3>
+                                
+
+                                    <div className="info-row"><label>🏢 Nhà cung cấp:</label> {popupData.nhaCungCap?.tenNhaCungCap}</div>
+                                    <div className="info-row"><label>👤 Người tạo:</label> {popupData.nguoiTao || 'Không rõ'}</div>
+                                    <div className="info-row"><label>📅 Ngày nhập:</label> {new Date(popupData.ngayNhap).toLocaleString()}</div>
+                                    <div className="info-row"><label>📝 Ghi chú:</label> {popupData.ghiChu || 'Không có'}</div>
+                                    <div className="info-row"><label>📌 Trạng thái:</label> {
+                                        popupData.trangThai === 1 ? '⏳ Chờ duyệt' :
+                                            popupData.trangThai === 2 ? '✅ Đã duyệt' :
+                                                popupData.trangThai === 3 ? '❌ Từ chối' : '↩️ Hoàn hàng'
+                                    }</div>
+
+                                    <h4 style={{ marginTop: 16 }}>🧾 Danh sách sản phẩm:</h4>
                                     <div style={{ overflowX: "auto" }}>
                                         <table className="sub-table">
                                             <thead>
@@ -196,18 +221,27 @@ const QuanLyPhieuNhapKho = () => {
                                             <tbody>
                                                 {chiTietSanPham.map((ct, idx) => (
                                                     <tr key={idx}>
-                                                        <td>{ct.sanPham?.tenSanPham}</td>
+                                                        <td style={{ textAlign: 'left' }}>{ct.sanPham?.tenSanPham}</td>
                                                         <td>{ct.soLuongTheoChungTu}</td>
                                                         <td>{ct.soLuongThucNhap}</td>
-                                                        <td>{ct.donGia !== undefined ? Number(ct.donGia).toLocaleString() : 0}</td>
-                                                        <td>{ct.tongTien !== undefined ? Number(ct.tongTien).toLocaleString() : 0}</td>
+                                                        <td>{Number(ct.donGia || 0).toLocaleString()}</td>
+                                                        <td>{Number(ct.tongTien || 0).toLocaleString()}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colSpan="4" style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng thành tiền:</td>
+                                                    <td style={{ fontWeight: 'bold' }}>{getTongThanhTien().toLocaleString()}</td>
+                                                </tr>
+                                            </tfoot>
+
                                         </table>
                                     </div>
+
                                     <button onClick={() => setPopupData(null)} className="close-btn">Đóng</button>
                                 </div>
+
                             </div>
                         )}
                     </div>
