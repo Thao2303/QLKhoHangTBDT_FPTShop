@@ -5,16 +5,26 @@ namespace QuanLyKhoHangFPTShop.Models
 {
     public class ChiTietPhieuXuat
     {
-        [Key]
-        public int idPhieuXuat { get; set; }
-        [Key]
-        public int idSanPham { get; set; }
-        public int soLuong { get; set; }
+        [Column("idPhieuXuat")]
+        public int IdPhieuXuat { get; set; }
 
-        [ForeignKey("idPhieuXuat")]
+        [Column("idSanPham")]
+        public int IdSanPham { get; set; }
+
+        [Column("soLuong")]
+        public int SoLuong { get; set; }
+
+        [ForeignKey("IdPhieuXuat")]
         public PhieuXuat? PhieuXuat { get; set; }
 
-        [ForeignKey("idSanPham")]
-        public SanPham SanPham { get; set; }
+        [ForeignKey("IdSanPham")]
+        public SanPham? SanPham { get; set; }
+
+        [Column("idViTri")]
+        public int IdViTri { get; set; }
+
+        [ForeignKey("IdViTri")]
+        public ViTri? ViTri { get; set; }
+
     }
 }

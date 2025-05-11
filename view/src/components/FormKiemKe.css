@@ -1,78 +1,57 @@
-﻿/* 📄 FormKiemKe.css */
-.kiemke-wrapper {
-    padding: 20px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+﻿.kiemke-wrapper {
     max-width: 1200px;
-    margin: auto;
+    margin: 0 auto;
+    padding: 24px;
 }
 
     .kiemke-wrapper h2 {
         font-size: 24px;
-        margin-bottom: 20px;
-        color: #333;
+        color: #2c3e50;
+        margin-bottom: 16px;
+        text-align: center;
+    }
+
+    .kiemke-wrapper p {
+        margin: 4px 0;
     }
 
 .kiemke-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
-    .kiemke-table th, .kiemke-table td {
+    .kiemke-table th,
+    .kiemke-table td {
         border: 1px solid #ccc;
         padding: 8px 12px;
         text-align: center;
+        font-size: 14px;
     }
 
-    .kiemke-table th {
-        background-color: #f3f3f3;
-        font-weight: bold;
-    }
-
-.input-kiemke {
-    width: 80px;
-    padding: 5px;
-    text-align: center;
-}
-
-.chenhlech {
-    font-weight: bold;
-    color: #d35400;
-}
-
-.ghi-chu {
-    margin-bottom: 20px;
-}
-
-    .ghi-chu label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 6px;
-    }
-
-    .ghi-chu textarea {
+    .kiemke-table input {
         width: 100%;
-        min-height: 80px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        resize: vertical;
+        padding: 6px;
+        box-sizing: border-box;
+    }
+
+    .kiemke-table ul {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
     }
 
 .submit-btn {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: #4caf50;
-    color: #fff;
-    font-weight: bold;
+    margin-top: 24px;
+    padding: 12px 24px;
+    background-color: #2ecc71;
+    color: white;
+    font-size: 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s ease;
 }
 
     .submit-btn:hover {
-        background: #43a047;
+        background-color: #27ae60;
     }

@@ -26,6 +26,29 @@ const GoiyViTri = () => {
             });
     }, [location.state]);
 
+    const [sanPhamList, setSanPhamList] = useState([]);
+
+    useEffect(() => {
+        const { sanPhams } = location.state || { sanPhams: [] };
+
+        axios.get("https://localhost:5288/api/sanpham")
+            .then(res => {
+                const mapTenSP = sanPhams.map(sp => {
+                    const matched = res.data.find(p => p.idSanPham === sp.idSanPham);
+                    return { ...sp, tenSanPham: matched?.tenSanPham || sp.tenSanPham || `Sản phẩm ${sp.idSanPham}` };
+                });
+                setProducts(mapTenSP);
+            });
+
+        axios.get("https://localhost:5288/api/vitri")
+            .then(res => setLocations(res.data || []))
+            .catch(err => {
+                console.error("Lỗi lấy vị trí kho:", err);
+                setError("Không lấy được dữ liệu vị trí từ server.");
+            });
+    }, [location.state]);
+
+
     const [oldPositionsState, setOldPositionsState] = useState({});
 
     useEffect(() => {
@@ -280,7 +303,12 @@ SL: ${vt.soLuong}`,
                         const usedVolume = calculateFullUsedVolume(sp.idSanPham);
                         return (
                             <div key={index} className="card">
-                                <h3 className="card-title">📱 {sp.tenSanPham || `Sản phẩm ${sp.idSanPham}`} – SL: {sp.soLuong}</h3>
+                                <h3 className="card-title">
+                                    - {sp.tenSanPham || `Sản phẩm ${sp.idSanPham}`}<br />
+                                     -  Số lượng: {sp.soLuong}
+                                </h3>
+
+
                                 {(luuTruData[sp.idSanPham] || []).map((row, i) => (
                                     <div key={i} className="row">
                                         <select
@@ -319,7 +347,7 @@ SL: ${vt.soLuong}`,
                         );
                     })}
                     {!loading && (
-                        <button className="save-btn" onClick={handleSave}>💾 Lưu vào kho & In mã QR</button>
+                        <button className="save-btn" onClick={handleSave}>💾 Lưu vào kho </button>
                     )}
                 </div>
             </div>

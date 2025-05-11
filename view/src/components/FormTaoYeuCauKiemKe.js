@@ -1,94 +1,146 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Autocomplete, TextField } from "@mui/material";
+import "./popup-style.css";
 
-export default function FormTaoYeuCauKiemKe() {
+const FormYeuCauKiemKePopup = ({ visible, onClose, onSubmit, initialData = null }) => {
+    const [sanPhamList, setSanPhamList] = useState([]);
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const [dsTaiKhoan, setDsTaiKhoan] = useState([]);
     const [form, setForm] = useState({
-        mucDich: '',
-        ngayKiem: '',
-        viTriKiemKe: '',
-        tenTruongBan: '',
-        chucVuTruongBan: '',
-        tenUyVien1: '',
-        chucVuUyVien1: '',
-        tenUyVien2: '',
-        chucVuUyVien2: '',
-        sanPham: '',
-        soLuong: '',
-        danhSachSanPham: []
+        mucDich: "",
+        viTriKiemKe: "",
+        ghiChu: "",
+        tenTruongBan: "",
+        tenUyVien1: "",
+        tenUyVien2: ""
     });
 
-    const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+    useEffect(() => {
+        axios.get("https://localhost:5288/api/kiemke/tonghop")
+            .then(res => setSanPhamList(res.data))
+            .catch(() => alert("❌ Lỗi tải sản phẩm"));
+
+        axios.get("https://localhost:5288/api/yeucaukiemke/taikhoan")
+            .then(res => setDsTaiKhoan(res.data))
+            .catch(() => alert("❌ Lỗi tải tài khoản"));
+    }, []);
+
+    useEffect(() => {
+        if (initialData) {
+            setForm({
+                mucDich: initialData.mucDich || "",
+                viTriKiemKe: initialData.viTriKiemKe || "",
+                ghiChu: initialData.ghiChu || "",
+                tenTruongBan: initialData.tenTruongBan || "",
+                tenUyVien1: initialData.tenUyVien1 || "",
+                tenUyVien2: initialData.tenUyVien2 || ""
+            });
+            setSelectedIds(new Set((initialData.chiTietYeuCau || []).map(sp => sp.idSanPham)));
+        } else {
+            setForm({ mucDich: "", viTriKiemKe: "", ghiChu: "", tenTruongBan: "", tenUyVien1: "", tenUyVien2: "" });
+            setSelectedIds(new Set());
+        }
+    }, [initialData, visible]);
+
+    const toggleSanPham = (id) => {
+        const newSet = new Set(selectedIds);
+        newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+        setSelectedIds(newSet);
     };
 
-    const handleAddSanPham = () => {
-        if (!form.sanPham || !form.soLuong) return;
-        const newList = [...form.danhSachSanPham, {
-            tenSanPham: form.sanPham,
-            soLuong: parseInt(form.soLuong)
-        }];
-        setForm({ ...form, danhSachSanPham: newList, sanPham: '', soLuong: '' });
-    };
-
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         const payload = {
-            mucDich: form.mucDich,
-            ngayKiem: form.ngayKiem,
-            viTriKiemKe: form.viTriKiemKe,
-            tenTruongBan: form.tenTruongBan,
-            chucVuTruongBan: form.chucVuTruongBan,
-            tenUyVien1: form.tenUyVien1,
-            chucVuUyVien1: form.chucVuUyVien1,
-            tenUyVien2: form.tenUyVien2,
-            chucVuUyVien2: form.chucVuUyVien2,
-            chiTietYeuCau: form.danhSachSanPham
+            ...form,
+            trangThai: 0,
+            nguoiTao: 1,
+            chiTietYeuCau: Array.from(selectedIds).map(id => ({ idSanPham: id }))
         };
 
-        const res = await fetch('https://localhost:5288/api/yeucaukiemke', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) alert('Tạo yêu cầu thành công!');
-        else alert('Lỗi khi tạo yêu cầu.');
+        try {
+            if (initialData) {
+                await axios.put(`https://localhost:5288/api/yeucaukiemke/${initialData.idYeuCauKiemKe}`, payload);
+                alert("✅ Cập nhật yêu cầu thành công");
+            } else {
+                await axios.post("https://localhost:5288/api/yeucaukiemke", payload);
+                alert("✅ Đã tạo yêu cầu");
+            }
+            onSubmit();
+        } catch {
+            alert("❌ Gửi yêu cầu thất bại");
+        }
     };
 
+    if (!visible) return null;
+
     return (
-        <div className="p-4 bg-white rounded shadow max-w-4xl mx-auto">
-            <h2 className="text-xl font-bold mb-4">Tạo yêu cầu kiểm kê</h2>
-            <div className="grid grid-cols-2 gap-4">
-                <input name="mucDich" placeholder="Mục đích" value={form.mucDich} onChange={handleChange} />
-                <input name="ngayKiem" type="date" value={form.ngayKiem} onChange={handleChange} />
+        <div className="popup-overlay">
+            <form className="popup-box" onSubmit={handleSubmit}>
+                <h2 className="popup-title">{initialData ? "✏️ Sửa yêu cầu" : "📋 Tạo yêu cầu kiểm kê"}</h2>
 
-                <input name="tenTruongBan" placeholder="Tên trưởng ban" value={form.tenTruongBan} onChange={handleChange} />
-                <input name="chucVuTruongBan" placeholder="Chức vụ" value={form.chucVuTruongBan} onChange={handleChange} />
+                <label>Mục đích</label>
+                <input className="input" value={form.mucDich} onChange={(e) => setForm({ ...form, mucDich: e.target.value })} required />
 
-                <input name="tenUyVien1" placeholder="Tên ủy viên 1" value={form.tenUyVien1} onChange={handleChange} />
-                <input name="chucVuUyVien1" placeholder="Chức vụ" value={form.chucVuUyVien1} onChange={handleChange} />
+                <label>Vị trí kiểm kê</label>
+                <input className="input" value={form.viTriKiemKe} onChange={(e) => setForm({ ...form, viTriKiemKe: e.target.value })} required />
 
-                <input name="tenUyVien2" placeholder="Tên ủy viên 2" value={form.tenUyVien2} onChange={handleChange} />
-                <input name="chucVuUyVien2" placeholder="Chức vụ" value={form.chucVuUyVien2} onChange={handleChange} />
+                <label>Trưởng ban</label>
+                <Autocomplete
+                    options={dsTaiKhoan}
+                    value={form.tenTruongBan}
+                    onChange={(e, val) => setForm({ ...form, tenTruongBan: val || "" })}
+                    renderInput={(params) => <TextField {...params} label="Chọn trưởng ban" />}
+                />
 
-                <input name="viTriKiemKe" placeholder="Vị trí kiểm kê" value={form.viTriKiemKe} onChange={handleChange} className="col-span-2" />
-            </div>
+                <label>Ủy viên 1</label>
+                <Autocomplete
+                    options={dsTaiKhoan}
+                    value={form.tenUyVien1}
+                    onChange={(e, val) => setForm({ ...form, tenUyVien1: val || "" })}
+                    renderInput={(params) => <TextField {...params} label="Chọn ủy viên 1" />}
+                />
 
-            <div className="mt-6 border-t pt-4">
-                <h3 className="font-semibold mb-2">Danh sách sản phẩm</h3>
-                <div className="flex gap-2">
-                    <input name="sanPham" placeholder="Sản phẩm" value={form.sanPham} onChange={handleChange} />
-                    <input name="soLuong" placeholder="Số lượng" value={form.soLuong} onChange={handleChange} />
-                    <button onClick={handleAddSanPham} className="bg-blue-500 text-white px-4 rounded">Thêm</button>
+                <label>Ủy viên 2</label>
+                <Autocomplete
+                    options={dsTaiKhoan}
+                    value={form.tenUyVien2}
+                    onChange={(e, val) => setForm({ ...form, tenUyVien2: val || "" })}
+                    renderInput={(params) => <TextField {...params} label="Chọn ủy viên 2" />}
+                />
+
+                <label>Ghi chú</label>
+                <textarea className="input" value={form.ghiChu} onChange={(e) => setForm({ ...form, ghiChu: e.target.value })} />
+
+                <h3>📦 Chọn sản phẩm cần kiểm kê</h3>
+                <div className="table-scroll">
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Tên sản phẩm</th>
+                                <th>Số lượng hiện có</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sanPhamList.map(sp => (
+                                <tr key={sp.idSanPham}>
+                                    <td><input type="checkbox" checked={selectedIds.has(sp.idSanPham)} onChange={() => toggleSanPham(sp.idSanPham)} /></td>
+                                    <td>{sp.tenSanPham}</td>
+                                    <td>{sp.soLuongHienCon}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-                <ul className="mt-4 list-disc list-inside">
-                    {form.danhSachSanPham.map((sp, i) => (
-                        <li key={i}>{sp.tenSanPham} - SL: {sp.soLuong}</li>
-                    ))}
-                </ul>
-            </div>
 
-            <div className="mt-6">
-                <button onClick={handleSubmit} className="bg-green-600 text-white px-6 py-2 rounded">Tạo yêu cầu</button>
-            </div>
+                <div className="popup-actions">
+                    <button type="button" className="btn btn-cancel" onClick={onClose}>Huỷ</button>
+                    <button type="submit" className="btn btn-primary">Lưu</button>
+                </div>
+            </form>
         </div>
     );
-}
+};
+
+export default FormYeuCauKiemKePopup;

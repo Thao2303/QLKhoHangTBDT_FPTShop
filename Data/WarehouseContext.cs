@@ -18,7 +18,8 @@ namespace QuanLyKhoHangFPTShop.Data
         public DbSet<SanPham> SanPham { get; set; }
         public DbSet<ViTri> ViTri { get; set; }
         public DbSet<ChiTietLuuTru> ChiTietLuuTru { get; set; }
-
+        public DbSet<LoHang> LoHang { get; set; }
+        public DbSet<DonViTinh> DonViTinh { get; set; }
 
         public DbSet<ThongSoKyThuat> ThongSoKyThuat { get; set; }
         public DbSet<SanPham_ThongSo> SanPham_ThongSo { get; set; }
@@ -34,6 +35,8 @@ namespace QuanLyKhoHangFPTShop.Data
         public DbSet<ChiTietYeuCauKiemKe> ChiTietYeuCauKiemKe { get; set; }
         public DbSet<KiemKe> KiemKe { get; set; }
         public DbSet<ChiTietKiemKe> ChiTietKiemKe { get; set; }
+        public DbSet<ChiTietThongSoKyThuat> ChiTietThongSoKyThuat { get; set; }
+ 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +48,8 @@ namespace QuanLyKhoHangFPTShop.Data
 
             // Định nghĩa khóa chính cho ChiTietPhieuXuat
             modelBuilder.Entity<ChiTietPhieuXuat>()
-                .HasKey(c => new { c.idPhieuXuat, c.idSanPham });
+     .HasKey(c => new { c.IdPhieuXuat, c.IdSanPham, c.IdViTri });
+
 
             // Định nghĩa khóa chính cho ChiTietYeuCauXuatKho
             modelBuilder.Entity<ChiTietYeuCauXuatKho>()
@@ -97,7 +101,7 @@ namespace QuanLyKhoHangFPTShop.Data
 
             // Định nghĩa khóa chính cho YeuCauXuatKho
             modelBuilder.Entity<YeuCauXuatKho>()
-                .HasKey(y => y.idYeuCauXuatKho); // Primary Key cho bảng YeuCauXuatKho
+                .HasKey(y => y.IdYeuCauXuatKho); // Primary Key cho bảng YeuCauXuatKho
 
             // Định nghĩa khóa chính cho PhieuNhap
             modelBuilder.Entity<PhieuNhap>()
@@ -105,7 +109,7 @@ namespace QuanLyKhoHangFPTShop.Data
 
 
             modelBuilder.Entity<PhieuXuat>()
-            .HasKey(c => new { c.idPhieuXuat });
+            .HasKey(c => new { c.IdPhieuXuat });
 
          
             modelBuilder.Entity<DaiLy>()
@@ -119,6 +123,9 @@ namespace QuanLyKhoHangFPTShop.Data
 
             modelBuilder.Entity<ChiTietKiemKe>()
     .HasKey(c => new { c.idKiemKe, c.idSanPham });
+
+            modelBuilder.Entity<ChiTietThongSoKyThuat>()
+.HasKey(c => new { c.idSanPham, c.idThongSo });
 
 
 

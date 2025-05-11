@@ -1,10 +1,11 @@
-﻿import React, { useEffect, useState } from "react";
+﻿// ✅ ĐÃ NÂNG CẤP: Hiển thị chi tiết hơn, có trạng thái, sản phẩm, vị trí...
+import React, { useEffect, useState } from "react";
 import "./QuanLyPhieuNhapKho.css";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import FormPhieuXuat from "./FormPhieuXuat";
 import PopupChiTietPhieuXuat from "./PopupChiTietPhieuXuat";
-
+import './QuanLyPhieuXuat.css';
 const QuanLyPhieuXuat = () => {
     const [list, setList] = useState([]);
     const [daiLyList, setDaiLyList] = useState([]);
@@ -147,7 +148,7 @@ const QuanLyPhieuXuat = () => {
                                     <th>Mã PX</th>
                                     <th>Đại lý</th>
                                     <th>Thời gian</th>
-                                    <th>Trạng thái</th>
+                                
                                     <th>Thao tác</th>
                                 </tr>
                             </thead>
@@ -156,9 +157,9 @@ const QuanLyPhieuXuat = () => {
                                     <tr key={px.idPhieuXuat}>
                                         <td>{idx + 1}</td>
                                         <td>{px.idPhieuXuat}</td>
-                                        <td>{px.yeuCauXuatKho?.daiLy?.tenDaiLy}</td>
-                                        <td>{new Date(px.ngayXuat).toLocaleString()}</td>
-                                        <td>{px.yeuCauXuatKho?.trangThaiXacNhan?.tenTrangThai}</td>
+                                        <td>{px.yeuCauXuatKho?.daiLy?.tenDaiLy || '—'}</td>
+                                        <td>{new Date(px.ngayXuat).toLocaleString('vi-VN')}</td>
+                                        
                                         <td>
                                             <button className="edit-btn" onClick={() => setPopup(px)}>👁️</button>
                                             <button className="delete-btn" onClick={() => handleDelete(px.idPhieuXuat)}>🗑</button>
@@ -166,6 +167,7 @@ const QuanLyPhieuXuat = () => {
                                     </tr>
                                 ))}
                             </tbody>
+
                         </table>
 
                         {/* Form tạo phiếu xuất */}

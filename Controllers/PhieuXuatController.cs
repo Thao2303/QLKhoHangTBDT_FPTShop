@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.Data;
+using QuanLyKhoHangFPTShop.Dtos;
 using QuanLyKhoHangFPTShop.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,19 +25,28 @@ namespace QuanLyKhoHangFPTShop.Controllers
         {
             return await _context.PhieuXuat
                 .Include(px => px.YeuCauXuatKho)
+                    .ThenInclude(yc => yc.DaiLy)
+                
                 .Include(px => px.ChiTietPhieuXuats)
-                .ThenInclude(ct => ct.SanPham)
+                    .ThenInclude(ct => ct.SanPham)
                 .ToListAsync();
         }
+
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PhieuXuat>> GetPhieuXuat(int id)
         {
             var phieuXuat = await _context.PhieuXuat
-                .Include(px => px.YeuCauXuatKho)
-                .Include(px => px.ChiTietPhieuXuats)
-                .ThenInclude(ct => ct.SanPham)
-                .FirstOrDefaultAsync(px => px.idPhieuXuat == id);
+     .Include(px => px.YeuCauXuatKho)
+         .ThenInclude(yc => yc.TrangThaiXacNhan)
+     .Include(px => px.YeuCauXuatKho)
+         .ThenInclude(yc => yc.DaiLy)
+     .Include(px => px.ChiTietPhieuXuats)
+         .ThenInclude(ct => ct.SanPham)
+     .Include(px => px.ChiTietPhieuXuats)
+         .ThenInclude(ct => ct.ViTri)
+     .FirstOrDefaultAsync(px => px.IdPhieuXuat == id);
+
 
             if (phieuXuat == null)
             {
@@ -51,41 +61,78 @@ namespace QuanLyKhoHangFPTShop.Controllers
         {
             foreach (var item in ds)
             {
-                var sp = await _context.SanPham.FindAsync(item.idSanPham);
-                if (sp == null || sp.soLuongHienCon < item.soLuong)
+                var sp = await _context.SanPham.FindAsync(item.IdSanPham);
+                if (sp == null || sp.soLuongHienCon < item.SoLuong)
                 {
-                    return BadRequest($"Sản phẩm {item.idSanPham} không đủ tồn kho.");
+                    return BadRequest($"Sản phẩm {item.IdSanPham} không đủ tồn kho.");
                 }
             }
             return Ok();
         }
 
         [HttpPost]
-        public async Task<ActionResult<PhieuXuat>> PostPhieuXuat(PhieuXuat phieuXuat)
+        public async Task<IActionResult> PostPhieuXuat([FromBody] PhieuXuatDTO dto)
         {
-            foreach (var ct in phieuXuat.ChiTietPhieuXuats)
+            // Xoá cache EF để tránh lỗi duplicate tracking
+            _context.ChangeTracker.Clear();
+
+            var phieu = new PhieuXuat
             {
-                var sp = await _context.SanPham.FindAsync(ct.idSanPham);
-                if (sp != null) sp.soLuongHienCon -= ct.soLuong;
+                MaPhieu = "PX" + DateTime.Now.ToString("yyMMddHHmmss"),
+                NgayXuat = dto.NgayXuat,
+                GhiChu = dto.GhiChu,
+                NguoiXuat = dto.NguoiTao,
+                IdYeuCauXuatKho = dto.IdYeuCauXuatKho,
+                ChiTietPhieuXuats = new List<ChiTietPhieuXuat>()
+            };
+
+            foreach (var ct in dto.ChiTietPhieuXuats)
+            {
+                var sp = await _context.SanPham.FindAsync(ct.IdSanPham);
+                if (sp == null || sp.soLuongHienCon < ct.SoLuong)
+                    return BadRequest($"Sản phẩm ID {ct.IdSanPham} không đủ tồn kho.");
+
+                sp.soLuongHienCon -= ct.SoLuong;
+
+                var luuTru = await _context.ChiTietLuuTru
+                    .FirstOrDefaultAsync(l => l.idSanPham == ct.IdSanPham && l.idViTri == ct.IdViTri);
+
+                if (luuTru != null)
+                    luuTru.soLuong -= ct.SoLuong;
+
+                // Tạo đối tượng mới, KHÔNG gán IdPhieuXuat thủ công
+                var ctNew = new ChiTietPhieuXuat
+                {
+                    IdSanPham = ct.IdSanPham,
+                    IdViTri = ct.IdViTri,
+                    SoLuong = ct.SoLuong
+                };
+
+                phieu.ChiTietPhieuXuats.Add(ctNew);
             }
 
-            _context.PhieuXuat.Add(phieuXuat);
+            // Gán và lưu phiếu + chi tiết cùng lúc
+            _context.PhieuXuat.Add(phieu);
             await _context.SaveChangesAsync();
 
-            var yc = await _context.YeuCauXuatKho.FindAsync(phieuXuat.idYeuCauXuatKho);
+            // Cập nhật trạng thái yêu cầu xuất
+            var yc = await _context.YeuCauXuatKho.FindAsync(dto.IdYeuCauXuatKho);
             if (yc != null)
             {
-                yc.idTrangThaiXacNhan = 3;
+                yc.IdTrangThaiXacNhan = 3;
                 await _context.SaveChangesAsync();
             }
 
-            return CreatedAtAction(nameof(GetPhieuXuat), new { id = phieuXuat.idPhieuXuat }, phieuXuat);
+            return Ok(phieu);
         }
+
+
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPhieuXuat(int id, PhieuXuat phieuXuat)
         {
-            if (id != phieuXuat.idPhieuXuat)
+            if (id != phieuXuat.IdPhieuXuat)
             {
                 return BadRequest();
             }
@@ -98,7 +145,7 @@ namespace QuanLyKhoHangFPTShop.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.PhieuXuat.Any(px => px.idPhieuXuat == id))
+                if (!_context.PhieuXuat.Any(px => px.IdPhieuXuat == id))
                 {
                     return NotFound();
                 }
@@ -125,5 +172,25 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             return NoContent();
         }
+
+        [HttpGet("vitri-sanpham/{id}")]
+        public async Task<IActionResult> GetViTriTheoSanPham(int id)
+        {
+            var list = await _context.ChiTietLuuTru
+                .Where(c => c.idSanPham == id && c.soLuong > 0)
+                .Include(c => c.ViTri)
+                .Select(c => new {
+                    c.idViTri,
+                    c.ViTri.Day,
+                    c.ViTri.Cot,
+                    c.ViTri.Tang,
+                    SoLuongCon = c.soLuong
+                })
+                .ToListAsync();
+
+            return Ok(list);
+        }
+
+
     }
 }

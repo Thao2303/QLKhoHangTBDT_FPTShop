@@ -21,12 +21,24 @@ import FormPhieuXuat from './components//FormPhieuXuat';
 import FormTaoYeuCauXuatKho from './components/FormTaoYeuCauXuatKho';
 import QuanLyYeuCauXuatKho from './components/QuanLyYeuCauXuatKho';
 import FormSuaYeuCauXuatKho from './components/FormSuaYeuCauXuatKho';
-import FormKiemKe from "./components/FormKiemKe";
-import FormThucHienKiemKe from "./components/FormThucHienKiemKe";
+import FormTaoPhieuXuat from './components/FormTaoPhieuXuat';
+
+//Kiểm kê
 import QuanLyYeuCauKiemKe from "./components/QuanLyYeuCauKiemKe";
 import FormTaoYeuCauKiemKe from "./components/FormTaoYeuCauKiemKe";
-import FormSuaYeuCauKiemKe from './components/FormSuaYeuCauKiemKe';
-import QuanLyPhieuKiemKe from './components/QuanLyPhieuKiemKe';
+import QuanLyPhieuKiemKe from "./components/QuanLyPhieuKiemKe";
+import FormThucHienKiemKe from "./components/FormThucHienKiemKe";
+import FormChinhSuaYeuCauKiemKe from "./components/FormChinhSuaYeuCauKiemKe";
+import XemPhieuKiemKe from "./components/XemPhieuKiemKe";
+
+//Danh mục
+import QuanLyDanhMuc from "./components/QuanLyDanhMuc";
+
+//Sản phẩm
+import QuanLySanPham from "./components/QuanLySanPham"; 
+
+import SuaViTriLuuTru from "./components/SuaViTriLuuTru";
+
 const App = () => {
     return (
         <Router> {/* Bao quanh toàn bộ các route với Router */}
@@ -48,15 +60,18 @@ const App = () => {
                 <Route path="/tao-phieu-xuat-kho" element={<><Navbar /><Sidebar /><FormPhieuXuat /></>} />
                 <Route path="/quanlyyeucauxuat" element={<><Navbar /><Sidebar /><QuanLyYeuCauXuatKho /></>} />
                 <Route path="/sua-yeu-cau-xuat-kho/:id" element={<FormSuaYeuCauXuatKho />} />
-                <Route path="/thuc-hien-kiem-ke" element={<FormThucHienKiemKe />} />
-                <Route path="/yeu-cau-kiem-ke" element={<QuanLyYeuCauKiemKe />} />
-                <Route path="/them-yeu-cau-kiem-ke" element={<FormTaoYeuCauKiemKe />} />
-                <Route path="/sua-yeu-cau-kiem-ke/:id" element={<FormSuaYeuCauKiemKe />} />
-                <Route path="/sua-yeu-cau-kiem-ke/:id" element={<QuanLyPhieuKiemKe />} />
-                <Route path="/phieu-kiem-ke" element={<QuanLyPhieuKiemKe />} />
-         
-                <Route path="/thuc-hien-kiem-ke" element={<FormThucHienKiemKe />} />
-         
+                <Route path="/tao-phieu-xuat" element={<FormTaoPhieuXuat />} />
+                <Route path="/quan-ly-yeu-cau-kiem-ke" element={<QuanLyYeuCauKiemKe />} />
+                <Route path="/tao-yeu-cau-kiem-ke" element={<FormTaoYeuCauKiemKe />} />
+                <Route path="/quan-ly-phieu-kiem-ke" element={<QuanLyPhieuKiemKe />} />
+                <Route path="/thuc-hien-kiem-ke/:idYeuCauKiemKe" element={<FormThucHienKiemKe />} />
+                <Route path="/chinh-sua-yeu-cau-kiem-ke/:id" element={<FormChinhSuaYeuCauKiemKe />} />
+                <Route path="/xem-phieu-kiem-ke/:idYeuCauKiemKe" element={<XemPhieuKiemKe />} />
+
+                <Route path="/quan-ly-danh-muc" element={<QuanLyDanhMuc />} />
+                <Route path="/sua-vitri-luutru" element={<SuaViTriLuuTru /> } />
+                <Route path="/quan-ly-san-pham" element={<QuanLySanPham />} />
+
             </Routes>
         </Router>
     );

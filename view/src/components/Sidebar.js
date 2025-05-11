@@ -64,12 +64,14 @@ const Sidebar = () => {
                             <MenuItem to="/quanlyvitri" icon={<FaBoxes />} label="Quản lý vị trí" isCollapsed={isCollapsed} />
                             <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
                             <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm vị trí SP" isCollapsed={isCollapsed} />
-                            <MenuItem to="/yeu-cau-kiem-ke" icon={<FaWarehouse />} label="Kiểm kê hàng hóa" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<FaClipboardList />} label="Yêu cầu kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-phieu-kiem-ke" icon={<FaWarehouse />} label="Phiếu kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/kiemke" icon={<FaWarehouse />} label="Kiểm kê" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlyncc" icon={<FaUsers />} label="Quản lý nhà cung cấp" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlydaily" icon={<FaUsers />} label="Quản lý đại lý" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlysanpham" icon={<FaBoxOpen />} label="Quản lý sản phẩm" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlydanhmuc" icon={<FaList />} label="Quản lý danh mục SP" isCollapsed={isCollapsed} />
-                                                   </>
+                            <MenuItem to="/quan-ly-san-pham" icon={<FaBoxOpen />} label="Quản lý sản phẩm" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-danh-muc" icon={<FaList />} label="Quản lý danh mục SP" isCollapsed={isCollapsed} />
+                        </>
                     )}
 
                     {role === "Nhân viên" && (
@@ -98,7 +100,6 @@ const Sidebar = () => {
                         <>
                             <MenuItem to="/tao-yeu-cau-xuat-kho" icon={<FaClipboardList />} label="Gửi YC xuất kho" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlyyeucauxuat" icon={<FaBoxOpen />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
-                            
                         </>
                     )}
 

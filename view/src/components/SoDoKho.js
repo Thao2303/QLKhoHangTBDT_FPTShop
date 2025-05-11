@@ -77,13 +77,14 @@ const SoDoKho = ({ highlightedIds = [] }) => {
     return (
         <div className="layout-wrapper">
             <Sidebar />
-            <div className="content-area4">
+            <div className="content-area">
                 <div className="main-layout">
-                    <h2>Sơ đồ kho FPT Shop</h2>
+                    <div className="container" >
+                        <h2 style={{ textAlign: 'center', marginBottom: 30, color: '#333' }}>Sơ đồ kho hàng FPT Shop</h2>
                     <Navbar />
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div className="note-box">
-                            <h4>📘 Ghi chú sơ đồ</h4>
+                            <h4>Ghi chú sơ đồ</h4>
                             <div className="legend">
                                 <div><span className="green box" /> Còn &gt; 50%</div>
                                 <div><span className="lightblue box" /> Còn 20–50%</div>
@@ -95,8 +96,16 @@ const SoDoKho = ({ highlightedIds = [] }) => {
                             </div>
                         </div>
                     </div>
-                    <div className="sodokho-container">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div className="sodokho-container2" style={{ textAlign: 'center' }}>
+
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center'  // 👈 Căn giữa các khối
+                            }}
+                        >
+
                             <div>
                                 <div className="area-label">Khu vực soạn hàng</div>
                                 <div className="kho-wrapper-horizontal">
@@ -123,6 +132,7 @@ const SoDoKho = ({ highlightedIds = [] }) => {
                         </div>
                         <div className="area-label">Khu vực hàng chờ xuất</div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>

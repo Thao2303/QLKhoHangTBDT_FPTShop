@@ -1,4 +1,4 @@
-﻿// Controllers/LuuTruController.cs
+﻿// YeuCauXuatKhoController.cs - cập nhật nhận dữ liệu mở rộng
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.Data;
@@ -6,7 +6,6 @@ using QuanLyKhoHangFPTShop.Models;
 
 namespace QuanLyKhoHangFPTShop.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class YeuCauXuatKhoController : ControllerBase
@@ -17,23 +16,25 @@ namespace QuanLyKhoHangFPTShop.Controllers
         {
             _context = context;
         }
+
         [HttpPost("tao")]
         public async Task<IActionResult> PostYeuCauXuatKho([FromBody] YeuCauXuatKho yc)
         {
+            yc.NgayYeuCau = DateTime.Now;
             _context.YeuCauXuatKho.Add(yc);
             await _context.SaveChangesAsync();
             return Ok(yc);
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> CapNhatYeuCauXuatKho(int id, [FromBody] YeuCauXuatKho yeuCau)
         {
-            if (id != yeuCau.idYeuCauXuatKho)
-                return BadRequest();
+            if (id != yeuCau.IdYeuCauXuatKho) return BadRequest();
 
-            // Cập nhật yêu cầu
+
+
             _context.Entry(yeuCau).State = EntityState.Modified;
 
-            // Cập nhật từng chi tiết (xử lý lại hoặc xóa rồi thêm mới tùy logic)
             var chiTietCu = _context.ChiTietYeuCauXuatKho.Where(c => c.idYeuCauXuatKho == id);
             _context.ChiTietYeuCauXuatKho.RemoveRange(chiTietCu);
             await _context.SaveChangesAsync();
@@ -50,6 +51,7 @@ namespace QuanLyKhoHangFPTShop.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
         [HttpPut("duyet/{id}")]
         public async Task<IActionResult> DuyetYeuCauXuatKho(int id)
         {
@@ -57,21 +59,19 @@ namespace QuanLyKhoHangFPTShop.Controllers
             if (yc == null)
                 return NotFound();
 
-            yc.idTrangThaiXacNhan = 2; // đã duyệt
+            yc.IdTrangThaiXacNhan = 2;
             await _context.SaveChangesAsync();
             return Ok(yc);
         }
 
-        // 📌 3️⃣ Lấy 1 yêu cầu xuất kho cụ thể (bao gồm cả Chi tiết)
         [HttpGet("{id}")]
         public async Task<ActionResult<YeuCauXuatKho>> GetYeuCauById(int id)
         {
             var yeuCau = await _context.YeuCauXuatKho
-                .Include(y => y.ChiTietYeuCauXuatKhos)
-                .ThenInclude(ct => ct.SanPham)
+                .Include(y => y.ChiTietYeuCauXuatKhos).ThenInclude(ct => ct.SanPham)
                 .Include(y => y.DaiLy)
                 .Include(y => y.TrangThaiXacNhan)
-                .FirstOrDefaultAsync(y => y.idYeuCauXuatKho == id);
+                .FirstOrDefaultAsync(y => y.IdYeuCauXuatKho == id);
 
             if (yeuCau == null)
                 return NotFound();
@@ -79,7 +79,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return yeuCau;
         }
 
-        // 📌 1️⃣ Lấy tất cả yêu cầu xuất kho (có thể lọc theo trạng thái)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<YeuCauXuatKho>>> GetYeuCauXuatKho()
         {
@@ -89,7 +88,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
                 .ToListAsync();
         }
 
-        // 📌 2️⃣ Lấy chi tiết sản phẩm trong một yêu cầu
         [HttpGet("chitiet/{id}")]
         public async Task<ActionResult<IEnumerable<ChiTietYeuCauXuatKho>>> GetChiTiet(int id)
         {
@@ -98,6 +96,41 @@ namespace QuanLyKhoHangFPTShop.Controllers
                 .Include(ct => ct.SanPham)
                 .ToListAsync();
         }
-    }
 
+        // Lấy tất cả danh mục
+        [HttpGet("danhmuc")]
+        public async Task<IActionResult> GetDanhMuc()
+        {
+            var list = await _context.DanhMuc.ToListAsync();
+            return Ok(list);
+        }
+
+        [HttpGet("donvitinh")] // không có slash đầu
+        public async Task<IActionResult> GetDonViTinh()
+        {
+            var list = await _context.DonViTinh.ToListAsync();
+            return Ok(list);
+        }
+
+
+        // Lấy sản phẩm theo danh mục
+        [HttpGet("sanpham/danhmuc/{id}")]
+        public async Task<IActionResult> GetSanPhamTheoDanhMuc(int id)
+        {
+            var list = await _context.SanPham
+                .Where(sp => sp.idDanhMuc == id)
+                .ToListAsync();
+            return Ok(list);
+        }
+        [HttpGet("tonkho/{id}")]
+        public IActionResult GetTonKho(int id)
+        {
+            var sp = _context.SanPham.FirstOrDefault(s => s.idSanPham == id);
+            if (sp == null)
+                return NotFound();
+
+            return Ok(sp.soLuongHienCon);
+        }
+
+    }
 }

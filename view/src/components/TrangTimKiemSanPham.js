@@ -1,17 +1,19 @@
-﻿// ✅ TRANG TÌM KIẾM VỊ TRÍ CHỨA SẢN PHẨM
+﻿// ✅ TRANG TÌM KIẾM VỊ TRÍ CHỨA SẢN PHẨM - COMBOBOX GÕ TỪ KHÓA TIẾNG VIỆT
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
-import SoDoKho from './SoDoKho';
 import './SoDoKho.css';
-import './TrangTimKiemSanPham.css'; 
-
+import './TrangTimKiemSanPham.css';
 
 const TrangTimKiemSanPham = () => {
     const [sanPhamList, setSanPhamList] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedSanPham, setSelectedSanPham] = useState(null);
     const [viTriCoSanPham, setViTriCoSanPham] = useState([]);
+    const [highlightedIds, setHighlightedIds] = useState([]);
+    const [grouped, setGrouped] = useState({});
+    const [vitriList, setVitriList] = useState([]);
 
     useEffect(() => {
         axios.get("https://localhost:5288/api/sanpham")
@@ -19,42 +21,147 @@ const TrangTimKiemSanPham = () => {
             .catch(err => console.error("Lỗi tải sản phẩm:", err));
     }, []);
 
+    useEffect(() => {
+        axios.get("https://localhost:5288/api/vitri")
+            .then(res => {
+                const group = {};
+                (res.data || []).forEach(v => {
+                    if (!group[v.day]) group[v.day] = [];
+                    group[v.day].push(v);
+                });
+                setGrouped(group);
+                setVitriList(res.data || []);
+            });
+    }, []);
+
     const handleSearch = () => {
         if (!selectedSanPham) return;
-        axios.get(`https://localhost:5288/api/chitietluutru/sanpham/${selectedSanPham}`)
-            .then(res => setViTriCoSanPham(res.data))
+        axios.get(`https://localhost:5288/api/ChiTietLuuTru/chitietluutru/sanpham/${selectedSanPham}`)
+            .then(res => {
+                console.log("✅ Dữ liệu trả về:", res.data); // Gỡ khi xong
+                setViTriCoSanPham(res.data);
+                setHighlightedIds([...new Set(res.data.map(item => item.idViTri))]);
+            })
+
+            .then(res => {
+                setViTriCoSanPham(res.data);
+                setHighlightedIds([...new Set(res.data.map(item => item.idViTri))]);
+            })
             .catch(err => console.error("Lỗi tải chi tiết lưu trữ:", err));
     };
 
-    const highlightedIds = viTriCoSanPham.map(item => item.idViTri);
+    const handleClear = () => {
+        setSearchTerm("");
+        setSelectedSanPham(null);
+        setViTriCoSanPham([]);
+        setHighlightedIds([]);
+    };
+
+    const getTooltip = (idViTri) => {
+        const items = viTriCoSanPham.filter(x => x.idViTri === idViTri);
+        if (items.length === 0) return "";
+
+        const tenSanPham = items[0].tenSanPham || "Sản phẩm";
+        const total = items.reduce((sum, x) => sum + x.soLuong, 0);
+
+        return `${tenSanPham} - Tổng SL: ${total}`;
+    };
+
+
+
+    const removeAccents = (str) => str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+    const handleSelectFromInput = (e) => {
+        const typed = e.target.value;
+        setSearchTerm(typed);
+
+        const typedNormalized = removeAccents(typed);
+
+        const exactMatch = sanPhamList.find(sp =>
+            removeAccents(sp.tenSanPham) === typedNormalized
+        );
+
+        if (exactMatch) {
+            setSelectedSanPham(exactMatch.idSanPham);
+            return;
+        }
+
+        const partialMatch = sanPhamList.find(sp =>
+            removeAccents(sp.tenSanPham).includes(typedNormalized)
+        );
+
+        if (partialMatch) {
+            setSelectedSanPham(partialMatch.idSanPham);
+        } else {
+            setSelectedSanPham(null);
+        }
+    };
+
 
     return (
         <div className="layout-wrapper" style={{ display: 'flex' }}>
             <Sidebar />
-            <div className="content-area" style={{ flexGrow: 1 }}>
-                <div className="main-layout" style={{ padding: '0 20px' }}>
+            <div className="content-area" style={{ flexGrow: 1, backgroundColor: '#f9f9f9' }}>
+                <div className="main-layout" style={{ padding: '20px' }}>
                     <Navbar />
 
-                    <div className="container" style={{ width: '100%', margin: '0 auto' }}>
-                        <h2 style={{ textAlign: 'center', marginBottom: 20 }}>🔍 Tìm kiếm vị trí lưu trữ sản phẩm</h2>
+                    <div className="container" >
+                        <h2 style={{ textAlign: 'center', marginBottom: 30, color: '#333' }}>🔍 Tìm kiếm vị trí lưu trữ sản phẩm</h2>
 
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                            <select value={selectedSanPham || ""} onChange={e => setSelectedSanPham(e.target.value)} style={{ padding: 8, minWidth: 400 }}>
-                                <option value="">-- Chọn sản phẩm --</option>
-                                {sanPhamList.map(sp => (
-                                    <option key={sp.idSanPham} value={sp.idSanPham}>{sp.tenSanPham}</option>
-                                ))}
-                            </select>
-                            <button onClick={handleSearch} style={{ padding: '8px 12px', background: '#007bff', color: '#fff', border: 'none', borderRadius: 4 }}>🔍 Tìm kiếm</button>
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 16, marginBottom: 30 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <label style={{ fontSize: 14, marginBottom: 4 }}>Tên sản phẩm</label>
+                                <input
+                                    list="sanpham-options"
+                                    type="text"
+                                    placeholder="Nhập tên sản phẩm..."
+                                    value={searchTerm}
+                                    onChange={handleSelectFromInput}
+                                    style={{ padding: 10, width: 400, borderRadius: 6, border: '1px solid #ccc' }}
+                                />
+                                <datalist id="sanpham-options">
+                                    {sanPhamList.map(sp => (
+                                        <option key={sp.idSanPham} value={sp.tenSanPham} />
+                                    ))}
+                                </datalist>
+                            </div>
+                            <button
+                                onClick={handleSearch}
+                                style={{ height: 42, padding: '0 16px', background: '#007bff', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold' }}
+                            >
+                                🔍 Tìm kiếm
+                            </button>
+                            <button
+                                onClick={handleClear}
+                                style={{ height: 42, padding: '0 16px', background: '#dc3545', color: '#fff', border: 'none', borderRadius: 6, fontWeight: 'bold' }}
+                            >
+                                ❌ Xóa
+                            </button>
                         </div>
 
-                        <div style={{ marginTop: 30 }}>
-                            <div style={{ width: '100%' }}>
-                                <div className="sodokho-container2" style={{ width: '100%', maxWidth: '100%' }}>
-                                    <SoDoKho highlightedIds={highlightedIds} />
-                                </div>
+                        <div className="sodokho-container2">
+                            <div className="kho-wrapper-horizontal">
+                                {Object.entries(grouped).sort().map(([day, items], idx) => (
+                                    <div className="kho-row" key={idx}>
+                                        <div className="day-label">Dãy {day}</div>
+                                        <div className="kho-row-items">
+                                            {items.map((vt, i) => {
+                                                const isHighlighted = highlightedIds.includes(vt.idViTri);
+                                                const tooltip = getTooltip(vt.idViTri);
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className={`vitri-cell ${isHighlighted ? 'highlighted' : ''}`}
+                                                        title={tooltip}
+                                                    >
+                                                        {vt.day}-{vt.cot}-{vt.tang}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-
                         </div>
 
                         <div className="note-box" style={{ margin: '30px auto', width: '70%' }}>
@@ -65,17 +172,28 @@ const TrangTimKiemSanPham = () => {
                                 <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 10 }}>
                                     <thead>
                                         <tr>
-                                            <th style={{ border: '1px solid #ccc', padding: 8, background: '#f0f0f0' }}>Vị trí</th>
-                                            <th style={{ border: '1px solid #ccc', padding: 8, background: '#f0f0f0' }}>Số lượng</th>
+                                            <th style={{ border: '1px solid #ccc', padding: 10, background: '#f0f0f0', textAlign: 'left' }}>Vị trí</th>
+                                            <th style={{ border: '1px solid #ccc', padding: 10, background: '#f0f0f0', textAlign: 'left' }}>Số lượng</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {viTriCoSanPham.map((item, index) => (
                                             <tr key={index}>
-                                                <td style={{ border: '1px solid #ccc', padding: 8 }}>{item.vitri?.day}-{item.vitri?.cot}-{item.vitri?.tang}</td>
-                                                <td style={{ border: '1px solid #ccc', padding: 8 }}>{item.soLuong}</td>
+                                                <td style={{ border: '1px solid #ccc', padding: 10 }}>
+                                                    {item.vitri && item.vitri.day && item.vitri.cot && item.vitri.tang
+                                                        ? `${item.vitri.day}-${item.vitri.cot}-${item.vitri.tang}`
+                                                        : '--'}
+                                                </td>
+
+                                                <td style={{ border: '1px solid #ccc', padding: 10 }}>{item.soLuong}</td>
                                             </tr>
                                         ))}
+                                            <tr>
+                                                <td style={{ border: '1px solid #ccc', padding: 10, fontWeight: 'bold' }}>Tổng</td>
+                                                <td style={{ border: '1px solid #ccc', padding: 10, fontWeight: 'bold' }}>
+                                                    {viTriCoSanPham.reduce((sum, item) => sum + item.soLuong, 0)}
+                                                </td>
+                                            </tr>
                                     </tbody>
                                 </table>
                             )}
@@ -87,6 +205,4 @@ const TrangTimKiemSanPham = () => {
     );
 };
 
-
 export default TrangTimKiemSanPham;
-

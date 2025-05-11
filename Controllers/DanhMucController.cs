@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.Data;
 using QuanLyKhoHangFPTShop.Models;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
-namespace QLKhoHangFPTShop.Controllers
+namespace QuanLyKhoHangFPTShop.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/danhmuc")]
     [ApiController]
-    public class DanhMucController:ControllerBase
+    public class DanhMucController : ControllerBase
     {
         private readonly WarehouseContext _context;
 
@@ -21,54 +19,47 @@ namespace QLKhoHangFPTShop.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DanhMuc>>> GetDanhMuc()
         {
-            return await _context.DanhMuc.ToListAsync();
-        }
-
-        [HttpGet("{id}")]
-        public async Task<ActionResult<DanhMuc>> GetDanhMuc(int id)
-        {
-            var danhMuc = await _context.DanhMuc.FindAsync(id);
-            if (danhMuc == null)
-            {
-                return NotFound();
-            }
-            return Ok(danhMuc);
+            var danhMucs = await _context.DanhMuc.ToListAsync();
+            return Ok(danhMucs);
         }
 
         [HttpPost]
-        public async Task<ActionResult<DanhMuc>> PostDanhMuc(DanhMuc danhMuc)
+        public async Task<IActionResult> CreateDanhMuc([FromBody] DanhMuc dto)
         {
-            _context.DanhMuc.Add(danhMuc);
+            if (string.IsNullOrWhiteSpace(dto.tenDanhMuc))
+                return BadRequest("Tên danh mục không được để trống");
+
+            _context.DanhMuc.Add(dto);
             await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetDanhMuc), new { id = danhMuc.idDanhMuc}, danhMuc);
+
+            return Ok(new { message = "Thêm danh mục thành công", id = dto.idDanhMuc });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutDanhMuc(int id, DanhMuc danhMuc)
+        public async Task<IActionResult> UpdateDanhMuc(int id, [FromBody] DanhMuc dto)
         {
-            if (id != danhMuc.idDanhMuc)
-            {
-                return BadRequest();
-            }
+            if (id != dto.idDanhMuc) return BadRequest("ID không khớp");
 
-            _context.Entry(danhMuc).State = EntityState.Modified;
+            var existing = await _context.DanhMuc.FindAsync(id);
+            if (existing == null) return NotFound("Không tìm thấy danh mục");
+
+            existing.tenDanhMuc = dto.tenDanhMuc;
             await _context.SaveChangesAsync();
-            return NoContent();
+
+            return Ok(new { message = "Cập nhật thành công" });
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDanhMuc(int id)
         {
-            var danhMuc = await _context.DanhMuc.FindAsync(id);
-            if (danhMuc != null)
-            {
-                return NotFound();
-            }
+            var dm = await _context.DanhMuc.FindAsync(id);
+            if (dm == null) return NotFound("Không tìm thấy danh mục");
 
-            _context.DanhMuc.Remove(danhMuc);
+            _context.DanhMuc.Remove(dm);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "Đã xoá danh mục" });
         }
+
     }
 }
