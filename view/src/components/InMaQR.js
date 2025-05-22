@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-import './GoiyViTri.css';
+import './GoiYViTri.css';
 
 const InMaQR = () => {
     const location = useLocation();

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-import "./GoiyViTri.css";
+import "./GoiYViTri.css";
 
 const SuaViTriLuuTru = () => {
     const { state } = useLocation();
