@@ -57,7 +57,8 @@ namespace WarehouseManagementAPI.Controllers
 
                 chieuDai = dto.chieuDai,
                 chieuRong = dto.chieuRong,
-                chieuCao = dto.chieuCao
+                chieuCao = dto.chieuCao,
+                hinhAnh = dto.hinhAnh
             };
 
             _context.SanPham.Add(sp);
@@ -91,6 +92,7 @@ namespace WarehouseManagementAPI.Controllers
             sp.chieuDai = dto.chieuDai;
             sp.chieuRong = dto.chieuRong;
             sp.chieuCao = dto.chieuCao;
+            sp.hinhAnh = dto.hinhAnh;
 
             await _context.SaveChangesAsync();
             return Ok(new { message = "✅ Cập nhật thành công" });
@@ -106,6 +108,43 @@ namespace WarehouseManagementAPI.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "🗑 Đã xoá sản phẩm" });
         }
+
+        [HttpGet("{id}/vitri-theo-lo")]
+        public IActionResult GetViTriTheoLo(int id)
+        {
+            var result = (from ct in _context.ChiTietLuuTru
+                          join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
+                          join lo in _context.LoHang on ct.idLoHang equals lo.idLoHang
+                          where ct.idSanPham == id && ct.soLuong > 0
+                          select new
+                          {
+                              idViTri = ct.idViTri,
+                              tenViTri = $"Dãy {vt.Day} - Cột {vt.Cot} - Tầng {vt.Tang}",
+                              soLuong = ct.soLuong,
+                              idLoHang = lo.idLoHang,
+                              tenLo = lo.tenLo
+                          }).ToList();
+
+            return Ok(result);
+        }
+        [HttpGet("{id}/vitri")]
+        public IActionResult GetViTriTheoSanPham(int id)
+        {
+            var result = (from ct in _context.ChiTietLuuTru
+                          join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
+                          where ct.idSanPham == id && ct.soLuong > 0
+                          select new
+                          {
+                              idViTri = vt.IdViTri,
+                              tenViTri = $"Dãy {vt.Day} - Cột {vt.Cot} - Tầng {vt.Tang}",
+                              soLuong = ct.soLuong,
+                              sucChua = vt.SucChua,
+                              daDung = vt.DaDung
+                          }).ToList();
+
+            return Ok(result);
+        }
+
     }
 
 

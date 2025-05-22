@@ -2,15 +2,31 @@
 using Microsoft.AspNetCore.Mvc;
 using QuanLyKhoHangFPTShop.Data;
 using System.Text.Json.Serialization;
+using QuanLyKhoHangFPTShop.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ✅ Cấu hình CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
 });
+builder.Services.AddSignalR()
+    .AddHubOptions<ThongBaoHub>(options =>
+    {
+        options.EnableDetailedErrors = true;
+    });
+
+
+
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // ✅ thêm vào đây
 
 // ✅ Cấu hình DbContext
 builder.Services.AddDbContext<WarehouseContext>(options =>
@@ -55,8 +71,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ThongBaoHub>("/hub/thongbao");
+app.UseStaticFiles();
 app.Run();
+builder.Logging.AddConsole();

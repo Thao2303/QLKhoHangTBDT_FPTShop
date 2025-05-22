@@ -1,39 +1,113 @@
-﻿.login-container {
-    width: 300px;
-    margin: 100px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+﻿.login-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f2f2f2;
 }
 
-    .login-container h2 {
-        text-align: center;
-        margin-bottom: 20px;
+.login-container {
+    width: 360px;
+    padding: 40px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
 
-    .login-container form div {
-        margin-bottom: 15px;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #333;
+}
+
+.login-container label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+    color: #555;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    outline: none;
+    transition: border 0.2s;
+}
+
+    .login-container input:focus {
+        border-color: #4facfe;
     }
 
-    .login-container input {
-        width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #4facfe;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+    .login-container button:hover {
+        background: #3b8beb;
     }
 
-    .login-container button {
-        width: 100%;
-        padding: 10px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #666;
+}
+
+.forgot-password {
+    text-align: right;
+    margin-bottom: 16px;
+}
+
+    .forgot-password a {
+        color: #007bff;
+        text-decoration: none;
+        font-size: 14px;
     }
 
-        .login-container button:hover {
-            background-color: #45a049;
+        .forgot-password a:hover {
+            text-decoration: underline;
         }
+.login-page {
+    min-height: 100vh;
+    
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.login-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4); /* 👈 độ mờ */
+    z-index: 0;
+}

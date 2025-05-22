@@ -1,10 +1,11 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./GoiyViTri.css";
+import "./GoiYViTri.css";
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-
+import { Link } from "react-router-dom";
+import { FaHome, FaFileAlt, FaPlus } from "react-icons/fa";
 const GoiyViTri = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ const GoiyViTri = () => {
     const [luuTruData, setLuuTruData] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const { idPhieuNhap } = location.state || {};
 
     useEffect(() => {
         const { sanPhams } = location.state || { sanPhams: [] };
@@ -33,11 +35,16 @@ const GoiyViTri = () => {
 
         axios.get("https://localhost:5288/api/sanpham")
             .then(res => {
-                const mapTenSP = sanPhams.map(sp => {
+                const mapFullSP = sanPhams.map(sp => {
                     const matched = res.data.find(p => p.idSanPham === sp.idSanPham);
-                    return { ...sp, tenSanPham: matched?.tenSanPham || sp.tenSanPham || `Sản phẩm ${sp.idSanPham}` };
+                    return {
+                        ...sp,
+                        ...matched, // 🔥 Lấy toàn bộ thông tin từ dữ liệu gốc (có hinhAnh)
+                    };
                 });
-                setProducts(mapTenSP);
+                setProducts(mapFullSP);
+
+               
             });
 
         axios.get("https://localhost:5288/api/vitri")
@@ -262,12 +269,16 @@ const GoiyViTri = () => {
             for (let vt of chiTiet) {
                 const viTriObj = locations.find(v => v.idViTri === parseInt(vt.viTri));
                 if (vt.viTri && vt.soLuong > 0 && viTriObj) {
+                    console.log("➡️ idPhieuNhap:", idPhieuNhap);
+
                     payload.push({
+                        idPhieuNhap, // ✅ Gửi ID phiếu nhập kèm
                         idSanPham: sp.idSanPham,
                         idViTri: parseInt(vt.viTri),
                         soLuong: vt.soLuong,
                         thoiGianLuu: new Date().toISOString()
                     });
+
                     qrList.push({
                         value: `SP: ${sp.tenSanPham || `SP${sp.idSanPham}`}
 Mã: ${sp.idSanPham}
@@ -282,7 +293,7 @@ SL: ${vt.soLuong}`,
         try {
             const res = await axios.post("https://localhost:5288/api/phieunhap/luu-vi-tri", payload);
             alert("✅ " + res.data.message);
-            navigate("/in-maqr", { state: { qrData: qrList } });
+            navigate("/quanlyphieunhap");
         } catch (err) {
             console.error("❌ Lỗi:", err);
             alert("❌ Lỗi gửi API: " + err.response?.data?.message || err.message);
@@ -292,21 +303,62 @@ SL: ${vt.soLuong}`,
     return (
         <div className="layout-wrapper">
             <Sidebar />
-            <div className="content-area">
-                <div className="main-layout">
+            <div className="content-area5">
+             
                     <Navbar />
+                    <div className="breadcrumb">
+                        <Link to="/dashboard">
+                            <FaHome className="breadcrumb-icon" /> Trang chủ
+                        </Link>
+                        <span>/</span>
+                        <Link to="/quanlyphieunhap">
+                            <FaFileAlt className="breadcrumb-icon" /> Quản lý phiếu nhập
+                        </Link>
+                    <span>/</span>
+                    <Link to="/them-phieu-nhap">
+                        <FaFileAlt className="breadcrumb-icon" /> Tạo phiếu nhập
+                    </Link>
+                    <span>/</span>
+                        <span>
+                            <FaPlus className="breadcrumb-icon" /> Chọn vị trí lưu trữ
+                        </span>
+                </div>
+                <div className="form-container">
                     <h2 className="title">🧜‍♂️ Gợi ý vị trí lưu trữ sản phẩm (tối ưu bằng GA)
                     </h2>
                     {loading && <p>⏳ Đang chạy thuật toán GA...</p>}
                     {error && <p style={{ color: 'red' }}>{error}</p>}
                     {!loading && products.map((sp, index) => {
-                        const usedVolume = calculateFullUsedVolume(sp.idSanPham);
+                        const usedVolume = calculateFullUsedVolume(luuTruData, products);
+
                         return (
                             <div key={index} className="card">
-                                <h3 className="card-title">
-                                    - {sp.tenSanPham || `Sản phẩm ${sp.idSanPham}`}<br />
-                                     -  Số lượng: {sp.soLuong}
-                                </h3>
+                                <div className="product-header" style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    marginBottom: 12
+                                }}>
+                                    {sp.hinhAnh && (
+                                        <img
+                                            src={sp.hinhAnh.startsWith('http') ? sp.hinhAnh : `https://localhost:5288${sp.hinhAnh}`}
+                                            alt={sp.tenSanPham}
+                                            style={{
+                                                width: 100,
+                                                height: 100,
+                                                objectFit: 'cover',
+                                                borderRadius: 12,
+                                                border: '1px solid #ccc',
+                                                marginBottom: 8,
+                                                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+                                            }}
+                                        />
+                                    )}
+                                    <strong style={{ fontSize: 16 }}>{sp.tenSanPham || `Sản phẩm ${sp.idSanPham}`}</strong>
+                                    <span style={{ color: '#555' }}>Số lượng: {sp.soLuong}</span>
+                                </div>
+
+
 
 
                                 {(luuTruData[sp.idSanPham] || []).map((row, i) => (
@@ -319,17 +371,16 @@ SL: ${vt.soLuong}`,
                                             <option value="">--Chọn vị trí--</option>
                                             {locations
                                                 .filter(loc => {
-                                                    const freeVol = getFreeVolume(loc, usedVolume);
                                                     const volPerItem = getVolumePerItem(sp);
+                                                    const freeVol = getFreeVolume(loc, usedVolume);
                                                     const maxQty = Math.floor(freeVol / volPerItem);
-                                                    return maxQty > 0;
+                                                    return maxQty > 0 || loc.idViTri === row.viTri; // ✅ giữ lại vị trí đã chọn
                                                 })
                                                 .map(loc => (
                                                     <option key={loc.idViTri} value={loc.idViTri}>
                                                         {loc.day}-{loc.cot}-{loc.tang} (còn {getFreeVolume(loc, usedVolume)} cm³)
                                                     </option>
-                                                ))
-                                            }
+                                                ))}
                                         </select>
 
                                         <input
@@ -342,6 +393,13 @@ SL: ${vt.soLuong}`,
                                         <button className="remove-btn" onClick={() => handleRemoveRow(sp.idSanPham, i)}>❌</button>
                                     </div>
                                 ))}
+
+                                <div style={{ marginTop: 4, fontStyle: 'italic', color: '#333' }}>
+                                    Tổng đã phân bổ: {
+                                        (luuTruData[sp.idSanPham] || []).reduce((sum, r) => sum + (parseInt(r.soLuong) || 0), 0)
+                                    } / {sp.soLuong}
+                                </div>
+
                                 <button className="add-btn" onClick={() => handleAddRow(sp.idSanPham)}>➕ Thêm vị trí</button>
                             </div>
                         );
@@ -350,8 +408,9 @@ SL: ${vt.soLuong}`,
                         <button className="save-btn" onClick={handleSave}>💾 Lưu vào kho </button>
                     )}
                 </div>
+                </div>
             </div>
-        </div>
+       
     );
 };
 

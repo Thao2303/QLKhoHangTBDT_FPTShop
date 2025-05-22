@@ -31,6 +31,7 @@ namespace QuanLyKhoHangFPTShop.Models
         public decimal? chieuDai { get; set; }  // ✅ Cho nullable
         public decimal? chieuRong { get; set; }
         public decimal? chieuCao { get; set; }
+        public string? hinhAnh { get; set; }
 
 
         [ForeignKey("idDonViTinh")]

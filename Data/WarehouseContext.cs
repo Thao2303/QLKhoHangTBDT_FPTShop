@@ -36,7 +36,9 @@ namespace QuanLyKhoHangFPTShop.Data
         public DbSet<KiemKe> KiemKe { get; set; }
         public DbSet<ChiTietKiemKe> ChiTietKiemKe { get; set; }
         public DbSet<ChiTietThongSoKyThuat> ChiTietThongSoKyThuat { get; set; }
- 
+        public DbSet<KhuVuc> KhuVuc { get; set; }
+        public DbSet<ThongBao> ThongBao { get; set; }
+        public DbSet<ThongBaoHeThong> ThongBaoHeThong { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -58,6 +60,12 @@ namespace QuanLyKhoHangFPTShop.Data
             // Định nghĩa khóa chính cho ChucVu
             modelBuilder.Entity<ChucVu>()
                 .HasKey(c => c.idChucVu); // Primary Key cho bảng ChucVu
+
+            modelBuilder.Entity<ThongBao>()
+                .HasKey(c => c.idThongBao);
+
+            modelBuilder.Entity<ThongBaoHeThong>()
+               .HasKey(c => c.idThongBaoHeThong);
 
             // Định nghĩa khóa chính cho TaiKhoan
             modelBuilder.Entity<TaiKhoan>()
@@ -122,13 +130,26 @@ namespace QuanLyKhoHangFPTShop.Data
                 .HasKey(y => y.idYeuCauKiemKe);
 
             modelBuilder.Entity<ChiTietKiemKe>()
-    .HasKey(c => new { c.idKiemKe, c.idSanPham });
+       .HasKey(x => new { x.idKiemKe, x.idSanPham, x.idViTri });
 
             modelBuilder.Entity<ChiTietThongSoKyThuat>()
 .HasKey(c => new { c.idSanPham, c.idThongSo });
 
+            modelBuilder.Entity<ViTri>()
+    .HasOne(v => v.KhuVuc)
+    .WithMany(k => k.ViTris)
+    .HasForeignKey(v => v.idKhuVuc)
+    .OnDelete(DeleteBehavior.Cascade);
 
 
+            modelBuilder.Entity<ChiTietLuuTru>()
+    .HasKey(c => c.idChiTietLuuTru); // hoặc để tự tăng PK nếu đang dùng
+
+            modelBuilder.Entity<ChiTietLuuTru>()
+                .HasOne(c => c.PhieuNhap)
+                .WithMany()
+                .HasForeignKey(c => c.idPhieuNhap)
+                .OnDelete(DeleteBehavior.Restrict); // hoặc Cascade nếu muốn xoá theo phiếu nhập
 
 
         }

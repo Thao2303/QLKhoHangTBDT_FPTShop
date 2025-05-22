@@ -7,8 +7,9 @@
     border: 1px solid #ccc;
     background: #fdfdfd;
     padding: 0px 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 2px solid #e5e7eb;
 }
 
 .sodokho-container2 {
@@ -31,7 +32,7 @@
     }
 
     h2 {
-        margin-top: 50px;
+        margin-top: 5px;
         margin-bottom: 0px;
     }
 
@@ -152,4 +153,8 @@
     box-shadow: 0 0 6px orange;
 }
 
+.vitri-cell.matched {
+    border: 3px solid #facc15; /* vàng */
+    box-shadow: 0 0 6px rgba(250, 204, 21, 0.6);
+}
 

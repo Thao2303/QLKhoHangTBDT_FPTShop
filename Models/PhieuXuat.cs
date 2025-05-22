@@ -15,7 +15,8 @@ public class PhieuXuat
     public DateTime NgayXuat { get; set; } = DateTime.Now;
 
     [Column("idYeuCauXuatKho")]
-    public int IdYeuCauXuatKho { get; set; }
+    public int? IdYeuCauXuatKho { get; set; } // ✅ Cho phép null
+
 
     [Column("nguoiXuat")]
     public string? NguoiXuat { get; set; }

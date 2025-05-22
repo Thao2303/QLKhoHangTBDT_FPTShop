@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import './FormTaoPhieuNhap.css';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-
+import { Link } from "react-router-dom";
+import { FaHome, FaFileAlt, FaPlus } from "react-icons/fa";
 const FormTaoPhieuNhap = () => {
     const [category, setCategory] = useState('');
     const [product, setProduct] = useState('');
@@ -185,7 +186,13 @@ const FormTaoPhieuNhap = () => {
                         chieuCao: sp?.chieuCao || 1
                     };
                 });
-                navigate('/goiyvitri', { state: { sanPhams } });
+                navigate('/goiyvitri', {
+                    state: {
+                        idPhieuNhap: res.data.id, // ✅ rất quan trọng!
+                        sanPhams
+                    }
+                });
+
             })
             .catch(err => {
                 console.error("Lỗi khi lưu phiếu nhập", err);
@@ -194,12 +201,29 @@ const FormTaoPhieuNhap = () => {
     };
 
     return (
+
         <div className="layout-wrapper">
+
             <Sidebar />
-            <div className="content-area5">
+            <div className="content-area">
                 <Navbar />
+
+                <div className="breadcrumb">
+                    <Link to="/dashboard">
+                        <FaHome className="breadcrumb-icon" /> Trang chủ
+                    </Link>
+                    <span>/</span>
+                    <Link to="/quanlyphieunhap">
+                        <FaFileAlt className="breadcrumb-icon" /> Quản lý phiếu nhập
+                    </Link>
+                    <span>/</span>
+                    <span>
+                        <FaPlus className="breadcrumb-icon" /> Tạo phiếu nhập
+                    </span>
+                </div>
                 <div className="form-container">
-                    <h2>Tạo Phiếu Nhập Kho</h2>
+                 
+                    <h1 className="title">Tạo Phiếu Nhập Kho</h1>
                     <form onSubmit={handleSubmit} className="form-grid">
                         <div className="form-section">
                             <label>Danh mục</label>
@@ -311,9 +335,12 @@ const FormTaoPhieuNhap = () => {
                                             <td>{prod.nguoiGiaoHang}</td>
                                             <td>{prod.totalPrice}</td>
                                             <td>
-                                                <button type="button" onClick={() => handleEdit(idx)}>✏️</button>
-                                                <button type="button" onClick={() => handleDelete(idx)}>🗑</button>
+                                                <div className="action-buttons">
+                                                    <button type="button" onClick={() => handleEdit(idx)}>✏️</button>
+                                                    <button type="button" onClick={() => handleDelete(idx)}>🗑</button>
+                                                </div>
                                             </td>
+
 
                                         </tr>
                                     ))}
@@ -330,7 +357,14 @@ const FormTaoPhieuNhap = () => {
                         </div>
 
                         <div className="form-actions full-width">
-                            <button type="reset" className="cancel-button">Hủy</button>
+                            <button
+                                type="button"
+                                className="cancel-button"
+                                onClick={() => navigate('/quanlyphieunhap')}
+                            >
+                                Hủy
+                            </button>
+
                             <button type="submit" className="submit-button">Lưu phiếu nhập</button>
                         </div>
                     </form>

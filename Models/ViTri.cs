@@ -1,7 +1,5 @@
-﻿using QuanLyKhoHangFPTShop.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
 
 namespace QuanLyKhoHangFPTShop.Models
 {
@@ -21,7 +19,9 @@ namespace QuanLyKhoHangFPTShop.Models
         [MaxLength(50)]
         public string TrangThai { get; set; } = "Trống";
 
-        public int SucChua { get; set; } = 100;
+        [Column(TypeName = "decimal(20, 2)")]
+        public decimal SucChua { get; set; }
+
         public int DaDung { get; set; } = 0;
 
         [Column(TypeName = "decimal(10, 2)")]
@@ -33,8 +33,10 @@ namespace QuanLyKhoHangFPTShop.Models
         [Column(TypeName = "decimal(10, 2)")]
         public decimal chieuCao { get; set; }
 
+        // 🔗 Liên kết đến KhuVuc
+        public int idKhuVuc { get; set; }
 
-
+        [ForeignKey("idKhuVuc")]
+        public KhuVuc KhuVuc { get; set; }
     }
 }
-

@@ -105,6 +105,26 @@ namespace QuanLyKhoHangFPTShop.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<IActionResult> GetTatCaChiTietViTri()
+        {
+            var result = await _context.ChiTietLuuTru
+                .Include(x => x.SanPham)
+                .Include(x => x.ViTri)
+                .Select(x => new
+                {
+                    idSanPham = x.idSanPham,
+                    tenSanPham = x.SanPham.tenSanPham,
+                    idViTri = x.idViTri,
+                    day = x.ViTri.Day,
+                    cot = x.ViTri.Cot,
+                    tang = x.ViTri.Tang,
+                    soLuong = x.soLuong
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
 
 
     }

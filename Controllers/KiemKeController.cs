@@ -188,7 +188,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
 
 
-
         [HttpGet("theo-yeucau/{idYeuCau}")]
         public async Task<IActionResult> GetTheoYeuCau(int idYeuCau)
         {
@@ -199,26 +198,48 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             if (kiemKe == null) return NotFound();
 
+            var viTriSanPham = await (
+                from ct in _context.ChiTietKiemKe
+                join sp in _context.SanPham on ct.idSanPham equals sp.idSanPham
+                join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
+                where ct.idKiemKe == kiemKe.idKiemKe
+                group ct by new { sp.idSanPham, sp.tenSanPham, ct.idViTri, vt.Day, vt.Cot, vt.Tang } into g
+                select new
+                {
+                    idSanPham = g.Key.idSanPham,
+                    tenSanPham = g.Key.tenSanPham,
+                    idViTri = g.Key.idViTri,
+                    viTri = g.Key.Day + "-" + g.Key.Cot + "-" + g.Key.Tang,
+                    soLuongTaiViTri = g.Sum(x => x.soLuongThucTe)
+                }
+            ).ToListAsync();
+
+            var tenNguoiThucHien = await _context.TaiKhoan
+                .Where(t => t.idTaiKhoan == kiemKe.idNguoiThucHien)
+                .Select(t => t.tenTaiKhoan)
+                .FirstOrDefaultAsync();
+
             return Ok(new
             {
                 kiemKe.idKiemKe,
                 kiemKe.ngayKiemKe,
                 nguoiKiemKe = kiemKe.idNguoiThucHien,
+                tenNguoiThucHien,
                 kiemKe.ghiChu,
                 viTriKiemKe = kiemKe.YeuCauKiemKe.viTriKiemKe,
                 mucDich = kiemKe.YeuCauKiemKe.mucDich,
                 tenTruongBan = kiemKe.YeuCauKiemKe.tenTruongBan,
                 tenUyVien1 = kiemKe.YeuCauKiemKe.tenUyVien1,
                 tenUyVien2 = kiemKe.YeuCauKiemKe.tenUyVien2,
-                chiTietPhieuKiemKes = kiemKe.ChiTietKiemKe.Select(ct => new
-                {
+                chiTietPhieuKiemKes = kiemKe.ChiTietKiemKe.Select(ct => new {
                     ct.idSanPham,
                     tenSanPham = ct.SanPham.tenSanPham,
                     ct.soLuongTheoHeThong,
                     ct.soLuongThucTe,
                     chenhLech = ct.soLuongThucTe - ct.soLuongTheoHeThong,
                     ct.phamChat
-                })
+                }),
+                viTriSanPham
             });
         }
 

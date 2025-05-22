@@ -16,8 +16,24 @@ const QuanLyYeuCauKiemKe = () => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    const itemsPerPage = 10;
+    const [trangThai, setTrangThai] = useState("");
+    const [filterTrangThai, setFilterTrangThai] = useState("");
+
     const navigate = useNavigate();
+    const currentUser = (() => {
+        const userStr = localStorage.getItem("user");
+        if (!userStr) return "";
+        try {
+            const userObj = JSON.parse(userStr);
+            return (userObj.tenTaiKhoan || "").trim().toLowerCase();
+        } catch {
+            return "";
+        }
+    })();
+    const removeVietnameseTones = (str) => {
+        return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+    };
 
     const fetchData = () => {
         fetch("https://localhost:5288/api/yeucaukiemke")
@@ -31,11 +47,16 @@ const QuanLyYeuCauKiemKe = () => {
     }, []);
 
     const filteredData = yeuCaus.filter(yc => {
-        const matchKeyword = searchKeyword === "" || yc.mucDich?.toLowerCase().includes(searchKeyword.toLowerCase());
+        const matchKeyword = searchKeyword === "" ||
+            removeVietnameseTones(yc.mucDich || "").includes(removeVietnameseTones(searchKeyword));
+
         const matchFrom = !fromDate || new Date(yc.ngayTao) >= new Date(fromDate);
         const matchTo = !toDate || new Date(yc.ngayTao) <= new Date(toDate);
-        return matchKeyword && matchFrom && matchTo;
+        const matchStatus = filterTrangThai === "" || yc.trangThai?.toString() === filterTrangThai;
+        return matchKeyword && matchFrom && matchTo && matchStatus;
+
     });
+
 
     const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -71,6 +92,16 @@ const QuanLyYeuCauKiemKe = () => {
 
                     <div className="search-form">
                         <input className="search-input" placeholder="Tìm theo mục đích..." value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)} />
+                        <select value={filterTrangThai} onChange={(e) => setFilterTrangThai(e.target.value)} className="filter-select">
+                            <option value="">-- Trạng thái --</option>
+                            <option value="0">⏳ Chưa thực hiện</option>
+                            <option value="1">✅ Đã kiểm</option>
+                            <option value="2">⚠️ Có lệch</option>
+                            <option value="3">📦 Đã xử lý</option>
+                        </select>
+
+
+
                         <div className="date-group">
                             <label>Từ ngày:</label>
                             <input type="date" className="date-input" value={fromDate} onChange={e => setFromDate(e.target.value)} />
@@ -80,11 +111,19 @@ const QuanLyYeuCauKiemKe = () => {
                             <input type="date" className="date-input" value={toDate} onChange={e => setToDate(e.target.value)} />
                         </div>
                         <button className="search-button">🔍 Tìm kiếm</button>
-                        <button className="reset-button" onClick={() => { setSearchKeyword(""); setFromDate(""); setToDate(""); }}>🗑 Reset</button>
+                        <button className="reset-button" onClick={() => {
+                            setSearchKeyword("");
+                            setFromDate("");
+                            setToDate("");
+                            setFilterTrangThai(""); // ✅ reset thêm lọc trạng thái
+                        }}
+>🗑 Reset</button>
                     </div>
 
                     <button className="add-button" onClick={() => { setShowPopup(true); setEditData(null); }}>+ Tạo yêu cầu kiểm kê</button>
-
+                    <p style={{ marginTop: 10 }}>
+                        🔍 Tổng kết quả: <strong>{filteredData.length}</strong>
+                    </p>
                     <table className="data-table">
                         <thead>
                             <tr>
@@ -123,11 +162,17 @@ const QuanLyYeuCauKiemKe = () => {
                                             disabled={yc.trangThai !== 0}
                                             style={yc.trangThai !== 0 ? { opacity: 0.5, cursor: "not-allowed" } : {}}
                                         >🗑 Xoá</button>
+
                                         {yc.trangThai === 0 ? (
-                                            <button onClick={() => navigate(`/thuc-hien-kiem-ke/${yc.idYeuCauKiemKe}`)}>📝 Kiểm kê</button>
+                                            currentUser === yc.tenTruongBan || currentUser === yc.tenUyVien1 || currentUser === yc.tenUyVien2 || currentUser === yc.nguoiTao ? (
+                                                <button onClick={() => navigate(`/thuc-hien-kiem-ke/${yc.idYeuCauKiemKe}`)}>📝 Kiểm kê</button>
+                                            ) : (
+                                                <button disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>📝 Không được phân công</button>
+                                            )
                                         ) : (
                                             <button onClick={() => navigate(`/xem-phieu-kiem-ke/${yc.idYeuCauKiemKe}`)}>📄 Xem kiểm kê</button>
                                         )}
+
                                     </td>
                                 </tr>
                             ))}
@@ -135,10 +180,26 @@ const QuanLyYeuCauKiemKe = () => {
                     </table>
 
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-
                     {popupData && (
                         <div className="popup">
-                            <div className="popup-inner">
+                            <div className="popup-inner" style={{ maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
+                                <div style={{ position: 'absolute', top: '10px', right: '15px', zIndex: 10 }}>
+                                    <button className="close-btn"
+                                        onClick={() => setPopupData(null)}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            fontSize: '24px',
+                                            fontWeight: 'bold',
+                                            cursor: 'pointer',
+                                            color: '#333'
+                                        }}
+                                        title="Đóng"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+
                                 <h3>📄 Chi tiết yêu cầu kiểm kê #{popupData.idYeuCauKiemKe}</h3>
                                 <p><strong>📅 Ngày tạo:</strong> {new Date(popupData.ngayTao).toLocaleString()}</p>
                                 <p><strong>🎯 Mục đích:</strong> {popupData.mucDich || "--"}</p>

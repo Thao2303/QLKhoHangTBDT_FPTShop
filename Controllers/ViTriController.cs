@@ -19,15 +19,34 @@ namespace QuanLyKhoHangFPTShop.Controllers
             _context = context;
         }
 
-        // GET: api/vitri
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ViTri>>> GetViTri()
+        public async Task<ActionResult<IEnumerable<object>>> GetViTri()
         {
-            return await _context.ViTri.ToListAsync();
+            var list = await _context.ViTri
+                .Include(v => v.KhuVuc)
+                .Select(v => new
+                {
+                    idViTri = v.IdViTri,
+                    day = v.Day,
+                    cot = v.Cot,
+                    tang = v.Tang,
+                    sucChua = v.SucChua,
+                    daDung = v.DaDung,
+                  chieuDai = v.chieuDai,
+                  chieuRong = v.chieuRong,
+                  chieuCao = v.chieuCao,
+                    khuVuc = new
+                    {
+                        idKhuVuc = v.KhuVuc.idKhuVuc,
+                        tenKhuVuc = v.KhuVuc.tenKhuVuc,
+                        loaiKhuVuc = v.KhuVuc.loaiKhuVuc
+                    }
+                })
+                .ToListAsync();
+
+            return Ok(list);
         }
 
-
-        // GET: api/vitri/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ViTri>> GetViTri(int id)
         {
@@ -41,24 +60,39 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return viTri;
         }
 
-        // POST: api/vitri
         [HttpPost]
         public async Task<ActionResult<ViTri>> PostViTri(ViTri viTri)
         {
+            if (viTri == null)
+                return BadRequest("❌ Dữ liệu vị trí không hợp lệ!");
+
+            if (viTri.idKhuVuc <= 0)
+                return BadRequest("❌ Vui lòng chọn khu vực hợp lệ!");
+
+            var khuVucTonTai = await _context.KhuVuc.AnyAsync(kv => kv.idKhuVuc == viTri.idKhuVuc);
+            if (!khuVucTonTai)
+                return BadRequest("❌ Khu vực không tồn tại!");
+
             _context.ViTri.Add(viTri);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetViTri), new { id = viTri.IdViTri }, viTri);
         }
 
-        // PUT: api/vitri/5
+
         [HttpPut("{id}")]
         public async Task<IActionResult> PutViTri(int id, ViTri viTri)
         {
             if (id != viTri.IdViTri)
-            {
-                return BadRequest();
-            }
+                return BadRequest("ID không khớp.");
+
+            if (viTri == null || viTri.idKhuVuc == 0)
+                return BadRequest("❌ Vui lòng chọn khu vực!");
+
+            var khuVucTonTai = await _context.KhuVuc.AnyAsync(kv => kv.idKhuVuc == viTri.idKhuVuc);
+            if (!khuVucTonTai)
+                return BadRequest("❌ Khu vực không tồn tại!");
+
 
             _context.Entry(viTri).State = EntityState.Modified;
 
@@ -69,26 +103,19 @@ namespace QuanLyKhoHangFPTShop.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!ViTriExists(id))
-                {
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
         }
 
-        // DELETE: api/vitri/5
-        [HttpDelete("{id}")]
         private bool ViTriExists(int id)
         {
-            return _context.ViTri.Any(v => v.IdViTri == id); // Kiểm tra sự tồn tại của vị trí theo ID
+            return _context.ViTri.Any(v => v.IdViTri == id);
         }
 
-        // DELETE: api/vitri/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteViTri(int id)
         {

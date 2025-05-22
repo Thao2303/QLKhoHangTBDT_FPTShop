@@ -1,12 +1,12 @@
 ﻿import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { utils, writeFile } from "xlsx";
-import "./FormKiemKe.css";
-import "./print.css";
+import "./popup-style.css";
 
 const XemPhieuKiemKe = () => {
     const { idYeuCauKiemKe } = useParams();
+    const navigate = useNavigate();
     const [data, setData] = useState(null);
 
     useEffect(() => {
@@ -15,11 +15,10 @@ const XemPhieuKiemKe = () => {
             .catch(() => alert("❌ Không thể tải phiếu kiểm kê."));
     }, [idYeuCauKiemKe]);
 
-    const handleIn = () => window.print();
+    const handlePrint = () => window.print();
 
-    const handleXuatExcel = () => {
+    const handleExport = () => {
         if (!data) return;
-
         const rows = data.chiTietPhieuKiemKes.map((ct, idx) => ({
             STT: idx + 1,
             "Sản phẩm": ct.tenSanPham,
@@ -28,17 +27,14 @@ const XemPhieuKiemKe = () => {
             "Chênh lệch": ct.soLuongThucTe - ct.soLuongTheoHeThong,
             "Phẩm chất": ct.phamChat || "--"
         }));
-
-        const worksheet = utils.json_to_sheet(rows);
-        const workbook = utils.book_new();
-        utils.book_append_sheet(workbook, worksheet, "PhieuKiemKe");
-
-        writeFile(workbook, `PhieuKiemKe_${idYeuCauKiemKe}.xlsx`);
+        const ws = utils.json_to_sheet(rows);
+        const wb = utils.book_new();
+        utils.book_append_sheet(wb, ws, "PhieuKiemKe");
+        writeFile(wb, `PhieuKiemKe_${idYeuCauKiemKe}.xlsx`);
     };
 
-    if (!data) return <p>Đang tải phiếu kiểm kê...</p>;
+    if (!data) return null;
 
-    // Gom nhóm vị trí lưu trữ nếu có
     const groupByProduct = {};
     (data.viTriSanPham || []).forEach(item => {
         if (!groupByProduct[item.tenSanPham]) groupByProduct[item.tenSanPham] = [];
@@ -46,77 +42,80 @@ const XemPhieuKiemKe = () => {
     });
 
     return (
-        <div className="kiemke-wrapper">
-            <h2>📋 Phiếu kiểm kê #{data.idKiemKe}</h2>
-            <p><strong>📅 Ngày kiểm kê:</strong> {new Date(data.ngayKiemKe).toLocaleString()}</p>
-            <p><strong>👤 Người kiểm:</strong> {data.nguoiKiemKe}</p>
-            <p><strong>📝 Ghi chú:</strong> {data.ghiChu}</p>
-            <p><strong>📊 Trạng thái:</strong> ✅ Đã kiểm</p>
+        <div className="popup-overlay">
+            <div className="popup-box" style={{ maxWidth: 1200 }}>
+                <h2 className="popup-title">📄 Phiếu kiểm kê #{data.idKiemKe}</h2>
+                <p><strong>📅 Ngày kiểm kê:</strong> {new Date(data.ngayKiemKe).toLocaleString()}</p>
+                <p><strong>👤 Người kiểm:</strong> {data.tenNguoiThucHien || data.nguoiKiemKe || "--"}</p>
+                <p><strong>🎯 Mục đích:</strong> {data.mucDich || "--"}</p>
+                <p><strong>📍 Vị trí kiểm kê:</strong> {data.viTriKiemKe || "--"}</p>
+                <p><strong>📝 Ghi chú:</strong> {data.ghiChu || "--"}</p>
+                <p><strong>📊 Trạng thái:</strong> ✅ Đã kiểm</p>
 
-            <h3>📦 Chi tiết sản phẩm kiểm kê</h3>
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        <th rowSpan="2">STT</th>
-                        <th rowSpan="2">Sản phẩm</th>
-                        <th colSpan="2">Vị trí lưu trữ</th>
-                        <th rowSpan="2">Tồn hệ thống</th>
-                        <th rowSpan="2">Thực tế</th>
-                        <th rowSpan="2">Chênh lệch</th>
-                        <th rowSpan="2">Phẩm chất</th>
-                    </tr>
-                    <tr>
-                        <th>Vị trí</th>
-                        <th>Số lượng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.chiTietPhieuKiemKes.map((ct, idx) => {
-                        const posList = groupByProduct[ct.tenSanPham] || [];
-
-                        return posList.length > 0 ? (
-                            posList.map((pos, i) => (
-                                <tr key={`${idx}-${i}`}>
-                                    {i === 0 && (
-                                        <>
-                                            <td rowSpan={posList.length}>{idx + 1}</td>
-                                            <td rowSpan={posList.length}>{ct.tenSanPham}</td>
-                                        </>
-                                    )}
-                                    <td>{pos.viTri}</td>
-                                    <td>{pos.soLuongTaiViTri}</td>
-                                    {i === 0 && (
-                                        <>
-                                            <td rowSpan={posList.length}>{ct.soLuongTheoHeThong}</td>
-                                            <td rowSpan={posList.length}>{ct.soLuongThucTe}</td>
-                                            <td rowSpan={posList.length} style={{ color: "red" }}>
-                                                {(ct.soLuongThucTe ?? 0) - (ct.soLuongTheoHeThong ?? 0)}
-                                            </td>
-                                            <td rowSpan={posList.length}>{ct.phamChat || "--"}</td>
-                                        </>
-                                    )}
-                                </tr>
-                            ))
-                        ) : (
-                            <tr key={idx}>
-                                <td>{idx + 1}</td>
-                                <td>{ct.tenSanPham}</td>
-                                <td colSpan="2"><em>Không có vị trí</em></td>
-                                <td>{ct.soLuongTheoHeThong}</td>
-                                <td>{ct.soLuongThucTe}</td>
-                                <td style={{ color: "red" }}>
-                                    {(ct.soLuongThucTe ?? 0) - (ct.soLuongTheoHeThong ?? 0)}
-                                </td>
-                                <td>{ct.phamChat || "--"}</td>
+                <div className="table-scroll">
+                    <table className="data-table">
+                        <thead>
+                            <tr>
+                                <th rowSpan="2">STT</th>
+                                <th rowSpan="2">Sản phẩm</th>
+                                <th colSpan="2">Vị trí lưu trữ</th>
+                                <th rowSpan="2">Tồn hệ thống</th>
+                                <th rowSpan="2">Thực tế</th>
+                                <th rowSpan="2">Chênh lệch</th>
+                                <th rowSpan="2">Phẩm chất</th>
                             </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                            <tr>
+                                <th>Vị trí</th>
+                                <th>Số lượng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.chiTietPhieuKiemKes.map((ct, idx) => {
+                                const posList = groupByProduct[ct.tenSanPham] || [];
+                                return posList.length > 0 ? (
+                                    posList.map((pos, i) => (
+                                        <tr key={`${idx}-${i}`}>
+                                            {i === 0 && (
+                                                <>
+                                                    <td rowSpan={posList.length}>{idx + 1}</td>
+                                                    <td rowSpan={posList.length}>{ct.tenSanPham}</td>
+                                                </>
+                                            )}
+                                            <td>{pos.viTri}</td>
+                                            <td>{pos.soLuongTaiViTri}</td>
+                                            {i === 0 && (
+                                                <>
+                                                    <td rowSpan={posList.length}>{ct.soLuongTheoHeThong}</td>
+                                                    <td rowSpan={posList.length}>{ct.soLuongThucTe}</td>
+                                                    <td rowSpan={posList.length} style={{ color: ct.soLuongThucTe !== ct.soLuongTheoHeThong ? "red" : undefined }}>
+                                                        {ct.soLuongThucTe - ct.soLuongTheoHeThong}
+                                                    </td>
+                                                    <td rowSpan={posList.length}>{ct.phamChat || "--"}</td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr key={idx}>
+                                        <td>{idx + 1}</td>
+                                        <td>{ct.tenSanPham}</td>
+                                        <td colSpan="2"><em>Không có vị trí</em></td>
+                                        <td>{ct.soLuongTheoHeThong}</td>
+                                        <td>{ct.soLuongThucTe}</td>
+                                        <td style={{ color: "red" }}>{ct.soLuongThucTe - ct.soLuongTheoHeThong}</td>
+                                        <td>{ct.phamChat || "--"}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
 
-            <div style={{ marginTop: "20px", display: "flex", gap: "10px" }} className="print-hide">
-                <button onClick={handleIn} className="submit-btn">🖨 In</button>
-                <button onClick={handleXuatExcel} className="submit-btn">📥 Xuất Excel</button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: 16 }}>
+                    <button onClick={handlePrint} className="btn">🖨 In</button>
+                    <button onClick={handleExport} className="btn">📥 Xuất Excel</button>
+                    <button onClick={() => navigate("/quan-ly-phieu-kiem-ke")} className="btn">Đóng</button>
+                </div>
             </div>
         </div>
     );

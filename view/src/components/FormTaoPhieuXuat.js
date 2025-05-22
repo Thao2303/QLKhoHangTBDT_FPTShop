@@ -21,14 +21,48 @@ const FormTaoPhieuXuat = () => {
         dsSanPham.forEach(sp => {
             axios.get(`https://localhost:5288/api/phieuxuat/vitri-sanpham/${sp.idSanPham}`)
                 .then(res => {
+                    const grouped = {};
+
+                    res.data.forEach(v => {
+                        if (!grouped[v.idViTri]) {
+                            grouped[v.idViTri] = {
+                                idViTri: v.idViTri,
+                                day: v.day,
+                                cot: v.cot,
+                                tang: v.tang,
+                                soLuongCon: 0,
+                                thoiGianLuu: v.thoiGianLuu // không bắt buộc, chỉ cần để sort
+                            };
+                        }
+                        grouped[v.idViTri].soLuongCon += v.soLuongCon;
+                    });
+
+                    const viTris = Object.values(grouped).sort(
+                        (a, b) => new Date(a.thoiGianLuu) - new Date(b.thoiGianLuu)
+                    );
+
                     setViTriMap(prev => ({
                         ...prev,
-                        [sp.idSanPham]: removeDuplicates(res.data)
+                        [sp.idSanPham]: viTris
                     }));
-                })
-                .catch(err => console.error('Lỗi lấy vị trí:', err));
+
+                    // Tự động gợi ý phân bổ (FIFO)
+                    let soLuongCan = sp.soLuong;
+                    const pbList = [];
+
+                    for (const vt of viTris) {
+                        if (soLuongCan <= 0) break;
+                        const lay = Math.min(vt.soLuongCon, soLuongCan);
+                        pbList.push({ idViTri: vt.idViTri, soLuong: lay });
+
+                        soLuongCan -= lay;
+                    }
+
+                    setPhanBo(prev => ({ ...prev, [sp.idSanPham]: pbList }));
+                });
         });
     }, [dsSanPham]);
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -38,16 +72,23 @@ const FormTaoPhieuXuat = () => {
         for (const sp of dsSanPham) {
             const danhSach = phanBo[sp.idSanPham] || [];
             const tong = danhSach.reduce((sum, p) => sum + p.soLuong, 0);
-            if (tong !== sp.soLuong) {
+            if (tong < sp.soLuong) {
                 alert(`⚠️ Sản phẩm "${sp.tenSanPham}" cần xuất ${sp.soLuong}, nhưng bạn mới phân bổ ${tong}.`);
                 return;
             }
+            if (tong > sp.soLuong) {
+                alert(`❌ Phân bổ vượt quá số lượng cho sản phẩm "${sp.tenSanPham}". Chỉ được phân tối đa ${sp.soLuong}.`);
+                return;
+            }
+
             for (const p of danhSach) {
                 chiTietPhieuXuats.push({
                     idSanPham: sp.idSanPham,
                     soLuong: p.soLuong,
-                    idViTri: p.idViTri
+                    idViTri: p.idViTri,
+                    idLoHang: p.idLoHang // thêm dòng này
                 });
+
             }
         }
 
@@ -62,6 +103,8 @@ const FormTaoPhieuXuat = () => {
         try {
             await axios.post("https://localhost:5288/api/phieuxuat/kiemtra-tonkho", chiTietPhieuXuats);
             await axios.post("https://localhost:5288/api/phieuxuat", payload);
+            await axios.put(`https://localhost:5288/api/yeucauxuatkho/capnhattrangthai/${tuYeuCau.idYeuCauXuatKho}`);
+
             alert("✅ Phiếu xuất đã được tạo thành công!");
             navigate("/quanlyphieuxuat");
         } catch (err) {
@@ -79,11 +122,15 @@ const FormTaoPhieuXuat = () => {
             return true;
         });
     };
+    const getTotalPhanBo = (idSanPham) => {
+        const list = phanBo[idSanPham] || [];
+        return list.reduce((sum, p) => sum + (parseInt(p.soLuong) || 0), 0);
+    };
 
     return (
         <div className="layout-wrapper">
             <Sidebar />
-            <div className="content-area5">
+            <div className="content-area">
                 <Navbar />
                 <div className="form-container">
                     <h2>Tạo Phiếu Xuất Kho từ Yêu Cầu #{tuYeuCau?.idYeuCauXuatKho}</h2>
@@ -103,37 +150,63 @@ const FormTaoPhieuXuat = () => {
                             {dsSanPham.map(sp => (
                                 <div key={sp.idSanPham} className="phanbo-sp">
                                     <h4>{sp.tenSanPham} (Cần: {sp.soLuong})</h4>
+                                    <p style={{
+                                        fontStyle: 'italic',
+                                        color: getTotalPhanBo(sp.idSanPham) > sp.soLuong ? 'red' : '#333'
+                                    }}>
+                                        Tổng đã phân bổ: {getTotalPhanBo(sp.idSanPham)} / {sp.soLuong}
+                                    </p>
+
                                     <table>
                                         <thead>
-                                            <tr><th>Vị trí</th><th>Số lượng còn</th><th>Số lượng xuất</th></tr>
+                                            <tr>
+                                                <th>Vị trí</th>
+                                                <th>Số lượng còn</th>
+                                                <th>Số lượng xuất</th>
+                                            </tr>
                                         </thead>
+
                                         <tbody>
-                                            {viTriMap[sp.idSanPham]?.map((v, idx) => (
-                                                <tr key={v.idViTri}>
-                                                    <td>Dãy {v.day} - Cột {v.cot} - Tầng {v.tang}</td>
-                                                    <td>{v.soLuongCon}</td>
-                                                    <td>
-                                                        <input
-                                                            type="number"
-                                                            min="0"
-                                                            max={v.soLuongCon}
-                                                            value={
-                                                                phanBo[sp.idSanPham]?.find(p => p.idViTri === v.idViTri)?.soLuong || ''
-                                                            }
-                                                            onChange={(e) => {
-                                                                const value = parseInt(e.target.value || 0);
-                                                                setPhanBo(prev => {
-                                                                    const list = prev[sp.idSanPham] || [];
-                                                                    const updated = list.filter(p => p.idViTri !== v.idViTri);
-                                                                    if (value > 0) updated.push({ idViTri: v.idViTri, soLuong: value });
-                                                                    return { ...prev, [sp.idSanPham]: updated };
-                                                                });
-                                                            }}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                            {viTriMap[sp.idSanPham]?.map((v, idx) => {
+                                                const key = v.idViTri;
+                                                const list = phanBo[sp.idSanPham] || [];
+
+                                                const currentPhanBo = list.find(p => p.idViTri === v.idViTri);
+                                                const otherTotal = list
+                                                    .filter(p => p.idViTri !== v.idViTri)
+                                                    .reduce((sum, p) => sum + p.soLuong, 0);
+
+                                                const maxAllow = Math.min(v.soLuongCon, sp.soLuong - otherTotal);
+                                                const currentValue = currentPhanBo?.soLuong || '';
+
+                                                return (
+                                                    <tr key={key}>
+                                                        <td>Dãy {v.day} - Cột {v.cot} - Tầng {v.tang}</td>
+                                                        <td>{v.soLuongCon}</td>
+                                                        <td>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                max={maxAllow}
+                                                                value={currentValue}
+                                                                onChange={(e) => {
+                                                                    const value = parseInt(e.target.value || 0);
+                                                                    setPhanBo(prev => {
+                                                                        const updated = list.filter(p => p.idViTri !== v.idViTri);
+                                                                        if (value > 0) {
+                                                                            updated.push({ idViTri: v.idViTri, soLuong: value });
+                                                                        }
+                                                                        return { ...prev, [sp.idSanPham]: updated };
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
+
+
                                     </table>
                                 </div>
                             ))}

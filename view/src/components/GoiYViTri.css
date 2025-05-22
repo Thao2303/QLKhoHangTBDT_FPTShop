@@ -1,7 +1,7 @@
 ﻿.container {
    
     padding: 30px;
-    max-width: 900px;
+
     margin: auto;
     font-family: 'Segoe UI', sans-serif;
     background: #f9fbff;
@@ -74,3 +74,41 @@
     background-color: #fff8dc; /* vàng nhạt */
     border-left: 4px solid #f4c542;
 }
+
+/* === Breadcrumb === */
+.breadcrumb {
+    padding: 12px 24px;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+    .breadcrumb a {
+        color: #1d4ed8;
+        text-decoration: none;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+.breadcrumb-icon {
+    margin-right: 4px;
+}
+.product-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+    .product-header img {
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+    }

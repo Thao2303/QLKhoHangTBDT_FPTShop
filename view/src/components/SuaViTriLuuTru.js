@@ -10,85 +10,55 @@ const SuaViTriLuuTru = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState(state?.sanPhams || []);
     const [locations, setLocations] = useState([]);
-    const [sanPhamList, setSanPhamList] = useState([]);
-    const [danhMucList, setDanhMucList] = useState([]);
     const [luuTruData, setLuuTruData] = useState({});
     const [error, setError] = useState("");
     const [isEditable, setIsEditable] = useState(true);
 
+    // 1. Load danh sách vị trí
     useEffect(() => {
-        axios.get("https://localhost:5288/api/vitri").then(res => setLocations(res.data || []));
-        axios.get("https://localhost:5288/api/sanpham").then(res => setSanPhamList(res.data || []));
-        axios.get("https://localhost:5288/api/danhmuc").then(res => setDanhMucList(res.data || []));
+        axios.get("https://localhost:5288/api/vitri")
+            .then(res => setLocations(res.data || []))
+            .catch(() => setError("Không lấy được danh sách vị trí"));
     }, []);
 
+    // 2. Khi đã có vị trí và sản phẩm, mới chạy GA
     useEffect(() => {
-        if (state?.sanPhams?.length > 0 && locations.length > 0 && sanPhamList.length > 0 && danhMucList.length > 0) {
-            const danhMucMap = Object.fromEntries(
-                danhMucList.map((dm, index) => [dm.idDanhMuc, dm.zone || String.fromCharCode(65 + index)])
-            );
-
-            const enhancedProducts = state.sanPhams.map(sp => {
-                const match = sanPhamList.find(p => p.idSanPham === sp.idSanPham) || {};
-                return {
-                    ...sp,
-                    soLanNhap: match.soLanNhap || 0,
-                    soLanXuat: match.soLanXuat || 0,
-                    idDanhMuc: match.idDanhMuc || 0,
-                    zoneGoiY: danhMucMap[match.idDanhMuc] || 'Z'
-                };
-            });
-
+        if (state?.sanPhams?.length > 0 && locations.length > 0) {
             const fetchOldLuuTru = async () => {
                 const result = {};
-                const viTriUsage = {};
 
+                // 🎯 Load lại daDung dựa trên lưu trữ thật
+                const viTriUsage = {};
                 try {
                     const resLuuTru = await axios.get("https://localhost:5288/api/phieunhap/luu-tru");
                     for (const row of resLuuTru.data) {
                         if (!viTriUsage[row.idViTri]) viTriUsage[row.idViTri] = 0;
-                        const sp = enhancedProducts.find(p => p.idSanPham === row.idSanPham);
+                        const sp = state.sanPhams.find(p => p.idSanPham === row.idSanPham);
                         if (!sp) continue;
                         const vol = (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
                         viTriUsage[row.idViTri] += row.soLuong * vol;
                     }
-
-                    const resPhieuNhap = await axios.get("https://localhost:5288/api/phieunhap");
-                    const phieuChuaDuyet = resPhieuNhap.data.filter(p => p.trangThai === 1);
-                    const idPhieuKhac = phieuChuaDuyet
-                        .map(p => p.idPhieuNhap)
-                        .filter(id => !state.sanPhams.some(sp => sp.idPhieuNhap === id));
-
-                    const chiTietTam = [];
-                    for (let id of idPhieuKhac) {
-                        const ct = await axios.get(`https://localhost:5288/api/phieunhap/chitiet/${id}`);
-                        chiTietTam.push(...ct.data);
-                    }
-
-                    for (const row of chiTietTam) {
-                        if (!viTriUsage[row.idViTri]) viTriUsage[row.idViTri] = 0;
-                        const sp = enhancedProducts.find(p => p.idSanPham === row.idSanPham);
-                        if (!sp) continue;
-                        const vol = (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
-                        viTriUsage[row.idViTri] += row.soLuongThucNhap * vol;
-                    }
                 } catch (err) {
-                    console.error("❌ Lỗi khi tính daDung:", err);
+                    console.error("❌ Lỗi khi lấy dữ liệu ChiTietLuuTru:", err);
                 }
-
                 const updatedLocations = locations.map(loc => ({
                     ...loc,
                     daDung: viTriUsage[loc.idViTri] || 0
                 }));
 
-                for (let sp of enhancedProducts) {
+                for (let sp of state.sanPhams) {
                     try {
                         const res = await axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
                         const oldLuuTru = res.data || [];
                         const oldQty = oldLuuTru.reduce((sum, r) => sum + (r.soLuong || 0), 0);
                         const qtyDiff = sp.soLuong - oldQty;
 
-                        result[sp.idSanPham] = oldLuuTru.map(x => ({ viTri: x.idViTri, soLuong: x.soLuong }));
+                        console.log(`🔎 SP ${sp.tenSanPham || sp.idSanPham} | Cũ: ${oldQty} | Mới: ${sp.soLuong} | Diff: ${qtyDiff}`);
+
+                        result[sp.idSanPham] = oldLuuTru.map(x => ({
+                            viTri: x.idViTri,
+                            soLuong: x.soLuong
+                        }));
 
                         if (qtyDiff < 0) {
                             let remaining = sp.soLuong;
@@ -121,6 +91,7 @@ const SuaViTriLuuTru = () => {
                             if (extra[sp.idSanPham]) {
                                 const newRows = extra[sp.idSanPham].map(x => ({ ...x, tuGA: true }));
                                 result[sp.idSanPham] = [...result[sp.idSanPham], ...newRows];
+                                console.log("✨ Đề xuất thêm vị trí mới từ GA:", newRows);
                             }
                         }
                     } catch (err) {
@@ -133,7 +104,7 @@ const SuaViTriLuuTru = () => {
 
             fetchOldLuuTru();
         }
-    }, [state, locations, sanPhamList, danhMucList]);
+    }, [state, locations]);
 
     const handleChange = (idSanPham, index, field, value) => {
         setLuuTruData(prev => {
@@ -203,7 +174,7 @@ const SuaViTriLuuTru = () => {
                         </h3>
 
                         {(luuTruData[sp.idSanPham] || []).map((row, i) => (
-                            <div key={`${sp.idSanPham}-${i}`} className={`row ${row.tuGA ? 'highlight-ga' : ''}`}>
+                            <div key={`${sp.idSanPham}-${i}-${row.viTri || i}`} className={`row ${row.tuGA ? 'highlight-ga' : ''}`}>
                                 <select value={row.viTri} onChange={(e) => handleChange(sp.idSanPham, i, 'viTri', e.target.value)} className="select" disabled={!isEditable}>
                                     <option value="">--Chọn vị trí--</option>
                                     {locations.map(loc => (
