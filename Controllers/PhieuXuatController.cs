@@ -69,17 +69,30 @@ namespace QuanLyKhoHangFPTShop.Controllers
             }
             return Ok();
         }
+        [HttpGet("sanpham/danhmuc/{id}")]
+        public async Task<IActionResult> GetSanPhamTheoDanhMuc(int id)
+        {
+            var list = await _context.SanPham
+                .Where(sp => sp.idDanhMuc == id)
+                .ToListAsync();
+            return Ok(list);
+        }
+        [HttpGet("danhmuc")]
+        public async Task<IActionResult> GetDanhMuc()
+        {
+            var list = await _context.DanhMuc.ToListAsync();
+            return Ok(list);
+        }
 
         [HttpPost]
         public async Task<IActionResult> PostPhieuXuat([FromBody] PhieuXuatDTO dto)
         {
-            // Xoá cache EF để tránh lỗi duplicate tracking
             _context.ChangeTracker.Clear();
 
             var phieu = new PhieuXuat
             {
                 MaPhieu = "PX" + DateTime.Now.ToString("yyMMddHHmmss"),
-                NgayXuat = dto.NgayXuat,
+                NgayXuat = dto.NgayXuat.Date.Add(DateTime.Now.TimeOfDay),
                 GhiChu = dto.GhiChu,
                 NguoiXuat = dto.NguoiTao,
                 IdYeuCauXuatKho = dto.IdYeuCauXuatKho,
@@ -88,46 +101,53 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             foreach (var ct in dto.ChiTietPhieuXuats)
             {
+                if (ct == null || ct.IdSanPham <= 0 || ct.SoLuong <= 0)
+                    return BadRequest("Dữ liệu sản phẩm không hợp lệ.");
+
                 var sp = await _context.SanPham.FindAsync(ct.IdSanPham);
-                if (sp == null || sp.soLuongHienCon < ct.SoLuong)
-                    return BadRequest($"Sản phẩm ID {ct.IdSanPham} không đủ tồn kho.");
+                if (sp == null)
+                    return BadRequest($"Không tìm thấy sản phẩm ID {ct.IdSanPham}.");
+
+                if (sp.soLuongHienCon < ct.SoLuong)
+                    return BadRequest($"Sản phẩm ID {ct.IdSanPham} không đủ tồn kho (hiện còn {sp.soLuongHienCon}, cần {ct.SoLuong}).");
 
                 sp.soLuongHienCon -= ct.SoLuong;
 
+                // ❌ KHÔNG dùng idLoHang nữa, lấy bất kỳ bản ghi ChiTietLuuTru theo idSanPham + idViTri
                 var luuTru = await _context.ChiTietLuuTru
-                    .FirstOrDefaultAsync(l => l.idSanPham == ct.IdSanPham && l.idViTri == ct.IdViTri);
+                    .Where(l => l.idSanPham == ct.IdSanPham && l.idViTri == ct.IdViTri)
+                    .OrderBy(l => l.thoiGianLuu) // FIFO
+                    .FirstOrDefaultAsync();
 
-                if (luuTru != null)
-                    luuTru.soLuong -= ct.SoLuong;
+                if (luuTru == null)
+                    return BadRequest($"Không tìm thấy vị trí lưu trữ cho SP {ct.IdSanPham} - VT {ct.IdViTri}");
 
-                // Tạo đối tượng mới, KHÔNG gán IdPhieuXuat thủ công
-                var ctNew = new ChiTietPhieuXuat
+                luuTru.soLuong -= ct.SoLuong;
+
+                phieu.ChiTietPhieuXuats.Add(new ChiTietPhieuXuat
                 {
                     IdSanPham = ct.IdSanPham,
                     IdViTri = ct.IdViTri,
                     SoLuong = ct.SoLuong
-                };
-
-                phieu.ChiTietPhieuXuats.Add(ctNew);
+                });
             }
 
-            // Gán và lưu phiếu + chi tiết cùng lúc
             _context.PhieuXuat.Add(phieu);
             await _context.SaveChangesAsync();
 
-            // Cập nhật trạng thái yêu cầu xuất
-            var yc = await _context.YeuCauXuatKho.FindAsync(dto.IdYeuCauXuatKho);
-            if (yc != null)
+            // ✅ Cập nhật trạng thái yêu cầu
+            if (dto.IdYeuCauXuatKho != null && dto.IdYeuCauXuatKho > 0)
             {
-                yc.IdTrangThaiXacNhan = 3;
-                await _context.SaveChangesAsync();
+                var yc = await _context.YeuCauXuatKho.FindAsync(dto.IdYeuCauXuatKho);
+                if (yc != null)
+                {
+                    yc.IdTrangThaiXacNhan = 4; // ✅ Đã xuất kho
+                    await _context.SaveChangesAsync();
+                }
             }
 
             return Ok(phieu);
         }
-
-
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPhieuXuat(int id, PhieuXuat phieuXuat)
@@ -172,7 +192,6 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             return NoContent();
         }
-
         [HttpGet("vitri-sanpham/{id}")]
         public async Task<IActionResult> GetViTriTheoSanPham(int id)
         {

@@ -8,19 +8,27 @@ using QuanLyKhoHangFPTShop.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-
+using MailKit.Net.Smtp;
+using MimeKit;
+using Microsoft.AspNetCore.SignalR;
+using QuanLyKhoHangFPTShop.Hubs;
 namespace QLKhoHangFPTShop.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class TaiKhoanController : ControllerBase
     {
+        private readonly IConfiguration _config;
         private readonly WarehouseContext _context;
+        private readonly IHubContext<ThongBaoHub> _hubContext;
 
-        public TaiKhoanController(WarehouseContext context)
+        public TaiKhoanController(WarehouseContext context, IConfiguration config, IHubContext<ThongBaoHub> hubContext)
         {
             _context = context;
+            _config = config;
+            _hubContext = hubContext;
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -163,7 +171,89 @@ namespace QLKhoHangFPTShop.Controllers
                 taiKhoan.email,
                 taiKhoan.ChucVu.tenChucVu  // Trả về thông tin chức vụ
             });
+
         }
+
+        [HttpPost("quen-mat-khau")]
+        public async Task<IActionResult> QuenMatKhau([FromBody] string email)
+        {
+            var user = await _context.TaiKhoan.FirstOrDefaultAsync(t => t.email == email);
+            if (user == null) return NotFound("Email không tồn tại");
+
+            // Tạo mật khẩu mới
+            var newPassword = Guid.NewGuid().ToString().Substring(0, 8);
+            var hasher = new PasswordHasher<TaiKhoan>();
+            user.matKhau = hasher.HashPassword(user, newPassword);
+
+            await _context.SaveChangesAsync();
+
+            // (Optionally) Gửi mật khẩu mới qua email (nếu có SMTP)
+            return Ok(new { message = "✅ Mật khẩu đã được cập nhật", newPassword }); // Tạm thời trả về để xem
+        }
+        [HttpPost("dat-lai-mat-khau")]
+        public async Task<IActionResult> DatLaiMatKhau([FromBody] ResetPasswordRequest request)
+        {
+            var user = await _context.TaiKhoan.FirstOrDefaultAsync(t => t.resetToken == request.Token);
+            if (user == null || user.resetTokenExpiry < DateTime.Now)
+                return BadRequest("Token không hợp lệ hoặc đã hết hạn.");
+
+            var hasher = new PasswordHasher<TaiKhoan>();
+            user.matKhau = hasher.HashPassword(user, request.NewPassword);
+            user.resetToken = null;
+            user.resetTokenExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Mật khẩu đã được cập nhật thành công.");
+        }
+        [HttpPost("yeu-cau-reset-mat-khau")]
+        public async Task<IActionResult> YeuCauResetMatKhau([FromBody] string email)
+        {
+            var user = await _context.TaiKhoan.FirstOrDefaultAsync(t => t.email == email);
+            if (user == null)
+                return NotFound("Không tìm thấy email.");
+
+            user.resetToken = Guid.NewGuid().ToString();
+            user.resetTokenExpiry = DateTime.Now.AddMinutes(15);
+            await _context.SaveChangesAsync();
+
+            // Đọc từ cấu hình appsettings.json
+            var domain = _config["FrontendDomain"] ?? "http://localhost:3000";
+            var senderEmail = _config["Mail:Username"];
+            var senderPassword = _config["Mail:Password"];
+
+            var resetLink = $"{domain}/reset-password?token={user.resetToken}";
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("FPT Shop", senderEmail));
+            message.To.Add(new MailboxAddress("", user.email));
+            message.Subject = "Đặt lại mật khẩu - FPT Shop";
+
+            message.Body = new TextPart("plain")
+            {
+                Text = $"Chào {user.tenTaiKhoan},\n\nBạn đã yêu cầu đặt lại mật khẩu. Bấm vào link sau để đặt lại:\n{resetLink}\n\nLink có hiệu lực trong 15 phút."
+            };
+
+            using (var smtp = new SmtpClient())
+            {
+                await smtp.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(senderEmail, senderPassword);
+                await smtp.SendAsync(message);
+                await smtp.DisconnectAsync(true);
+            }
+
+            return Ok(new
+            {
+                message = "✅ Hướng dẫn đặt lại mật khẩu đã được gửi qua email."
+            });
+        }
+
+        public class ResetPasswordRequest
+        {
+            public string? Token { get; set; }
+            public string? NewPassword { get; set; }
+        }
+
 
 
     }

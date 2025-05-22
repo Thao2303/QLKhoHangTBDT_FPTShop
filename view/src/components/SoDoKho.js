@@ -1,15 +1,19 @@
-﻿// ✅ SƠ ĐỒ KHO - Hỗ trợ highlight vị trí theo sản phẩm
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Tooltip } from "react-tooltip";
 import "./SoDoKho.css";
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
+import ChiTietSanPhamViTri from "./ChiTietSanPhamViTri";
 
 const SoDoKho = ({ highlightedIds = [] }) => {
     const [vitri, setVitri] = useState([]);
     const [grouped, setGrouped] = useState({});
-    const [sanPhamTheoViTri, setSanPhamTheoViTri] = useState({});
+    const [filterDay, setFilterDay] = useState("");
+    const [filterTrangThai, setFilterTrangThai] = useState("");
+    const [searchMaViTri, setSearchMaViTri] = useState("");
+    const [popupViTri, setPopupViTri] = useState(null);
+    const [sanPhamPopup, setSanPhamPopup] = useState([]);
 
     useEffect(() => {
         axios.get("https://localhost:5288/api/vitri")
@@ -17,23 +21,14 @@ const SoDoKho = ({ highlightedIds = [] }) => {
                 setVitri(res.data || []);
                 const group = {};
                 (res.data || []).forEach(v => {
-                    if (!group[v.day]) group[v.day] = [];
-                    group[v.day].push(v);
+                    const d = v.day || v.tenDay;
+                    if (!d) return;
+                    if (!group[d]) group[d] = [];
+                    group[d].push(v);
                 });
                 setGrouped(group);
             })
             .catch(err => console.error("Lỗi lấy vị trí:", err));
-
-        axios.get("https://localhost:5288/api/phieunhap/luu-tru")
-            .then(res => {
-                const map = {};
-                (res.data || []).forEach(ct => {
-                    if (!map[ct.idViTri]) map[ct.idViTri] = [];
-                    map[ct.idViTri].push(ct);
-                });
-                setSanPhamTheoViTri(map);
-            })
-            .catch(err => console.error("Lỗi lấy chi tiết lưu trữ:", err));
     }, []);
 
     const getColor = (viTri) => {
@@ -44,35 +39,42 @@ const SoDoKho = ({ highlightedIds = [] }) => {
         return "red";
     };
 
-    const getTooltipContent = (viTri) => {
-        const products = sanPhamTheoViTri[viTri.idViTri] || [];
-        const percentUsed = ((viTri.daDung / viTri.sucChua) * 100).toFixed(1);
-
-        const groupedProducts = {};
-        for (const p of products) {
-            const key = p.idSanPham;
-            if (!groupedProducts[key]) {
-                groupedProducts[key] = {
-                    tenSanPham: p.sanPham?.tenSanPham || `SP #${p.idSanPham}`,
-                    soLuong: 0
-                };
-            }
-            groupedProducts[key].soLuong += p.soLuong;
+    const handleOpenPopup = async (viTri) => {
+        setPopupViTri(viTri);
+        try {
+            const res = await axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/vitri/${viTri.idViTri}`);
+            setSanPhamPopup(res.data || []);
+        } catch (err) {
+            console.error("Lỗi khi tải chi tiết sản phẩm vị trí:", err);
+            setSanPhamPopup([]);
         }
-
-        const productList = Object.values(groupedProducts)
-            .map(p => `<div class="tt-item"><span>${p.tenSanPham}</span><span>${p.soLuong}</span></div>`)
-            .join('');
-
-        return `
-        <div class="tt-wrapper">
-            <div class="tt-header"><strong>Dung tích:</strong> ${viTri.daDung}/${viTri.sucChua} cm³ (${percentUsed}%)</div>
-            ${productList ? `<div class="tt-body"><strong>SP lưu trữ:</strong>${productList}</div>` : ''}
-        </div>
-    `;
     };
 
     const sortByCotTang = (a, b) => a.cot - b.cot || a.tang - b.tang;
+
+    const filteredGrouped = Object.entries(grouped)
+        .filter(([day]) => !filterDay || day === filterDay)
+        .map(([day, items]) => [day, items.filter(v => {
+            if (filterTrangThai === "0") return v.trangThai === 0 || v.trangThai === "0";
+            if (filterTrangThai === "full") return v.daDung >= v.sucChua;
+            if (filterTrangThai === "partial") return v.daDung < v.sucChua;
+            if (searchMaViTri) {
+                const ma = `${v.day}-${v.cot}-${v.tang}`;
+                return ma.toLowerCase().includes(searchMaViTri.toLowerCase());
+            }
+            return true;
+        })]);
+
+    const matchedMaViTri = (v) => {
+        const ma = `${v.day}-${v.cot}-${v.tang}`;
+        const matchMa = searchMaViTri && ma.toLowerCase().includes(searchMaViTri.toLowerCase());
+        const matchDay = filterDay && v.day === filterDay;
+        const matchTrangThai = filterTrangThai === "0" ? (v.trangThai === 0 || v.trangThai === "0")
+            : filterTrangThai === "full" ? (v.daDung >= v.sucChua)
+                : filterTrangThai === "partial" ? (v.daDung < v.sucChua)
+                    : false;
+        return matchMa || matchDay || matchTrangThai;
+    };
 
     return (
         <div className="layout-wrapper">
@@ -80,57 +82,78 @@ const SoDoKho = ({ highlightedIds = [] }) => {
             <div className="content-area">
                 <div className="main-layout">
                     <div className="container" >
-                        <h2 style={{ textAlign: 'center', marginBottom: 30, color: '#333' }}>Sơ đồ kho hàng FPT Shop</h2>
-                    <Navbar />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div className="note-box">
-                            <h4>Ghi chú sơ đồ</h4>
-                            <div className="legend">
-                                <div><span className="green box" /> Còn &gt; 50%</div>
-                                <div><span className="lightblue box" /> Còn 20–50%</div>
-                                <div><span className="red box" /> Còn &lt; 20%</div>
-                            </div>
-                            <div style={{ textAlign: 'left', fontSize: 13 }}>
-                                <p><strong>Mã vị trí:</strong> A-1-1</p>
-                                <p><strong>Ý nghĩa:</strong> Dãy A - Cột 1 - Tầng 1</p>
-                            </div>
+
+                        <h1 className="title">SƠ ĐỒ KHO HÀNG FPT SHOP</h1>
+                        <Navbar />
+
+                        <div className="search-form">
+                            <input placeholder="Tìm mã vị trí (VD: A-1-1)" value={searchMaViTri} onChange={(e) => setSearchMaViTri(e.target.value)} className="search-input" />
+                            <select value={filterDay} onChange={(e) => setFilterDay(e.target.value)} className="filter-select">
+                                <option value="">-- Dãy --</option>
+                                {Object.keys(grouped).sort().map(d => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                            <select value={filterTrangThai} onChange={(e) => setFilterTrangThai(e.target.value)} className="filter-select">
+                                <option value="">-- Trạng thái --</option>
+                                <option value="partial">Còn trống</option>
+                                <option value="full">Đã đầy</option>
+                                <option value="0">Đã khoá</option>
+                            </select>
+                            <button className="reset-button" onClick={() => { setFilterDay(""); setFilterTrangThai(""); setSearchMaViTri(""); }}>🗑 Xoá lọc</button>
                         </div>
-                    </div>
-                    <div className="sodokho-container2" style={{ textAlign: 'center' }}>
-
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center'  // 👈 Căn giữa các khối
-                            }}
-                        >
-
-                            <div>
-                                <div className="area-label">Khu vực soạn hàng</div>
-                                <div className="kho-wrapper-horizontal">
-                                    {Object.entries(grouped).sort().map(([day, items], idx) => (
-                                        <div className="kho-row" key={idx}>
-                                            <div className="day-label">Dãy {day}</div>
-                                            <div className="kho-row-items">
-                                                {items.sort(sortByCotTang).map((vt, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className={`vitri-cell ${getColor(vt)} ${highlightedIds.includes(vt.idViTri) ? 'highlighted' : ''}`}
-                                                        data-tooltip-id={`tooltip-${vt.idViTri}`}
-                                                        data-tooltip-html={getTooltipContent(vt)}
-                                                    >
-                                                        {vt.day}-{vt.cot}-{vt.tang}
-                                                        <Tooltip id={`tooltip-${vt.idViTri}`} place="top" />
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
+                        <div className="so-do-wrapper" style={{ textAlign: 'center', marginTop: 10 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div className="note-box">
+                                <h4>Ghi chú sơ đồ</h4>
+                                <div className="legend">
+                                    <div><span className="green box" /> Còn &gt; 50%</div>
+                                    <div><span className="lightblue box" /> Còn 20–50%</div>
+                                    <div><span className="red box" /> Còn &lt; 20%</div>
+                                </div>
+                                <div style={{ textAlign: 'left', fontSize: 13 }}>
+                                        <p><strong>Mã vị trí:</strong>  A-1-1: Dãy A - Cột 1 - Tầng 1</p>
+                              
                                 </div>
                             </div>
                         </div>
-                        <div className="area-label">Khu vực hàng chờ xuất</div>
+                    
+                        <div className="sodokho-container2" style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <div>
+                                    <div className="area-label">Khu vực soạn hàng</div>
+                                    <div className="kho-wrapper-horizontal">
+                                        {filteredGrouped.map(([day, items], idx) => (
+                                            <div className="kho-row" key={idx}>
+                                                <div className="day-label">Dãy {day}</div>
+                                                <div className="kho-row-items">
+                                                    {items.sort(sortByCotTang).map((vt, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className={`vitri-cell ${getColor(vt)} ${matchedMaViTri(vt) ? 'matched' : ''}`}
+                                                            onClick={() => handleOpenPopup(vt)}
+                                                        >
+                                                            {vt.day}-{vt.cot}-{vt.tang}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="area-label">Khu vực hàng chờ xuất</div>
+                        </div>
+
+                        {popupViTri && (
+                            <div className="popup-overlay">
+                                <div className="popup-box" style={{ margin: "auto" }}>
+                                    
+                                    <ChiTietSanPhamViTri danhSach={sanPhamPopup} viTri={popupViTri} onClose={() => setPopupViTri(null)} />
+                                </div>
+                            </div>
+                        )}
+
                     </div>
                 </div>
                 </div>

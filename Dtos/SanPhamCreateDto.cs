@@ -22,6 +22,8 @@
         public decimal? chieuDai { get; set; }
         public decimal? chieuRong { get; set; }
         public decimal? chieuCao { get; set; }
+        public string? hinhAnh { get; set; }
+
     }
 
 

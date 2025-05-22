@@ -18,14 +18,19 @@ namespace QuanLyKhoHangFPTShop.Models
     public class ChiTietDto
     {
         public int product { get; set; }
-
         public int quantity { get; set; }        // số lượng theo chứng từ
         public int realQuantity { get; set; }    // số lượng thực nhập
-
         public decimal unitPrice { get; set; }
+        public string? note { get; set; }
+        public string? nguoiGiaoHang { get; set; }
 
-        public string? note { get; set; }        // ghi chú (có thể để trống)
-
-        public string? nguoiGiaoHang { get; set; } // ✅ cho phép null để tránh lỗi validation
+        // ✅ Bổ sung danh sách vị trí lưu
+        public List<ViTriLuuDto>? positions { get; set; }
     }
+    public class ViTriLuuDto
+    {
+        public int idViTri { get; set; }
+        public int soLuong { get; set; }
+    }
+
 }

@@ -1,5 +1,4 @@
-﻿// ✅ QUẢN LÝ VỊ TRÍ - Giao diện đồng bộ như Quản lý phiếu nhập / tài khoản
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import axios from "axios";
 import DanhSachViTri from "./DanhSachViTri";
 import FormViTri from "./FormViTri";
@@ -8,6 +7,7 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Pagination from './Pagination';
 import "./QuanLyPhieuNhapKho.css";
+import "./popup-style.css";
 
 const QuanLyViTri = () => {
     const [danhSach, setDanhSach] = useState([]);
@@ -18,6 +18,7 @@ const QuanLyViTri = () => {
     const [sanPhamChiTiet, setSanPhamChiTiet] = useState([]);
     const [xemChiTietId, setXemChiTietId] = useState(null);
     const [isChiTietOpen, setIsChiTietOpen] = useState(false);
+    const [viTriChiTiet, setViTriChiTiet] = useState(null);
 
     const [searchMaViTri, setSearchMaViTri] = useState("");
     const [filterTrangThai, setFilterTrangThai] = useState("");
@@ -29,7 +30,12 @@ const QuanLyViTri = () => {
         setIsLoading(true);
         try {
             const res = await axios.get("https://localhost:5288/api/vitri");
-            setDanhSach(res.data);
+            const processed = res.data.map(vt => ({
+                ...vt,
+                idKhuVuc: vt.khuVuc?.idKhuVuc || ""
+            }));
+            setDanhSach(processed);
+
         } catch (err) {
             console.error("Lỗi tải vị trí:", err);
         } finally {
@@ -66,11 +72,16 @@ const QuanLyViTri = () => {
         setXemChiTietId(idViTri);
         setIsChiTietOpen(true);
         try {
-            const res = await axios.get(`https://localhost:5288/api/luutru/chitietluutru/vitri/${idViTri}`);
-            setSanPhamChiTiet(res.data);
+            const [spRes, vtRes] = await Promise.all([
+                axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/vitri/${idViTri}`),
+                axios.get(`https://localhost:5288/api/vitri/${idViTri}`)
+            ]);
+            setSanPhamChiTiet(spRes.data);
+            setViTriChiTiet(vtRes.data);
         } catch (err) {
-            console.error("Lỗi khi lấy sản phẩm trong vị trí:", err);
+            console.error("Lỗi khi lấy chi tiết vị trí hoặc sản phẩm:", err);
             setSanPhamChiTiet([]);
+            setViTriChiTiet(null);
         }
     };
 
@@ -90,6 +101,8 @@ const QuanLyViTri = () => {
         const matchDay = filterDay ? item.day?.toLowerCase().includes(filterDay.toLowerCase()) : true;
         return matchMaViTri && matchTrangThai && matchDay;
     });
+
+    const danhSachDay = [...new Set(danhSach.map(x => x.day))].sort();
 
     const indexOfLast = currentPage * itemsPerPage;
     const indexOfFirst = indexOfLast - itemsPerPage;
@@ -113,7 +126,12 @@ const QuanLyViTri = () => {
                                 <option value="Đã đầy">Đã đầy</option>
                                 <option value="Đã khoá">Đã khoá</option>
                             </select>
-                            <input placeholder="Dãy (A, B...)" value={filterDay} onChange={(e) => setFilterDay(e.target.value)} className="filter-select" />
+                            <select value={filterDay} onChange={(e) => setFilterDay(e.target.value)} className="filter-select">
+                                <option value="">-- Dãy --</option>
+                                {danhSachDay.map(d => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
                             <div style={{ display: "flex", gap: 10 }}>
                                 <button className="search-button">🔍 Tìm kiếm</button>
                                 <button className="reset-button" onClick={() => { setSearchMaViTri(""); setFilterTrangThai(""); setFilterDay(""); }}>🗑 Xóa lọc</button>
@@ -124,10 +142,32 @@ const QuanLyViTri = () => {
 
                         <DanhSachViTri
                             danhSach={currentData}
-                            handleEdit={(vt) => { setSelectedViTri(vt); setIsFormOpen(true); }}
+                            handleEdit={async (vt) => {
+                                try {
+                                    const res = await axios.get(`https://localhost:5288/api/vitri/${vt.idViTri}`);
+                                    const full = res.data;
+                                    const idKhuVuc = full.khuVuc?.idKhuVuc || "";
+                                    setSelectedViTri({ ...full, idKhuVuc });
+
+                                    setSelectedViTri(full);
+                                    setIsFormOpen(true);
+                                } catch (err) {
+                                    console.error("Không lấy được chi tiết vị trí:", err);
+                                }
+                            }}
+
                             setConfirmDelete={setConfirmDelete}
                             isLoading={isLoading}
                             onXemChiTiet={onXemChiTiet}
+                            renderStatus={(item) => {
+                                const tinhTrang = item.trangThai === 0
+                                    ? "Đã khoá"
+                                    : item.daDung >= item.sucChua
+                                        ? "Đã đầy"
+                                        : "Còn trống";
+                                const colorClass = tinhTrang === "Còn trống" ? "status-approved" : tinhTrang === "Đã đầy" ? "status-rejected" : "status-pending";
+                                return <span className={`status-badge ${colorClass}`}>{tinhTrang}</span>;
+                            }}
                         />
 
                         <Pagination
@@ -149,7 +189,7 @@ const QuanLyViTri = () => {
 
                 {confirmDelete && (
                     <div className="popup-overlay">
-                        <div className="popup-box">
+                        <div className="popup-box" style={{ margin: "auto" }}>
                             <p>Bạn có chắc chắn muốn xoá vị trí này?</p>
                             <div className="mt-4 flex justify-end gap-2">
                                 <button className="btn btn-cancel" onClick={() => setConfirmDelete(null)}>Huỷ</button>
@@ -161,14 +201,11 @@ const QuanLyViTri = () => {
 
                 {isChiTietOpen && (
                     <div className="popup-overlay">
-                        <div className="popup-box">
-                            <h2 className="text-xl font-semibold mb-4">📦 Sản phẩm trong vị trí #{xemChiTietId}</h2>
-                            <ChiTietSanPhamViTri danhSach={sanPhamChiTiet} />
-                            <div className="mt-4 text-right">
-                                <button onClick={() => setIsChiTietOpen(false)} className="btn btn-cancel">Đóng</button>
-                            </div>
+                   
+                        <ChiTietSanPhamViTri danhSach={sanPhamChiTiet} viTri={viTriChiTiet} onClose={() => setIsChiTietOpen(false)} />
+
                         </div>
-                    </div>
+                 
                 )}
             </div>
         </div>

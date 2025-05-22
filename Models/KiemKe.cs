@@ -20,7 +20,7 @@ namespace QuanLyKhoHangFPTShop.Models
         public DateTime thoiGianThucHien { get; set; } = DateTime.Now;
 
         public string? ghiChu { get; set; }
-
+        public int trangThai { get; set; } = 0;
         public ICollection<ChiTietKiemKe> ChiTietKiemKe { get; set; } = new List<ChiTietKiemKe>();
     }
 

@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import './FormTaoPhieuNhap.css';
-
+import { Link } from "react-router-dom";
+import { FaHome, FaFileAlt, FaPlus } from "react-icons/fa";
 const FormTaoYeuCauXuatKho = () => {
     const [danhMucList, setDanhMucList] = useState([]);
     const [donViTinhList, setDonViTinhList] = useState([]);
@@ -20,6 +21,8 @@ const FormTaoYeuCauXuatKho = () => {
     const [lyDoXuat, setLyDoXuat] = useState('');
     const [hinhThucXuat, setHinhThucXuat] = useState('');
     const [phuongThucVC, setPhuongThucVC] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [editIndex, setEditIndex] = useState(null);
 
     const navigate = useNavigate();
 
@@ -39,14 +42,38 @@ const FormTaoYeuCauXuatKho = () => {
     const handleThem = () => {
         if (!sanPham || !soLuong) return;
         const sp = sanPhamList.find(p => p.idSanPham.toString() === sanPham);
-        setDanhSachThem([...danhSachThem, {
+        const newSP = {
             idSanPham: sp.idSanPham,
             tenSanPham: sp.tenSanPham,
             soLuong: parseInt(soLuong)
-        }]);
+        };
+
+        if (isEditing && editIndex !== null) {
+            const updatedList = [...danhSachThem];
+            updatedList[editIndex] = newSP;
+            setDanhSachThem(updatedList);
+            setIsEditing(false);
+            setEditIndex(null);
+        } else {
+            if (danhSachThem.some(item => item.idSanPham === newSP.idSanPham)) {
+                alert("Sản phẩm đã có trong danh sách!");
+                return;
+            }
+            setDanhSachThem([...danhSachThem, newSP]);
+        }
+
         setSanPham('');
         setSoLuong('');
     };
+
+    const handleEdit = (index) => {
+        const item = danhSachThem[index];
+        setSanPham(item.idSanPham.toString());
+        setSoLuong(item.soLuong.toString());
+        setIsEditing(true);
+        setEditIndex(index);
+    };
+
 
     const generateMaPhieu = () => {
         const now = new Date();
@@ -70,6 +97,7 @@ const FormTaoYeuCauXuatKho = () => {
             hinhThucXuat,
             phuongThucVanChuyen: phuongThucVC,
             nguoiYeuCau: user?.tenNguoiDung || 'Ẩn danh',
+            idNguoiTao: user?.idTaiKhoan, // ✅ BỔ SUNG DÒNG NÀY
             maPhieu: generateMaPhieu(),
             ghiChu,
             chiTietYeuCauXuatKhos: danhSachThem.map(sp => ({
@@ -77,6 +105,7 @@ const FormTaoYeuCauXuatKho = () => {
                 soLuong: parseInt(sp.soLuong)
             }))
         };
+
 
         try {
             await axios.post(
@@ -95,8 +124,22 @@ const FormTaoYeuCauXuatKho = () => {
     return (
         <div className="layout-wrapper">
             <Sidebar />
-            <div className="content-area5">
+            <div className="content-area">
                 <Navbar />
+
+                <div className="breadcrumb">
+                    <Link to="/dashboard">
+                        <FaHome className="breadcrumb-icon" /> Trang chủ
+                    </Link>
+                    <span>/</span>
+                    <Link to="/quanlyphieuxuat">
+                        <FaFileAlt className="breadcrumb-icon" /> Quản lý yêu cầu xuất kho
+                    </Link>
+                    <span>/</span>
+                    <span>
+                        <FaPlus className="breadcrumb-icon" /> Tạo yêu cầu xuất kho
+                    </span>
+                </div>
                 <div className="form-container">
                     <h2>📦 Gửi Yêu Cầu Xuất Kho</h2>
                     <form onSubmit={handleSubmit} className="form-grid">
@@ -160,11 +203,13 @@ const FormTaoYeuCauXuatKho = () => {
 
                         
 
-                        <div className="form-actions">
-                            <button type="button" className="add-button" onClick={handleThem}>+ Thêm sản phẩm</button>
-                        </div>
+                        <div className="form-actions full-width">
+                            <button type="button" className="add-button" onClick={handleThem}>
+                                {isEditing ? "✔️ Cập nhật sản phẩm" : "+ Thêm sản phẩm"}
+                            </button>
 
-                        {danhSachThem.length > 0 && (
+                        </div>
+                     
                             <div className="added-products full-width">
                                 <h3>Danh sách sản phẩm đã thêm:</h3>
                                 <table>
@@ -177,14 +222,18 @@ const FormTaoYeuCauXuatKho = () => {
                                                 <td>{sp.tenSanPham}</td>
                                                 <td>{sp.soLuong}</td>
                                                 <td>
+                                                    <button type="button" onClick={() => handleEdit(i)}>✏️</button>
                                                     <button type="button" onClick={() => setDanhSachThem(prev => prev.filter(item => item.idSanPham !== sp.idSanPham))}>🗑</button>
                                                 </td>
+
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-                        )}
+                     
+
+                      
 
                         <div className="form-actions full-width">
                             <button type="submit" className="submit-button">📨 Gửi yêu cầu</button>

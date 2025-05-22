@@ -1,12 +1,10 @@
-﻿// ================================
-// 🔍 ga.worker.js (Nâng cấp gợi ý theo danh mục, nhập/xuất)
-// ================================
+﻿/* eslint-disable no-restricted-globals */
 
-/* eslint-disable no-restricted-globals */
-
+// GA Core
 function runGeneticAlgorithm(products, locations, generations = 30, populationSize = 20, oldPositions = {}) {
-    const getVolume = (sp) => (sp.chieuDai || 1) * (sp.chieuRong || 1) * (sp.chieuCao || 1);
-    const population = Array.from({ length: populationSize }, () => generateRandomSolution(products, locations, oldPositions));
+    const population = Array.from({ length: populationSize }, () =>
+        generateRandomSolution(products, locations, oldPositions)
+    );
 
     for (let g = 0; g < generations; g++) {
         population.sort((a, b) => fitness(b, products, locations, oldPositions) - fitness(a, products, locations, oldPositions));
@@ -23,6 +21,7 @@ function runGeneticAlgorithm(products, locations, generations = 30, populationSi
     return population[0];
 }
 
+// Tạo giải pháp ngẫu nhiên
 function generateRandomSolution(products, locations, oldPositions) {
     const solution = {};
     const used = {};
@@ -37,25 +36,18 @@ function generateRandomSolution(products, locations, oldPositions) {
 
         let targetZone = "";
         if (oldLocObjects.length > 0) {
-            targetZone = oldLocObjects[0].day.trim().toUpperCase();
+            targetZone = oldLocObjects[0].day?.trim().toUpperCase();
         }
 
         const remainingLocs = locations.filter(loc => !oldLocIds.includes(loc.idViTri));
 
         const sameZoneLocs = remainingLocs
-            .filter(loc => loc.day.trim().toUpperCase() === targetZone)
-            .sort((a, b) => {
-                if (a.cot !== b.cot) return a.cot - b.cot;
-                return a.tang - b.tang;
-            });
+            .filter(loc => loc.day?.trim().toUpperCase() === targetZone)
+            .sort((a, b) => a.cot - b.cot || a.tang - b.tang);
 
         const otherLocs = remainingLocs
-            .filter(loc => loc.day.trim().toUpperCase() !== targetZone)
-            .sort((a, b) => {
-                if (a.day !== b.day) return a.day.localeCompare(b.day);
-                if (a.cot !== b.cot) return a.cot - b.cot;
-                return a.tang - b.tang;
-            });
+            .filter(loc => loc.day?.trim().toUpperCase() !== targetZone)
+            .sort((a, b) => a.day.localeCompare(b.day) || a.cot - b.cot || a.tang - b.tang);
 
         const combined = [...oldLocObjects, ...sameZoneLocs, ...otherLocs];
 
@@ -78,6 +70,7 @@ function generateRandomSolution(products, locations, oldPositions) {
     return solution;
 }
 
+// Tính điểm fitness
 function fitness(solution, products, locations, oldPositions) {
     let totalUsed = 0, totalWaste = 0, bonus = 0;
     const locMap = Object.fromEntries(locations.map(l => [l.idViTri, l]));
@@ -94,11 +87,13 @@ function fitness(solution, products, locations, oldPositions) {
 
             const cap = (loc.sucChua || 0) - (loc.daDung || 0);
             const usedVol = qty * vol;
+
             totalUsed += usedVol;
             used[vt] = (used[vt] || 0) + usedVol;
             if (used[vt] > cap) totalWaste += used[vt] - cap;
 
             if ((oldPositions[sp.idSanPham] || []).includes(vt)) bonus += 10;
+
             if ((sp.soLanNhap || 0) > 10 && isNearReceivingArea(loc)) bonus += 5;
             if ((sp.soLanXuat || 0) > 10 && isNearShippingArea(loc)) bonus += 5;
             if (sp.zoneGoiY && loc.day === sp.zoneGoiY) bonus += 3;
@@ -108,14 +103,15 @@ function fitness(solution, products, locations, oldPositions) {
     return totalUsed - totalWaste + bonus;
 }
 
+// Ưu tiên khu vực
 function isNearReceivingArea(loc) {
-    return loc.day === 'A' || loc.cot <= 2;
+    return loc.khuVuc?.loaiKhuVuc === 'nhap';
 }
-
 function isNearShippingArea(loc) {
-    return loc.day === 'D' || loc.cot >= 8;
+    return loc.khuVuc?.loaiKhuVuc === 'xuat';
 }
 
+// Lai tạo
 function crossover(a, b) {
     const child = {};
     for (const key in a) {
@@ -124,6 +120,7 @@ function crossover(a, b) {
     return child;
 }
 
+// Worker
 self.onmessage = function (e) {
     const { products, locations, oldPositions } = e.data;
     try {

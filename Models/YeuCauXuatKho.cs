@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-
 public class YeuCauXuatKho
 {
     [Key]
@@ -33,6 +32,12 @@ public class YeuCauXuatKho
     [Column("phuongThucVanChuyen")]
     public string PhuongThucVanChuyen { get; set; }
 
+    [Column("idNguoiTao")]
+    public int idNguoiTao { get; set; }
+
+    [ForeignKey("idNguoiTao")]
+    public TaiKhoan? NguoiTao { get; set; }
+
     [Column("nguoiYeuCau")]
     public string NguoiYeuCau { get; set; }
 
@@ -56,4 +61,3 @@ public class YeuCauXuatKho
     [ForeignKey("IdDonViTinh")]
     public DonViTinh? DonViTinh { get; set; }
 }
-

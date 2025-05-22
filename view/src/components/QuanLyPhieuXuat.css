@@ -1,5 +1,5 @@
 ﻿.container {
-    padding: 0px;
+  
     background-color: #f8f9fa;
 }
 
@@ -86,63 +86,49 @@
     font-size: 16px;
     cursor: pointer;
     color: #dc3545;
+
 }
 
 /* 🔍 Form tìm kiếm */
 .search-form {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 ô: Mã, NCC, Trạng thái, Hành động */
     gap: 12px;
     padding: 15px;
-    background: #f8f9fc; /* Màu nền */
+    background: #f8f9fc;
     border-radius: 12px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 850px; /* Giới hạn chiều rộng */
+    width: 100%;
+    max-width: 850px;
     margin: auto;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+.search-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 
 
 /* Input và Select */
 .search-input, .filter-select {
-    padding: 12px 14px;
-    font-size: 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    outline: none;
-    background-color: #f5f5f5;
-    display: flex;
-    align-items: center;
-    width: 90%;
+    padding: 6px 10px;
+    font-size: 13px;
 }
 
 .date-input {
-    padding: 12px 14px;
-    font-size: 14px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    outline: none;
-    background-color: #f5f5f5;
-    display: flex;
-    align-items: center;
-    width: 40%;
+    padding: 6px 10px;
+    font-size: 13px;
 }
 
-/* Button tìm kiếm */
+
 .search-button, .reset-button {
-    padding: 12px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 120px;
-    transition: 0.3s;
+    padding: 8px 12px;
+    font-size: 13px;
+    max-width: 7px;
 }
+
 
 /* Màu nút tìm kiếm */
 .search-button {
@@ -319,4 +305,22 @@
     border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
+}
+.button-container {
+    display: flex;
+    justify-content: flex-end; /* ✅ đẩy qua phải */
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.sub-table th, .sub-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
 }

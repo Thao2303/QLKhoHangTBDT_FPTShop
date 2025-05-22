@@ -58,15 +58,16 @@ const Sidebar = () => {
                         <>
                             <MenuItem to="/dashboard" icon={<FaHome />} label="Dashboard" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlyphieunhap" icon={<FaClipboardList />} label="Quản lý nhập kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyyeucauxuat" icon={<FaClipboardList />} label="Gửi YC xuất kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyyeucauxuat" icon={<FaClipboardList />} label="Quản lý YC xuất kho" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlyphieuxuat" icon={<FaBoxOpen />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-tai-khoan" icon={<FaUsers />} label="Quản lý tài khoản" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyvitri" icon={<FaBoxes />} label="Quản lý vị trí" isCollapsed={isCollapsed} />
                             <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
                             <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm vị trí SP" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<FaClipboardList />} label="Yêu cầu kiểm kê" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-phieu-kiem-ke" icon={<FaWarehouse />} label="Phiếu kiểm kê" isCollapsed={isCollapsed} />
-                            <MenuItem to="/kiemke" icon={<FaWarehouse />} label="Kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<FaClipboardList />} label="Quản lý kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-ton-kho" icon={<FaWarehouse />} label="Tồn kho" isCollapsed={isCollapsed} />
+                       
+                            <MenuItem to="/quan-ly-vi-tri-san-pham" icon={<FaWarehouse />} label="Quản lý vị trí sản phẩm" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-tai-khoan" icon={<FaUsers />} label="Quản lý tài khoản" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyvitri" icon={<FaBoxes />} label="Quản lý vị trí" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlyncc" icon={<FaUsers />} label="Quản lý nhà cung cấp" isCollapsed={isCollapsed} />
                             <MenuItem to="/quanlydaily" icon={<FaUsers />} label="Quản lý đại lý" isCollapsed={isCollapsed} />
                             <MenuItem to="/quan-ly-san-pham" icon={<FaBoxOpen />} label="Quản lý sản phẩm" isCollapsed={isCollapsed} />
@@ -84,7 +85,7 @@ const Sidebar = () => {
                             <MenuItem to="/vitritrong" icon={<FaBoxes />} label="Vị trí trống" isCollapsed={isCollapsed} />
                             <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
                             <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm" isCollapsed={isCollapsed} />
-                            <MenuItem to="/kiemke" icon={<FaWarehouse />} label="Kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<FaClipboardList />} label="Quản lý kiểm kê" isCollapsed={isCollapsed} />
                         </>
                     )}
 

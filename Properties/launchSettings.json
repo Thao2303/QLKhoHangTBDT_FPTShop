@@ -1,5 +1,6 @@
 ﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
+
   "profiles": {
     "http": {
       "commandName": "Project",
@@ -22,6 +23,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+
     }
   }
 }

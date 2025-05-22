@@ -39,8 +39,10 @@ const TrangTimKiemSanPham = () => {
         axios.get(`https://localhost:5288/api/ChiTietLuuTru/chitietluutru/sanpham/${selectedSanPham}`)
             .then(res => {
                 console.log("✅ Dữ liệu trả về:", res.data); // Gỡ khi xong
-                setViTriCoSanPham(res.data);
-                setHighlightedIds([...new Set(res.data.map(item => item.idViTri))]);
+                const validItems = res.data.filter(item => item.soLuong > 0);
+                setViTriCoSanPham(validItems);
+                setHighlightedIds([...new Set(validItems.map(item => item.idViTri))]);
+
             })
 
             .then(res => {
@@ -106,7 +108,8 @@ const TrangTimKiemSanPham = () => {
                     <Navbar />
 
                     <div className="container" >
-                        <h2 style={{ textAlign: 'center', marginBottom: 30, color: '#333' }}>🔍 Tìm kiếm vị trí lưu trữ sản phẩm</h2>
+                        <h1 className="title">🔍 Tìm kiếm vị trí lưu trữ sản phẩm</h1>
+                      
 
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 16, marginBottom: 30 }}>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -177,7 +180,7 @@ const TrangTimKiemSanPham = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {viTriCoSanPham.map((item, index) => (
+                                            {viTriCoSanPham.filter(item => item.soLuong > 0).map((item, index) => (
                                             <tr key={index}>
                                                 <td style={{ border: '1px solid #ccc', padding: 10 }}>
                                                     {item.vitri && item.vitri.day && item.vitri.cot && item.vitri.tang
@@ -191,7 +194,8 @@ const TrangTimKiemSanPham = () => {
                                             <tr>
                                                 <td style={{ border: '1px solid #ccc', padding: 10, fontWeight: 'bold' }}>Tổng</td>
                                                 <td style={{ border: '1px solid #ccc', padding: 10, fontWeight: 'bold' }}>
-                                                    {viTriCoSanPham.reduce((sum, item) => sum + item.soLuong, 0)}
+                                                    {viTriCoSanPham.filter(item => item.soLuong > 0).reduce((sum, item) => sum + item.soLuong, 0)}
+
                                                 </td>
                                             </tr>
                                     </tbody>

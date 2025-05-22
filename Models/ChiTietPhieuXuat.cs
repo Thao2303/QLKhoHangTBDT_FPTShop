@@ -25,6 +25,6 @@ namespace QuanLyKhoHangFPTShop.Models
 
         [ForeignKey("IdViTri")]
         public ViTri? ViTri { get; set; }
-
+  
     }
 }

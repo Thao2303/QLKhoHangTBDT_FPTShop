@@ -1,8 +1,15 @@
-﻿// 📁 Pagination.js
-import React, { useState, useEffect } from "react";
-import "./Pagination.css"; // Đảm bảo đã tạo file CSS kèm theo nếu cần
+﻿import React, { useState, useEffect } from "react";
+import "./Pagination.css";
 
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+    const [goToValue, setGoToValue] = useState(currentPage);
+
+    useEffect(() => {
+        setGoToValue(currentPage);
+    }, [currentPage]);
+
+    if (totalPages <= 1) return null;
+
     const maxVisible = 2;
     let pages = [];
 
@@ -19,11 +26,12 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
         pages.push(totalPages);
     }
 
-    const [goToValue, setGoToValue] = useState(currentPage);
-
-    useEffect(() => {
-        setGoToValue(currentPage);
-    }, [currentPage]);
+    const handlePageInput = () => {
+        const val = parseInt(goToValue);
+        if (!isNaN(val) && val >= 1 && val <= totalPages) {
+            onPageChange(val);
+        }
+    };
 
     return (
         <div className="pagination-advanced">
@@ -31,10 +39,10 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
             {pages.map((p, i) =>
                 p === "..." ? (
-                    <span key={i} className="dots">...</span>
+                    <span key={`dots-${i}`} className="dots">...</span>
                 ) : (
                     <button
-                        key={p}
+                        key={`page-${p}`}
                         className={p === currentPage ? "active-page" : ""}
                         onClick={() => onPageChange(p)}
                     >
@@ -53,20 +61,8 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                     max={totalPages}
                     value={goToValue}
                     onChange={(e) => setGoToValue(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            const val = parseInt(goToValue);
-                            if (!isNaN(val) && val >= 1 && val <= totalPages) {
-                                onPageChange(val);
-                            }
-                        }
-                    }}
-                    onBlur={() => {
-                        const val = parseInt(goToValue);
-                        if (!isNaN(val) && val >= 1 && val <= totalPages) {
-                            onPageChange(val);
-                        }
-                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handlePageInput()}
+                    onBlur={handlePageInput}
                 />
             </div>
         </div>

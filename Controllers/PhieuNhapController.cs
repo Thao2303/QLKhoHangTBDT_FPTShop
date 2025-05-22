@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.Data;
 using QuanLyKhoHangFPTShop.Dtos;
+using QuanLyKhoHangFPTShop.Hubs;
 using QuanLyKhoHangFPTShop.Models;
 
 namespace QuanLyKhoHangFPTShop.Controllers
@@ -12,9 +14,12 @@ namespace QuanLyKhoHangFPTShop.Controllers
     {
         private readonly WarehouseContext _context;
 
-        public PhieuNhapController(WarehouseContext context)
+        private readonly IHubContext<ThongBaoHub> _hubContext;
+
+        public PhieuNhapController(WarehouseContext context, IHubContext<ThongBaoHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         [HttpGet("{id}")]
@@ -69,28 +74,27 @@ namespace QuanLyKhoHangFPTShop.Controllers
                 {
                     idTaiKhoan = dto.idTaiKhoan,
                     idNhaCungCap = dto.idNhaCungCap,
-                    ngayNhap = dto.ngayNhap
+                    ngayNhap = DateTime.Now
                 };
 
                 _context.PhieuNhap.Add(phieuNhap);
-                await _context.SaveChangesAsync(); // => để có idPhieuNhap
+                await _context.SaveChangesAsync(); // => lấy được idPhieuNhap
 
                 // 2. Tạo lô hàng tương ứng
                 var soLoTuDong = await TaoSoLoTuDong(dto.idNhaCungCap);
-
                 var loHang = new LoHang
                 {
-                    ngayNhapLo = dto.ngayNhap,
+                    ngayNhapLo = DateTime.Now,
                     idNhaCungCap = dto.idNhaCungCap,
                     idPhieuNhap = phieuNhap.idPhieuNhap,
                     trangThaiLoHang = 1,
-                    tenLo = soLoTuDong // ✅ Tự sinh
+                    tenLo = soLoTuDong
                 };
-                _context.LoHang.Add(loHang);
 
+                _context.LoHang.Add(loHang);
                 await _context.SaveChangesAsync();
 
-                // 3. Tạo các dòng chi tiết phiếu nhập
+                // 3. Tạo chi tiết phiếu nhập + chi tiết lưu trữ
                 foreach (var item in dto.products)
                 {
                     var chiTiet = new ChiTietPhieuNhap
@@ -107,23 +111,62 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
                     _context.ChiTietPhieuNhap.Add(chiTiet);
 
-                    // ✅ Cập nhật tồn kho
-                    var sp = await _context.SanPham.FindAsync(item.product);
-                    
+                    // ✅ Tạo các dòng ChiTietLuuTru từ item.positions
+                    if (item.positions != null && item.positions.Any())
+                    {
+                        foreach (var pos in item.positions)
+                        {
+                            var chiTietLuu = new ChiTietLuuTru
+                            {
+                                idSanPham = item.product,
+                                idViTri = pos.idViTri,
+                                soLuong = pos.soLuong,
+                                thoiGianLuu = DateTime.Now,
+                                idPhieuNhap = phieuNhap.idPhieuNhap
+                            };
+
+                            _context.ChiTietLuuTru.Add(chiTietLuu);
+                        }
+                    }
                 }
 
                 await _context.SaveChangesAsync();
+                // 🔔 Gửi thông báo tới tất cả Thủ kho
+                var thuKhos = await _context.TaiKhoan
+                    .Include(t => t.ChucVu)
+                    .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
+                    .ToListAsync();
+
+                foreach (var tk in thuKhos)
+                {
+                    var content = $"📥 Phiếu nhập mới #{phieuNhap.idPhieuNhap} từ người dùng {dto.idTaiKhoan}";
+
+                    await _hubContext.Clients.User(tk.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", new
+                        {
+                            idPhieuNhap = phieuNhap.idPhieuNhap,
+                            noiDung = content,
+                            ngayTao = DateTime.Now
+                        });
+
+                    _context.ThongBao.Add(new ThongBao
+                    {
+                        idNguoiNhan = tk.idTaiKhoan,
+                        noiDung = content,
+                        ngayTao = DateTime.Now,
+                        daXem = false
+                    });
+                }
 
                 return Ok(new { message = "Tạo phiếu nhập thành công", id = phieuNhap.idPhieuNhap });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Lỗi tạo phiếu nhập: " + ex.ToString());
+                Console.WriteLine("Lỗi tạo phiếu nhập: " + ex);
                 return StatusCode(500, new { error = ex.Message });
             }
-
-
         }
+
 
         [HttpPut("tuchoi/{id}")]
         public async Task<IActionResult> TuChoiPhieuNhap(int id)
@@ -210,6 +253,27 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
                 await _context.SaveChangesAsync();
                 await command.ExecuteNonQueryAsync();
+                var nguoiTao = await _context.PhieuNhap
+    .Include(p => p.TaiKhoan)
+    .Where(p => p.idPhieuNhap == id)
+    .Select(p => p.TaiKhoan)
+    .FirstOrDefaultAsync();
+
+                if (nguoiTao != null)
+                {
+                    var msg = $"✅ Phiếu nhập #{id} của bạn đã được duyệt.";
+
+                    await _hubContext.Clients.User(nguoiTao.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", msg);
+
+                    _context.ThongBao.Add(new ThongBao
+                    {
+                        idNguoiNhan = nguoiTao.idTaiKhoan,
+                        noiDung = msg,
+                        ngayTao = DateTime.Now,
+                        daXem = false
+                    });
+                }
 
                 return Ok(new { message = "✅ Đã duyệt, cập nhật tồn kho và vị trí thành công!" });
             }
@@ -229,14 +293,48 @@ namespace QuanLyKhoHangFPTShop.Controllers
             return Ok(new { trangThai = trangThai ?? 1 }); // 1 = chờ duyệt
         }
         [HttpGet("chitiet/{id}")]
-        public async Task<ActionResult<IEnumerable<ChiTietPhieuNhap>>> GetChiTietPhieuNhap(int id)
+        public async Task<ActionResult<IEnumerable<object>>> GetChiTietPhieuNhap(int id)
         {
-            return await _context.ChiTietPhieuNhap
-                .Where(ct => ct.idPhieuNhap == id)
-                .Include(ct => ct.SanPham)
-                .ToListAsync();
-        }
+            var chiTiet = await _context.ChiTietPhieuNhap
+     .Where(ct => ct.idPhieuNhap == id)
+     .Include(ct => ct.SanPham)
+     .Select(ct => new
+     {
+         ct.idPhieuNhap,
+         ct.idSanPham,
+         sanPham = new
+         {
+             ct.SanPham.tenSanPham,
+             ct.SanPham.idSanPham,
+             ct.SanPham.DanhMuc,
+             ct.SanPham.hinhAnh
+         },
+         nguoiGiao = ct.nguoiGiaoHang,
+         ct.soLuongTheoChungTu,
+         ct.soLuongThucNhap,
+         ct.donGia,
+         ct.tongTien,
 
+         viTri = _context.ChiTietLuuTru
+    .Where(l => l.idSanPham == ct.idSanPham && l.idPhieuNhap == id)
+             .Join(_context.ViTri,
+                 l => l.idViTri,
+                 v => v.IdViTri,
+                 (l, v) => new
+                 {
+                     v.IdViTri,
+                     v.Day,
+                     v.Cot,
+                     v.Tang,
+                     l.soLuong
+                 })
+             .ToList()
+     })
+     .ToListAsync();
+
+
+            return Ok(chiTiet);
+        }
 
 
         [HttpDelete("{id}")]
@@ -261,59 +359,58 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             return $"LO-{maNcc}-{ngay}-{stt:D2}";
         }
-
         [HttpPost("luu-vi-tri")]
         public async Task<IActionResult> LuuViTriLuuTru([FromBody] List<ChiTietLuuTruDto> ds)
         {
             if (ds == null || !ds.Any())
                 return BadRequest("❌ Payload gửi lên rỗng hoặc sai định dạng!");
 
-            // ✅ Xoá lưu trữ cũ trước khi thêm mới (áp dụng từng sản phẩm)
-            var idSanPhams = ds.Select(d => d.idSanPham).Distinct().ToList();
-            var oldRecords = await _context.ChiTietLuuTru
-                .Where(x => idSanPhams.Contains(x.idSanPham))
-                .ToListAsync();
-            _context.ChiTietLuuTru.RemoveRange(oldRecords);
-            await _context.SaveChangesAsync();
-
-            // ✅ Thêm mới lại toàn bộ
             foreach (var item in ds)
             {
+                if (item.idPhieuNhap == 0)
+                {
+                    return BadRequest("Thiếu idPhieuNhap trong chi tiết lưu trữ.");
+                }
+
                 var entity = new ChiTietLuuTru
                 {
                     idSanPham = item.idSanPham,
                     idViTri = item.idViTri,
                     soLuong = item.soLuong,
-                    thoiGianLuu = item.thoiGianLuu
+                    thoiGianLuu = item.thoiGianLuu,
+                    idPhieuNhap = item.idPhieuNhap // ✅ Gắn đúng phiếu
                 };
+
                 _context.ChiTietLuuTru.Add(entity);
             }
 
+
             await _context.SaveChangesAsync();
 
-            // ✅ Cập nhật lại daDung chính xác theo dữ liệu đã có
+            // ✅ Cập nhật lại daDung theo thực tế
             using var connection = _context.Database.GetDbConnection();
             await connection.OpenAsync();
             using var command = connection.CreateCommand();
 
             command.CommandText = @"
-                UPDATE V
-                SET V.daDung = T.tongTheTich
-                FROM ViTri V
-                JOIN (
-                    SELECT 
-                        C.idViTri,
-                        SUM(SP.chieuDai * SP.chieuRong * SP.chieuCao * C.soLuong) AS tongTheTich
-                    FROM ChiTietLuuTru C
-                    JOIN SanPham SP ON C.idSanPham = SP.idSanPham
-                    GROUP BY C.idViTri
-                ) T ON V.idViTri = T.idViTri;
-            ";
+        UPDATE V
+        SET V.daDung = T.tongTheTich
+        FROM ViTri V
+        JOIN (
+            SELECT 
+                C.idViTri,
+                SUM(SP.chieuDai * SP.chieuRong * SP.chieuCao * C.soLuong) AS tongTheTich
+            FROM ChiTietLuuTru C
+            JOIN SanPham SP ON C.idSanPham = SP.idSanPham
+            GROUP BY C.idViTri
+        ) T ON V.idViTri = T.idViTri;
+    ";
 
             await command.ExecuteNonQueryAsync();
 
-            return Ok(new { message = "✅ Lưu vào kho và cập nhật daDung thành công!" });
+            return Ok(new { message = "✅ Đã lưu và cập nhật dung tích thành công!" });
         }
+
         [HttpGet("luu-tru")]
         public async Task<IActionResult> GetChiTietLuuTru()
         {
@@ -342,10 +439,22 @@ namespace QuanLyKhoHangFPTShop.Controllers
 
             try
             {
-                phieuNhap.ngayNhap = dto.ngayNhap;
+                // ✅ Cập nhật ngày nhập mới
+                phieuNhap.ngayNhap = dto.ngayNhap ?? DateTime.Now;
 
+
+                // ✅ Xoá tất cả ChiTietLuuTru cũ thuộc phiếu này
+                var luuTruCu = await _context.ChiTietLuuTru
+                    .Where(x => x.idPhieuNhap == id)
+                    .ToListAsync();
+                _context.ChiTietLuuTru.RemoveRange(luuTruCu);
+
+                // ✅ Xoá toàn bộ chi tiết phiếu nhập cũ
                 _context.ChiTietPhieuNhap.RemoveRange(phieuNhap.ChiTietPhieuNhap);
 
+                await _context.SaveChangesAsync(); // Lưu lại các xoá trước
+
+                // ✅ Thêm lại chi tiết phiếu nhập mới
                 foreach (var ct in dto.chiTietPhieuNhaps)
                 {
                     Console.WriteLine($"➡️ Add CT: idSP={ct.idSanPham}, SL={ct.soLuong}, ĐG={ct.donGia}, GhiChu={ct.ghiChu}");
@@ -359,15 +468,17 @@ namespace QuanLyKhoHangFPTShop.Controllers
                         idSanPham = ct.idSanPham,
                         soLuongTheoChungTu = ct.soLuong,
                         soLuongThucNhap = ct.soLuong,
-                        donGia = ct.donGia,            // ✅ Không cần ép kiểu nữa
+                        donGia = ct.donGia,
                         tongTien = ct.soLuong * ct.donGia,
                         trangThai = 1,
-                        nguoiGiaoHang = ct.ghiChu ?? ""
+                     
+                        nguoiGiaoHang = ct.nguoiGiaoHang ?? ""
                     });
                 }
 
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Cập nhật phiếu nhập thành công!" });
+
+                return Ok(new { message = "✅ Cập nhật phiếu nhập thành công!" });
             }
             catch (Exception ex)
             {
@@ -382,8 +493,8 @@ namespace QuanLyKhoHangFPTShop.Controllers
                 Console.WriteLine("Chi tiết lỗi: " + ex.ToString());
                 return StatusCode(500, $"❌ Lỗi server: {ex.Message}");
             }
-
         }
+
 
     }
 }
