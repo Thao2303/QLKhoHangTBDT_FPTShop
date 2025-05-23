@@ -7,12 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="server\wwwroot\images\3bb6bc1c-60f5-4a65-87ef-c4b97fd191df.jpg" />
-    <Content Include="server\wwwroot\images\77aaceaf-ddb6-40d6-b6c7-3df2cafad6d4.png" />
-    <Content Include="server\wwwroot\images\c7471894-4fe6-4cb2-8c7c-604980ef9ec7.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MailKit" Version="4.12.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.4" />
@@ -30,8 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="server\wwwroot\" />
-    <Folder Include="server\Services\" />
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\" />
+    <Folder Include="Services\" />
     <Folder Include="view\src\imgs\" />
     <Folder Include="view\src\img\" />
     <Folder Include="view\src\styles\" />
