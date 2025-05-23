@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: qlkhohang-backend
+    env: docker
+    plan: free
+    dockerfilePath: server/Dockerfile
+    rootDir: server
+    autoDeploy: true
+    buildCommand: ""
+    startCommand: ""
+    envVars: []
