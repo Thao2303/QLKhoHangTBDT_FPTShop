@@ -3,7 +3,7 @@ services:
     name: qlkhohang-backend
     env: docker
     plan: free
-    dockerfilePath: Dockerfile
+    dockerfilePath: server/Dockerfile
     rootDir: server
     autoDeploy: true
     buildCommand: ""
