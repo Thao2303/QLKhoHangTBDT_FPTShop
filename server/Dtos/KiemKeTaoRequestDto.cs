@@ -34,10 +34,10 @@ namespace QuanLyKhoHangFPTShop.server.Dtos
         public int idNguoiThucHien { get; set; }
         public DateTime? ngayKiemKe { get; set; }
         public string? ghiChu { get; set; }
-        public List<ChiTietDto> chiTiet { get; set; } = new();
+        public List<ChiTietKiemKeTaoRequestDto> chiTiet { get; set; } = new();
     }
 
-    public class ChiTietDto
+    public class ChiTietKiemKeTaoRequestDto
     {
         public int idSanPham { get; set; }
         public int soLuongThucTe { get; set; }
