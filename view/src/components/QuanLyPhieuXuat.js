@@ -33,11 +33,11 @@ const QuanLyPhieuXuat = () => {
     const user = JSON.parse(localStorage.getItem("user"));
 
     const fetchData = async () => {
-        const res = await fetch("https://localhost:5288/api/phieuxuat");
+        const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat");
         const data = await res.json();
         setList(data);
 
-        const resDaiLy = await fetch("https://localhost:5288/api/daily");
+        const resDaiLy = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/daily");
         const daiLys = await resDaiLy.json();
         setDaiLyList(daiLys);
     };
@@ -66,7 +66,7 @@ const QuanLyPhieuXuat = () => {
 
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc muốn xóa phiếu xuất này không?")) {
-            await fetch(`https://localhost:5288/api/phieuxuat/${id}`, {
+            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${id}`, {
                 method: "DELETE",
             });
             fetchData();
@@ -74,7 +74,7 @@ const QuanLyPhieuXuat = () => {
     };
 
     const handleChonYeuCau = async (yc) => {
-        const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+        const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
         const chiTiet = await res.json();
         setPopupChonYC(false);
         setPopupYCChiTiet({ ...yc, chiTietYeuCauXuatKhos: chiTiet });

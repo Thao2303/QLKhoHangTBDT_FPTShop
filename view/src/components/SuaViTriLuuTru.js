@@ -16,7 +16,7 @@ const SuaViTriLuuTru = () => {
 
     // 1. Load danh sách vị trí
     useEffect(() => {
-        axios.get("https://localhost:5288/api/vitri")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
             .then(res => setLocations(res.data || []))
             .catch(() => setError("Không lấy được danh sách vị trí"));
     }, []);
@@ -30,7 +30,7 @@ const SuaViTriLuuTru = () => {
                 // 🎯 Load lại daDung dựa trên lưu trữ thật
                 const viTriUsage = {};
                 try {
-                    const resLuuTru = await axios.get("https://localhost:5288/api/phieunhap/luu-tru");
+                    const resLuuTru = await axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/luu-tru");
                     for (const row of resLuuTru.data) {
                         if (!viTriUsage[row.idViTri]) viTriUsage[row.idViTri] = 0;
                         const sp = state.sanPhams.find(p => p.idSanPham === row.idSanPham);
@@ -48,7 +48,7 @@ const SuaViTriLuuTru = () => {
 
                 for (let sp of state.sanPhams) {
                     try {
-                        const res = await axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
+                        const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
                         const oldLuuTru = res.data || [];
                         const oldQty = oldLuuTru.reduce((sum, r) => sum + (r.soLuong || 0), 0);
                         const qtyDiff = sp.soLuong - oldQty;
@@ -148,7 +148,7 @@ const SuaViTriLuuTru = () => {
         }
 
         try {
-            const res = await axios.post("https://localhost:5288/api/phieunhap/luu-vi-tri", payload);
+            const res = await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/luu-vi-tri", payload);
             alert("✅ " + res.data.message);
             navigate("/quanlyphieunhap");
         } catch (err) {

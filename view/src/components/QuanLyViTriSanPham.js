@@ -26,7 +26,7 @@ const QuanLyViTriSanPham = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get("https://localhost:5288/api/ChiTietLuuTru")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/ChiTietLuuTru")
             .then(res => setDanhSach(res.data))
             .catch(err => console.error("Lỗi tải danh sách vị trí:", err));
     }, []);
@@ -58,7 +58,7 @@ const QuanLyViTriSanPham = () => {
     const handleXoa = async (idViTri, idSanPham) => {
         if (!window.confirm("Xoá sản phẩm khỏi vị trí này?")) return;
         try {
-            await axios.delete(`https://localhost:5288/api/ChiTietLuuTru/${idViTri}/${idSanPham}`);
+            await axios.delete(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/ChiTietLuuTru/${idViTri}/${idSanPham}`);
             setDanhSach(prev => prev.filter(i => !(i.idViTri === idViTri && i.idSanPham === idSanPham)));
             alert("✅ Đã xoá khỏi vị trí");
         } catch (err) {

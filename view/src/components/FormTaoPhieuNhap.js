@@ -37,15 +37,15 @@ const FormTaoPhieuNhap = () => {
             setUsername(user.tenTaiKhoan);
         }
 
-        axios.get('https://localhost:5288/api/nhacungcap')
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/nhacungcap')
             .then(response => setSuppliersList(response.data))
             .catch(error => console.error("Lỗi khi lấy danh sách nhà cung cấp", error));
 
-        axios.get('https://localhost:5288/api/sanpham')
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham')
             .then(response => setProductsList(response.data))
             .catch(error => console.error("Lỗi khi lấy danh sách sản phẩm", error));
 
-        axios.get('https://localhost:5288/api/danhmuc')
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/danhmuc')
             .then(response => setCategoriesList(response.data))
             .catch(error => console.error("Lỗi khi lấy danh mục", error));
     }, []);
@@ -173,7 +173,7 @@ const FormTaoPhieuNhap = () => {
             }))
         };
 
-        axios.post('https://localhost:5288/api/phieunhap', phieuNhap)
+        axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap', phieuNhap)
             .then(res => {
                 alert(`✅ Đã tạo phiếu nhập\n👤 Người tạo: ${username}\n📦 Số lô: ${soLo}`);
                 const sanPhams = addedProducts.map(p => {

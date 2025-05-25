@@ -14,7 +14,7 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
     const [chucVus, setChucVus] = useState([]);
 
     useEffect(() => {
-        fetch("https://localhost:5288/api/chucvu")
+        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chucvu")
             .then((res) => res.json())
             .then((data) => setChucVus(data))
             .catch((err) => console.error("Lỗi lấy chức vụ:", err));
@@ -54,7 +54,7 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
         };
 
         try {
-            const response = await fetch(`https://localhost:5288/api/taikhoan${initialData ? '/' + initialData.id : ''}`, {
+            const response = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan${initialData ? '/' + initialData.id : ''}`, {
                 method: initialData ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
