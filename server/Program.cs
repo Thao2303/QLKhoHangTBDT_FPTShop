@@ -61,21 +61,19 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// ✅ Bật Swagger cho mọi môi trường
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Warehouse API V1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Warehouse API V1");
+    c.RoutePrefix = string.Empty;
+});
 
 app.UseCors("AllowFrontend");
-
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapHub<ThongBaoHub>("/hub/thongbao");
 app.UseStaticFiles();
 app.Run();
-builder.Logging.AddConsole();
+
