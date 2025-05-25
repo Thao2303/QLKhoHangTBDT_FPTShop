@@ -3,8 +3,8 @@ services:
     name: qlkhohang-backend
     env: docker
     plan: free
-    dockerfilePath: Dockerfile
-    rootDir: server
+    dockerfilePath: server/Dockerfile  # chỉ rõ Dockerfile ở đâu
+    rootDir: .                          # repo gốc, không phải "server"
     autoDeploy: true
     buildCommand: ""
     startCommand: ""
