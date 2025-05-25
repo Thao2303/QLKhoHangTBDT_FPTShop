@@ -12,7 +12,7 @@ const FormThucHienKiemKe = () => {
     const [phamChatOptions] = useState(["Tốt", "Hư hỏng", "Cần kiểm tra", "Mới"]);
 
     useEffect(() => {
-        axios.get(`https://localhost:5288/api/yeucaukiemke/${idYeuCauKiemKe}`)
+        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${idYeuCauKiemKe}`)
             .then(res => setData(res.data))
             .catch(() => alert("❌ Không tải được dữ liệu yêu cầu kiểm kê."));
     }, [idYeuCauKiemKe]);
@@ -74,7 +74,7 @@ const FormThucHienKiemKe = () => {
 
         if (!window.confirm("Bạn có chắc chắn muốn gửi phiếu kiểm kê?")) return;
         try {
-            await axios.post("https://localhost:5288/api/kiemke/tao", payload);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/tao", payload);
             alert("✅ Gửi phiếu kiểm kê thành công");
             navigate("/quan-ly-yeu-cau-kiem-ke");
         } catch (err) {

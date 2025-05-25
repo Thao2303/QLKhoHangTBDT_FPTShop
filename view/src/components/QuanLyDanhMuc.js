@@ -22,7 +22,7 @@ const QuanLyDanhMuc = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
     const navigate = useNavigate();
-    const API_URL = "https://localhost:5288/api/danhmuc";
+    const API_URL = "https://qlkhohangtbdt-fptshop-be2.onrender.com/api/danhmuc";
 
     const fetchDanhMuc = () => {
         fetch(API_URL)

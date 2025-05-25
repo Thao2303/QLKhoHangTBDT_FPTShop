@@ -8,7 +8,7 @@ const FormSuaYeuCauKiemKe = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch(`https://localhost:5288/api/yeucaukiemke/${id}`)
+        fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${id}`)
             .then((res) => res.json())
             .then((data) => setFormData(data))
             .catch((err) => console.error("Lỗi lấy yêu cầu:", err));
@@ -21,7 +21,7 @@ const FormSuaYeuCauKiemKe = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const res = await fetch(`https://localhost:5288/api/yeucaukiemke/${id}`, {
+        const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData)

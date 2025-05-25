@@ -12,7 +12,7 @@ const QuanLyPhieuKiemKe = () => {
 
     const fetchData = async () => {
         try {
-            const res = await axios.get("https://localhost:5288/api/kiemke")
+            const res = await axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke")
 
             setDsPhieu(res.data || []);
         } catch (err) {

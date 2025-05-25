@@ -19,7 +19,7 @@ const FormTaoPhieuXuat = () => {
 
     useEffect(() => {
         dsSanPham.forEach(sp => {
-            axios.get(`https://localhost:5288/api/phieuxuat/vitri-sanpham/${sp.idSanPham}`)
+            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/vitri-sanpham/${sp.idSanPham}`)
                 .then(res => {
                     const grouped = {};
 
@@ -101,9 +101,9 @@ const FormTaoPhieuXuat = () => {
         };
 
         try {
-            await axios.post("https://localhost:5288/api/phieuxuat/kiemtra-tonkho", chiTietPhieuXuats);
-            await axios.post("https://localhost:5288/api/phieuxuat", payload);
-            await axios.put(`https://localhost:5288/api/yeucauxuatkho/capnhattrangthai/${tuYeuCau.idYeuCauXuatKho}`);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/kiemtra-tonkho", chiTietPhieuXuats);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat", payload);
+            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/capnhattrangthai/${tuYeuCau.idYeuCauXuatKho}`);
 
             alert("✅ Phiếu xuất đã được tạo thành công!");
             navigate("/quanlyphieuxuat");

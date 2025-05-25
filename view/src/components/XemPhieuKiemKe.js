@@ -10,7 +10,7 @@ const XemPhieuKiemKe = () => {
     const [data, setData] = useState(null);
 
     useEffect(() => {
-        axios.get(`https://localhost:5288/api/kiemke/theo-yeucau/${idYeuCauKiemKe}`)
+        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/theo-yeucau/${idYeuCauKiemKe}`)
             .then(res => setData(res.data))
             .catch(() => alert("❌ Không thể tải phiếu kiểm kê."));
     }, [idYeuCauKiemKe]);
