@@ -1,13 +1,13 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+WORKDIR /app
 
-# Copy csproj file and restore
-COPY QuanLyKhoHangFPTShop.csproj .
+# Copy .csproj and restore
+COPY ./QuanLyKhoHangFPTShop.csproj ./
 RUN dotnet restore
 
-# Copy rest of the source code
-COPY . .
+# Copy everything else and publish
+COPY . ./
 RUN dotnet publish -c Release -o /app/out
 
 # Runtime image
