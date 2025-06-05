@@ -163,6 +163,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Include(y => y.DaiLy)
                 .Include(y => y.TrangThaiXacNhan)
                 .Include(y => y.NguoiTao)
+
                 .FirstOrDefaultAsync(y => y.IdYeuCauXuatKho == id);
 
             if (yeuCau == null)
@@ -182,12 +183,14 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         }
 
         [HttpGet("chitiet/{id}")]
-        public async Task<ActionResult<IEnumerable<ChiTietYeuCauXuatKho>>> GetChiTiet(int id)
+        public async Task<IActionResult> GetChiTiet(int id)
         {
-            return await _context.ChiTietYeuCauXuatKho
-                .Where(ct => ct.idYeuCauXuatKho == id)
-                .Include(ct => ct.SanPham)
+            var list = await _context.ChiTietYeuCauXuatKho
+                .Where(c => c.idYeuCauXuatKho == id)
+                .Include(c => c.SanPham) // ✅ Thêm dòng này
                 .ToListAsync();
+
+            return Ok(list);
         }
 
         // Lấy tất cả danh mục

@@ -20,6 +20,7 @@ namespace QuanLyKhoHangFPTShop.server.Data
         public DbSet<ChiTietLuuTru> ChiTietLuuTru { get; set; }
         public DbSet<LoHang> LoHang { get; set; }
         public DbSet<DonViTinh> DonViTinh { get; set; }
+        public DbSet<ViTriLuuTam> ViTriLuuTam { get; set; }
 
         public DbSet<ThongSoKyThuat> ThongSoKyThuat { get; set; }
         public DbSet<SanPham_ThongSo> SanPham_ThongSo { get; set; }

@@ -1,0 +1,249 @@
+﻿.navbar {
+
+
+
+    justify-content: space-between;
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    margin-left: 2.2%;
+    margin-right:2%;
+    right: 0;
+    z-index: 1000;
+}
+
+
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 100px;
+    margin-right: 20px;
+}
+
+.search-box {
+    display: block;
+    align-items: center;
+    background: white;
+    border-radius: 20px;
+    padding: 5px;
+    margin-left: 50px;
+}
+
+.search-icon {
+    color: gray;
+    margin-right: 5px;
+}
+
+.search-box input {
+    border: none;
+    outline: none;
+    width: 250px;
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.icon {
+    margin-right: 15px;
+    cursor: pointer;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-left: 30px;
+    margin-right: 100px;
+}
+
+.user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+/* Thêm vào Navbar.css */
+
+.notification-wrapper {
+    position: relative;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+}
+
+.notification-dropdown {
+    position: absolute;
+    right: 0;
+    top: 30px;
+    background: #fff;
+    border: 1px solid #ccc;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1000;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+    .notification-dropdown h4 {
+        margin-top: 0;
+        font-size: 16px;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+    }
+
+    .notification-dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .notification-dropdown li {
+        padding: 8px 10px;
+        border-bottom: 1px solid #f1f1f1;
+        cursor: pointer;
+    }
+
+        .notification-dropdown li.unread {
+            background-color: #f9f9f9;
+            font-weight: 600;
+        }
+
+        .notification-dropdown li.read {
+            background-color: #ffffff;
+            font-weight: 400;
+        }
+
+        .notification-dropdown li:hover {
+            background-color: #f1f1f1;
+        }
+
+        .notification-dropdown li small {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+    .notification-dropdown.styled-dropdown {
+        background: #fff;
+        border-radius: 6px;
+        width: 380px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding: 12px;
+        z-index: 1000;
+        position: absolute;
+        top: 100%;
+        right: 0;
+    }
+
+    .notification-dropdown h4 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+.tab-filter {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+    .tab-filter button {
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        background: #f8f8f8;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+
+        .tab-filter button:hover {
+            background: #e6e6e6;
+        }
+
+.noti-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.noti-item {
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: flex-start;
+}
+
+    .noti-item:hover {
+        background-color: #f3f3f3;
+    }
+
+    .noti-item.unread {
+        background-color: #fff7e6;
+        font-weight: bold;
+    }
+
+    .noti-item.read {
+        background-color: #f9f9f9;
+        color: #555;
+    }
+
+.noti-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.noti-text {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.noti-time {
+    font-size: 11px;
+    color: #888;
+}
+
+.noti-icon {
+    margin-right: 6px;
+}
+
+    .noti-icon.warning {
+        color: #f5a623;
+    }
+
+    .noti-icon.success {
+        color: #27ae60;
+    }
+
+    .noti-icon.danger {
+        color: #e74c3c;
+    }
+
+.no-thongbao {
+    font-size: 13px;
+    color: #888;
+    text-align: center;
+    margin-top: 10px;
+}

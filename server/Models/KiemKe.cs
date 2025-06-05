@@ -39,6 +39,7 @@ namespace QuanLyKhoHangFPTShop.server.Models
         public int soLuongTheoHeThong { get; set; }
 
         public string? phamChat { get; set; }
+        public string? ghiChu { get; set; }
 
         [NotMapped]
         public int chenhLech => soLuongThucTe - soLuongTheoHeThong;

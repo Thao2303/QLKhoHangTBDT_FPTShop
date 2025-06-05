@@ -35,6 +35,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     v.chieuDai,
                     v.chieuRong,
                     v.chieuCao,
+                    trangThai = v.TrangThai,
                     khuVuc = new
                     {
                         v.KhuVuc.idKhuVuc,

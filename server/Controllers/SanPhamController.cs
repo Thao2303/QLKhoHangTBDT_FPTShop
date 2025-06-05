@@ -29,6 +29,16 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             return Ok(list);
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<SanPham>> GetSanPham(int id)
+        {
+            var sp = await _context.SanPham.FindAsync(id);
+            if (sp == null)
+            {
+                return NotFound();
+            }
+            return sp;
+        }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SanPhamCreateDto dto)

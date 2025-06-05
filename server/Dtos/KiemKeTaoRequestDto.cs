@@ -40,8 +40,20 @@ namespace QuanLyKhoHangFPTShop.server.Dtos
     public class ChiTietKiemKeTaoRequestDto
     {
         public int idSanPham { get; set; }
-        public int soLuongThucTe { get; set; }
+        public int? soLuongThucTe { get; set; }
         public string? phamChat { get; set; }
         public int idViTri { get; set; }
+        public string? ghiChu { get; set; }
     }
+
+    public class ChiTietKiemKeDto
+    {
+        public int idSanPham { get; set; }
+        public int idViTri { get; set; }
+        public int? soLuongThucTe { get; set; }
+        public string phamChat { get; set; }
+        public string? ghiChu { get; set; }
+
+    }
+
 }

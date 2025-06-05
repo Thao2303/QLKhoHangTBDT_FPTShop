@@ -69,7 +69,6 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         {
             try
             {
-                // 1. Tạo phiếu nhập
                 var phieuNhap = new PhieuNhap
                 {
                     idTaiKhoan = dto.idTaiKhoan,
@@ -78,9 +77,8 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 };
 
                 _context.PhieuNhap.Add(phieuNhap);
-                await _context.SaveChangesAsync(); // => lấy được idPhieuNhap
+                await _context.SaveChangesAsync();
 
-                // 2. Tạo lô hàng tương ứng
                 var soLoTuDong = await TaoSoLoTuDong(dto.idNhaCungCap);
                 var loHang = new LoHang
                 {
@@ -94,48 +92,37 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 _context.LoHang.Add(loHang);
                 await _context.SaveChangesAsync();
 
-                // 3. Tạo chi tiết phiếu nhập + chi tiết lưu trữ
                 foreach (var item in dto.products)
                 {
+                    Console.WriteLine($"📦 Sản phẩm: {item.product}");
+                    Console.WriteLine("📌 Vị trí nhận được từ frontend:");
+                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(item.positions));
+
+                    var idViTriTam = item.positions != null && item.positions.Count > 0 ? item.positions[0].idViTri : (int?)null;
+
                     var chiTiet = new ChiTietPhieuNhap
                     {
                         idPhieuNhap = phieuNhap.idPhieuNhap,
                         idSanPham = item.product,
-                        donGia = item.unitPrice,
                         tongTien = item.unitPrice * item.realQuantity,
                         soLuongTheoChungTu = item.quantity,
                         soLuongThucNhap = item.realQuantity,
                         trangThai = 1,
+                        donGia = item.unitPrice,
                         nguoiGiaoHang = item.nguoiGiaoHang
                     };
 
+
                     _context.ChiTietPhieuNhap.Add(chiTiet);
-
-                    // ✅ Tạo các dòng ChiTietLuuTru từ item.positions
-                    if (item.positions != null && item.positions.Any())
-                    {
-                        foreach (var pos in item.positions)
-                        {
-                            var chiTietLuu = new ChiTietLuuTru
-                            {
-                                idSanPham = item.product,
-                                idViTri = pos.idViTri,
-                                soLuong = pos.soLuong,
-                                thoiGianLuu = DateTime.Now,
-                                idPhieuNhap = phieuNhap.idPhieuNhap
-                            };
-
-                            _context.ChiTietLuuTru.Add(chiTietLuu);
-                        }
-                    }
                 }
 
                 await _context.SaveChangesAsync();
-                // 🔔 Gửi thông báo tới tất cả Thủ kho
+
                 var thuKhos = await _context.TaiKhoan
                     .Include(t => t.ChucVu)
                     .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
                     .ToListAsync();
+
 
                 foreach (var tk in thuKhos)
                 {
@@ -146,7 +133,8 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         {
                             phieuNhap.idPhieuNhap,
                             noiDung = content,
-                            ngayTao = DateTime.Now
+                            ngayTao = DateTime.Now,
+                            lienKet = $"/quanlyphieunhap?focus={phieuNhap.idPhieuNhap}"
                         });
 
                     _context.ThongBao.Add(new ThongBao
@@ -226,38 +214,54 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     {
                         sp.soLuongHienCon += ct.soLuongThucNhap;
                     }
+
+                    var viTriTams = await _context.ViTriLuuTam
+     .Where(v => v.idPhieuNhap == id && v.idSanPham == ct.idSanPham)
+     .ToListAsync();
+
+                    foreach (var vt in viTriTams)
+                    {
+                        var chiTietLuu = new ChiTietLuuTru
+                        {
+                            idSanPham = vt.idSanPham,
+                            idViTri = vt.idViTri,
+                            soLuong = vt.soLuong,
+                            thoiGianLuu = DateTime.Now,
+                            idPhieuNhap = vt.idPhieuNhap
+                        };
+
+                        _context.ChiTietLuuTru.Add(chiTietLuu);
+                    }
+
                 }
 
-                // ✅ Lưu vị trí đã nhập trước đó (nếu có)
-                var viTriLuu = await _context.ChiTietLuuTru
-                    .Where(x => chiTietList.Select(ct => ct.idSanPham).Contains(x.idSanPham))
-                    .ToListAsync();
-
+                // Cập nhật daDung
                 using var connection = _context.Database.GetDbConnection();
                 await connection.OpenAsync();
                 using var command = connection.CreateCommand();
 
                 command.CommandText = @"
-                    UPDATE V
-                    SET V.daDung = T.tongTheTich
-                    FROM ViTri V
-                    JOIN (
-                        SELECT 
-                            C.idViTri,
-                            SUM(SP.chieuDai * SP.chieuRong * SP.chieuCao * C.soLuong) AS tongTheTich
-                        FROM ChiTietLuuTru C
-                        JOIN SanPham SP ON C.idSanPham = SP.idSanPham
-                        GROUP BY C.idViTri
-                    ) T ON V.idViTri = T.idViTri;
-                ";
+            UPDATE V
+            SET V.daDung = T.tongTheTich
+            FROM ViTri V
+            JOIN (
+                SELECT 
+                    C.idViTri,
+                    SUM(SP.chieuDai * SP.chieuRong * SP.chieuCao * C.soLuong) AS tongTheTich
+                FROM ChiTietLuuTru C
+                JOIN SanPham SP ON C.idSanPham = SP.idSanPham
+                GROUP BY C.idViTri
+            ) T ON V.idViTri = T.idViTri;
+        ";
 
                 await _context.SaveChangesAsync();
                 await command.ExecuteNonQueryAsync();
+
                 var nguoiTao = await _context.PhieuNhap
-    .Include(p => p.TaiKhoan)
-    .Where(p => p.idPhieuNhap == id)
-    .Select(p => p.TaiKhoan)
-    .FirstOrDefaultAsync();
+                    .Include(p => p.TaiKhoan)
+                    .Where(p => p.idPhieuNhap == id)
+                    .Select(p => p.TaiKhoan)
+                    .FirstOrDefaultAsync();
 
                 if (nguoiTao != null)
                 {
@@ -315,20 +319,32 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
          ct.donGia,
          ct.tongTien,
 
-         viTri = _context.ChiTietLuuTru
-    .Where(l => l.idSanPham == ct.idSanPham && l.idPhieuNhap == id)
-             .Join(_context.ViTri,
-                 l => l.idViTri,
-                 v => v.IdViTri,
-                 (l, v) => new
-                 {
-                     v.IdViTri,
-                     v.Day,
-                     v.Cot,
-                     v.Tang,
-                     l.soLuong
-                 })
-             .ToList()
+         viTri = (
+    from vt in _context.ChiTietLuuTru
+    where vt.idPhieuNhap == id && vt.idSanPham == ct.idSanPham
+    join v in _context.ViTri on vt.idViTri equals v.IdViTri
+    select new
+    {
+        v.IdViTri,
+        v.Day,
+        v.Cot,
+        v.Tang,
+        soLuong = vt.soLuong
+    }
+).Union(
+    from vt in _context.ViTriLuuTam
+    where vt.idPhieuNhap == id && vt.idSanPham == ct.idSanPham
+    join v in _context.ViTri on vt.idViTri equals v.IdViTri
+    select new
+    {
+        v.IdViTri,
+        v.Day,
+        v.Cot,
+        v.Tang,
+        soLuong = vt.soLuong
+    }
+).ToList()
+
      })
      .ToListAsync();
 
@@ -360,56 +376,33 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             return $"LO-{maNcc}-{ngay}-{stt:D2}";
         }
         [HttpPost("luu-vi-tri")]
-        public async Task<IActionResult> LuuViTriLuuTru([FromBody] List<ChiTietLuuTruDto> ds)
+        public async Task<IActionResult> LuuViTriTam([FromBody] List<ChiTietLuuTruDto> ds)
         {
             if (ds == null || !ds.Any())
-                return BadRequest("❌ Payload gửi lên rỗng hoặc sai định dạng!");
+                return BadRequest("Payload trống!");
 
+            int idPhieuNhap = ds.First().idPhieuNhap;
+
+            // Xoá vị trí tạm cũ
+            var old = await _context.ViTriLuuTam.Where(v => v.idPhieuNhap == idPhieuNhap).ToListAsync();
+            _context.ViTriLuuTam.RemoveRange(old);
+
+            // Thêm mới
             foreach (var item in ds)
             {
-                if (item.idPhieuNhap == 0)
+                _context.ViTriLuuTam.Add(new ViTriLuuTam
                 {
-                    return BadRequest("Thiếu idPhieuNhap trong chi tiết lưu trữ.");
-                }
-
-                var entity = new ChiTietLuuTru
-                {
+                    idPhieuNhap = item.idPhieuNhap,
                     idSanPham = item.idSanPham,
                     idViTri = item.idViTri,
-                    soLuong = item.soLuong,
-                    thoiGianLuu = item.thoiGianLuu,
-                    idPhieuNhap = item.idPhieuNhap // ✅ Gắn đúng phiếu
-                };
-
-                _context.ChiTietLuuTru.Add(entity);
+                    soLuong = item.soLuong
+                });
             }
 
-
             await _context.SaveChangesAsync();
-
-            // ✅ Cập nhật lại daDung theo thực tế
-            using var connection = _context.Database.GetDbConnection();
-            await connection.OpenAsync();
-            using var command = connection.CreateCommand();
-
-            command.CommandText = @"
-        UPDATE V
-        SET V.daDung = T.tongTheTich
-        FROM ViTri V
-        JOIN (
-            SELECT 
-                C.idViTri,
-                SUM(SP.chieuDai * SP.chieuRong * SP.chieuCao * C.soLuong) AS tongTheTich
-            FROM ChiTietLuuTru C
-            JOIN SanPham SP ON C.idSanPham = SP.idSanPham
-            GROUP BY C.idViTri
-        ) T ON V.idViTri = T.idViTri;
-    ";
-
-            await command.ExecuteNonQueryAsync();
-
-            return Ok(new { message = "✅ Đã lưu và cập nhật dung tích thành công!" });
+            return Ok(new { message = "✅ Đã lưu vị trí tạm thành công!" });
         }
+
 
         [HttpGet("luu-tru")]
         public async Task<IActionResult> GetChiTietLuuTru()
