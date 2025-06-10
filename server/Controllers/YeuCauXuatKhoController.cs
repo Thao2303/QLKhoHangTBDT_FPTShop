@@ -38,9 +38,10 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             await _context.SaveChangesAsync();
 
             var thuKhoList = await _context.TaiKhoan
-                .Include(t => t.ChucVu)
-                .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
-                .ToListAsync();
+     .Include(t => t.ChucVu)
+     .Where(t => t.ChucVu != null && t.ChucVu.tenChucVu == "Thủ kho")
+     .ToListAsync();
+
 
             Console.WriteLine($"🔎 Số tài khoản Thủ kho tìm được: {thuKhoList.Count}");
 

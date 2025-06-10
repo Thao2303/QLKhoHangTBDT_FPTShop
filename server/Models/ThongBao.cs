@@ -16,7 +16,7 @@ namespace QuanLyKhoHangFPTShop.server.Models
         public DateTime ngayTao { get; set; } = DateTime.Now;
 
         public bool daXem { get; set; } = false;
-
+        public string? lienKet { get; set; }
         [ForeignKey("TaiKhoan")]
         public int idNguoiNhan { get; set; }
 

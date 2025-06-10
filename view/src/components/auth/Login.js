@@ -38,7 +38,12 @@ const Login = () => {
 
             localStorage.setItem('user', JSON.stringify(userData));
 
-            window.location.href = "/dashboard";
+            if (userData.doiMatKhau) {
+                window.location.href = "/doi-mat-khau";
+            } else {
+                window.location.href = "/dashboard";
+            }
+
         } catch (err) {
             if (err.response && err.response.status === 401) {
                 setError(err.response.data);

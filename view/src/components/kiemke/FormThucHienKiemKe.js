@@ -13,6 +13,8 @@ const FormThucHienKiemKe = () => {
     const [data, setData] = useState(null);
     const [input, setInput] = useState({});
     const [phamChatOptions] = useState(["Tốt", "Hư hỏng", "Cần kiểm tra", "Mới"]);
+    const nguoiDung = JSON.parse(localStorage.getItem("user"));
+    const idNguoiThucHien = nguoiDung?.idTaiKhoan;
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -162,7 +164,7 @@ const FormThucHienKiemKe = () => {
 
         const payload = {
             idYeuCauKiemKe: data.idYeuCauKiemKe,
-            idNguoiThucHien: 1,
+            idNguoiThucHien: idNguoiThucHien,
             ngayKiemKe: new Date().toISOString(),
             ghiChu: data.ghiChu,
             chiTiet

@@ -37,6 +37,15 @@ const QuanLyPhieuKiemKe = () => {
             default: return "--";
         }
     };
+    const fetchChiTietPhieu = async (idKiemKe) => {
+        try {
+            const res = await axios.get(`https://localhost:5288/api/kiemke/${idKiemKe}`);
+            setPopupPhieu(res.data);
+        } catch (err) {
+            alert("Không thể tải chi tiết phiếu kiểm kê");
+            console.error(err);
+        }
+    };
 
     return (
         <div className="layout-wrapper">
@@ -76,7 +85,8 @@ const QuanLyPhieuKiemKe = () => {
                                     <td>{phieu.ghiChu || "--"}</td>
                                     <td><span className={`trangthai tt-${phieu.trangThai}`}>{getTrangThaiLabel(phieu.trangThai)}</span></td>
                                     <td>
-                                        <button onClick={() => setPopupPhieu(phieu)}>👁 Xem</button>
+                                        <button onClick={() => fetchChiTietPhieu(phieu.idKiemKe)}>👁 Xem</button>
+
                                     </td>
                                 </tr>
                             ))}
@@ -93,27 +103,32 @@ const QuanLyPhieuKiemKe = () => {
                                 <p><strong>Trạng thái:</strong> {getTrangThaiLabel(popupPhieu.trangThai)}</p>
 
                                 <table className="table" style={{ marginTop: 10 }}>
-                                    <thead>
-                                        <tr>
-                                            <th>Sản phẩm</th>
-                                            <th>Tồn hệ thống</th>
-                                            <th>Thực tế</th>
-                                            <th>Chênh lệch</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {(popupPhieu.chiTietPhieuKiemKes || []).map((ct, i) => (
-                                            <tr key={i}>
-                                                <td>{ct.tenSanPham || `SP#${ct.idSanPham}`}</td>
-
-                                                <td>{ct.soLuongHeThong}</td>
-                                                <td>{ct.soLuongThucTe}</td>
-                                                <td className={ct.soLuongThucTe !== ct.soLuongHeThong ? "text-red" : ""}>
-                                                    {ct.soLuongThucTe - ct.soLuongHeThong}
-                                                </td>
+                                        <thead>
+                                            <tr>
+                                                <th>Sản phẩm</th>
+                                                <th>Tồn hệ thống</th>
+                                                <th>Thực tế</th>
+                                                <th>Chênh lệch</th>
+                                                <th>Phẩm chất</th>
+                                                <th>Ghi chú</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
+                                        </thead>
+
+                                        <tbody>
+                                            {(popupPhieu.chiTietPhieuKiemKes || []).map((ct, i) => (
+                                                <tr key={i}>
+                                                    <td>{ct.tenSanPham || `SP#${ct.idSanPham}`}</td>
+                                                    <td>{ct.soLuongHeThong}</td>
+                                                    <td>{ct.soLuongThucTe}</td>
+                                                    <td className={ct.soLuongThucTe !== ct.soLuongHeThong ? "text-red" : ""}>
+                                                        {ct.soLuongThucTe - ct.soLuongHeThong}
+                                                    </td>
+                                                    <td>{ct.phamChat || "--"}</td>
+                                                    <td>{ct.ghiChu || "--"}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+
                                 </table>
 
                                 <button className="btn-close" onClick={() => setPopupPhieu(null)}>Đóng</button>

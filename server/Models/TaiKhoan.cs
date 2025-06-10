@@ -21,8 +21,8 @@ namespace QuanLyKhoHangFPTShop.server.Models
         [EmailAddress]
         public string email { get; set; }
 
-        public bool trangThai { get; set; } = true;
-
+        public bool? trangThai { get; set; } = true;
+        public bool? doiMatKhau { get; set; } = false;
         public DateTime ngayCap { get; set; }
 
         public int idChucVu { get; set; }

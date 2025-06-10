@@ -2,7 +2,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { utils, writeFile } from "xlsx";
-import '../common/ModalPopup/popup-style.css';
+import "../nhapkho/QuanLyPhieuNhapKho.css";
 
 const XemPhieuKiemKe = () => {
     const { idYeuCauKiemKe } = useParams();
@@ -36,89 +36,122 @@ const XemPhieuKiemKe = () => {
 
     if (!data) return null;
 
-    const groupByProduct = {};
-    (data.viTriSanPham || []).forEach(item => {
-        if (!groupByProduct[item.tenSanPham]) groupByProduct[item.tenSanPham] = [];
-        groupByProduct[item.tenSanPham].push(item);
-    });
+    const groupedSanPham = data.chiTietPhieuKiemKes.reduce((acc, curr) => {
+        const id = curr.idSanPham;
+        if (!acc[id]) {
+            acc[id] = {
+                idSanPham: id,
+                tenSanPham: curr.tenSanPham,
+                tongThucTe: 0,
+                tongHeThong: 0,
+                phamChat: [],
+                ghiChu: []
+            };
+        }
+        acc[id].tongThucTe += curr.soLuongThucTe || 0;
+        acc[id].tongHeThong += curr.soLuongTheoHeThong || 0;
+        if (curr.phamChat) acc[id].phamChat.push(curr.phamChat);
+        if (curr.ghiChu) acc[id].ghiChu.push(curr.ghiChu);
+        return acc;
+    }, {});
 
     return (
-        <div className="popup-overlay">
-            <div className="popup-box" style={{ maxWidth: 1200 }}>
-                <h1 className="title">📄 Phiếu kiểm kê #{data.idKiemKe}</h1>
-                <p><strong>📅 Ngày kiểm kê:</strong> {new Date(data.ngayKiemKe).toLocaleString()}</p>
-                <p><strong>👤 Người kiểm:</strong> {data.tenNguoiThucHien || data.nguoiKiemKe || "--"}</p>
-                <p><strong>🎯 Mục đích:</strong> {data.mucDich || "--"}</p>
-                <p><strong>📍 Vị trí kiểm kê:</strong> {data.viTriKiemKe || "--"}</p>
-                <p><strong>📝 Ghi chú:</strong> {data.ghiChu || "--"}</p>
-                <p><strong>📊 Trạng thái:</strong> ✅ Đã kiểm</p>
+        <div className="popup" style={{
+            zIndex: 9999,
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+        }}>
+            <div className="popup-inner" style={{
+                background: "#fff",
+                padding: 24,
+                borderRadius: 8,
+                width: "90%",
+                maxWidth: 1000,
+                maxHeight: "90vh",
+                overflowY: "auto"
+            }}>
+                <h3 style={{
+                    fontSize: 20,
+                    fontWeight: 600,
+                    borderBottom: "2px solid #ccc",
+                    paddingBottom: 6,
+                    marginBottom: 16
+                }}>📋 CHI TIẾT PHIẾU KIỂM KÊ #{data.idKiemKe}</h3>
 
-                <div className="table-scroll">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th rowSpan="2">STT</th>
-                                <th rowSpan="2">Sản phẩm</th>
-                                <th colSpan="2">Vị trí lưu trữ</th>
-                                <th rowSpan="2">Tồn hệ thống</th>
-                                <th rowSpan="2">Thực tế</th>
-                                <th rowSpan="2">Chênh lệch</th>
-                                <th rowSpan="2">Phẩm chất</th>
-                                <th rowSpan="2">Ghi chú</th>
-                            </tr>
-                            <tr>
-                                <th>Vị trí</th>
-                                <th>Số lượng</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.chiTietPhieuKiemKes.map((ct, idx) => {
-                                const posList = groupByProduct[ct.tenSanPham] || [];
-                                return posList.length > 0 ? (
-                                    posList.map((pos, i) => (
-                                        <tr key={`${idx}-${i}`}>
-                                            {i === 0 && (
-                                                <>
-                                                    <td rowSpan={posList.length}>{idx + 1}</td>
-                                                    <td rowSpan={posList.length}>{ct.tenSanPham}</td>
-                                                </>
-                                            )}
-                                            <td>{pos.viTri}</td>
-                                            <td>{pos.soLuongTaiViTri}</td>
-                                            {i === 0 && (
-                                                <>
-                                                    <td rowSpan={posList.length}>{ct.soLuongTheoHeThong}</td>
-                                                    <td rowSpan={posList.length}>{ct.soLuongThucTe}</td>
-                                                    <td rowSpan={posList.length} style={{ color: ct.soLuongThucTe !== ct.soLuongTheoHeThong ? "red" : undefined }}>
-                                                        {ct.soLuongThucTe - ct.soLuongTheoHeThong}
-                                                    </td>
-                                                    <td rowSpan={posList.length}>{ct.phamChat || "--"}</td>
-                                                    <td rowSpan={posList.length}>{ct.ghiChu || "--"}</td>
-                                                </>
-                                            )}
+                <div className="info-row"><label>👤 Người kiểm:</label> {data.tenNguoiThucHien || data.nguoiKiemKe || "--"}</div>
+                <div className="info-row"><label>📅 Ngày kiểm kê:</label> {new Date(data.ngayKiemKe).toLocaleString()}</div>
+                <div className="info-row"><label>🎯 Mục đích:</label> {data.mucDich || "--"}</div>
+                <div className="info-row"><label>📍 Vị trí kiểm kê:</label> {data.viTriKiemKe || "--"}</div>
+                <div className="info-row"><label>📝 Ghi chú:</label> {data.ghiChu || "--"}</div>
+                <div className="info-row"><label>📊 Trạng thái:</label> ✅ Đã kiểm</div>
+
+                <h4 style={{ color: "#c0392b", marginTop: 16 }}>📦 Danh sách sản phẩm kiểm kê:</h4>
+
+                <table className="sub-table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Vị trí</th>
+                            <th>Số lượng tại vị trí</th>
+                            <th>Tồn hệ thống</th>
+                            <th>Thực tế</th>
+                            <th>Chênh lệch</th>
+                            <th>Phẩm chất</th>
+                            <th>Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.values(groupedSanPham).map((ct) => {
+                            const posList = (data.viTriSanPham || []).filter(v => v.idSanPham === ct.idSanPham);
+                            return (
+                                <React.Fragment key={ct.idSanPham}>
+                                    {posList.length > 0 ? (
+                                        posList.map((pos, i) => (
+                                            <tr key={`${ct.idSanPham}-${i}`}>
+                                                {i === 0 && <td rowSpan={posList.length}>{ct.tenSanPham}</td>}
+                                                <td>{pos.viTri}</td>
+                                                <td>{pos.soLuongTaiViTri}</td>
+                                                {i === 0 && (
+                                                    <>
+                                                        <td rowSpan={posList.length}>{ct.tongHeThong}</td>
+                                                        <td rowSpan={posList.length}>{ct.tongThucTe}</td>
+                                                        <td rowSpan={posList.length} style={{ color: ct.tongThucTe !== ct.tongHeThong ? "red" : undefined }}>
+                                                            {ct.tongThucTe - ct.tongHeThong}
+                                                        </td>
+                                                        <td rowSpan={posList.length}>{ct.phamChat.join(", ") || "--"}</td>
+                                                        <td rowSpan={posList.length}>{ct.ghiChu.join(" | ") || "--"}</td>
+                                                    </>
+                                                )}
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td>{ct.tenSanPham}</td>
+                                            <td colSpan={2}><em>Không có vị trí</em></td>
+                                            <td>{ct.tongHeThong}</td>
+                                            <td>{ct.tongThucTe}</td>
+                                            <td style={{ color: "red" }}>{ct.tongThucTe - ct.tongHeThong}</td>
+                                            <td>{ct.phamChat.join(", ") || "--"}</td>
+                                            <td>{ct.ghiChu.join(" | ") || "--"}</td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr key={idx}>
-                                        <td>{idx + 1}</td>
-                                        <td>{ct.tenSanPham}</td>
-                                        <td colSpan="2"><em>Không có vị trí</em></td>
-                                        <td>{ct.soLuongTheoHeThong}</td>
-                                        <td>{ct.soLuongThucTe}</td>
-                                        <td style={{ color: "red" }}>{ct.soLuongThucTe - ct.soLuongTheoHeThong}</td>
-                                        <td>{ct.phamChat || "--"}</td>
-                                        <td>{ct.ghiChu || "--"}</td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                    </tbody>
+                </table>
 
-                <div style={{ display: 'flex', gap: '10px', marginTop: 16 }}>
-                    <button onClick={handlePrint} className="btn">🖨 In</button>
-                    <button onClick={handleExport} className="btn">📥 Xuất Excel</button>
-                    <button onClick={() => navigate("/quan-ly-yeu-cau-kiem-ke")} className="btn">Đóng</button>
+                <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
+                    <button onClick={handlePrint} className="search-button">🖨 In</button>
+                    <button onClick={handleExport} className="reset-button">📥 Xuất Excel</button>
+                    <button onClick={() => navigate("/quan-ly-yeu-cau-kiem-ke")} className="reset-button">Đóng</button>
                 </div>
             </div>
         </div>

@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.server.Models;
 using QuanLyKhoHangFPTShop.server.Data;
 using QuanLyKhoHangFPTShop.server.Dtos;
+using Microsoft.AspNetCore.SignalR;
+using QuanLyKhoHangFPTShop.server.Hubs;
 
 namespace QuanLyKhoHangFPTShop.server.Controllers
 {
@@ -12,11 +14,14 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
     public class YeuCauKiemKeController : ControllerBase
     {
         private readonly WarehouseContext _context;
+        private readonly IHubContext<ThongBaoHub> _hubContext;
 
-        public YeuCauKiemKeController(WarehouseContext context)
+        public YeuCauKiemKeController(WarehouseContext context, IHubContext<ThongBaoHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -135,6 +140,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             _context.YeuCauKiemKe.Add(yeuCau);
             await _context.SaveChangesAsync();
 
+            // Thêm chi tiết yêu cầu
             foreach (var item in dto.chiTietYeuCau)
             {
                 var chiTiet = new ChiTietYeuCauKiemKe
@@ -145,8 +151,51 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 _context.ChiTietYeuCauKiemKe.Add(chiTiet);
             }
 
+            // Lấy danh sách người nhận
+            var danhSachTen = new List<string> { yeuCau.tenTruongBan, yeuCau.tenUyVien1, yeuCau.tenUyVien2 };
+
+            var nguoiNhans = await _context.TaiKhoan
+                .Where(tk => danhSachTen.Contains(tk.tenTaiKhoan))
+                .Select(tk => new { tk.idTaiKhoan, tk.tenTaiKhoan })
+                .ToListAsync();
+
+            // Gửi thông báo đến từng người
+            foreach (var nguoi in nguoiNhans.DistinctBy(x => x.idTaiKhoan))
+            {
+                string noiDung = $"📋 Bạn được phân công thực hiện kiểm kê: \"{yeuCau.mucDich}\" tại \"{yeuCau.viTriKiemKe}\".";
+                string lienKet = $"/thuc-hien-kiem-ke/{yeuCau.idYeuCauKiemKe}";
+
+                _context.ThongBao.Add(new ThongBao
+                {
+                    idNguoiNhan = nguoi.idTaiKhoan,
+                    noiDung = noiDung,
+                    ngayTao = DateTime.Now,
+                    daXem = false,
+                    lienKet = lienKet
+                });
+
+                await _hubContext.Clients.User(nguoi.idTaiKhoan.ToString()).SendAsync("NhanThongBao", new
+                {
+                    idThongBao = 0, // client có thể bỏ qua ID 0 nếu muốn
+                    noiDung = noiDung,
+                    ngayTao = DateTime.Now,
+                    lienKet = lienKet
+                });
+            }
+
             await _context.SaveChangesAsync();
             return Ok(new { message = "Tạo yêu cầu kiểm kê thành công", id = yeuCau.idYeuCauKiemKe });
+        }
+
+        [HttpGet("thongbao/nguoi/{idNguoiNhan}")]
+        public async Task<IActionResult> LayThongBaoTheoId(int idNguoiNhan)
+        {
+            var ds = await _context.ThongBao
+                .Where(tb => tb.idNguoiNhan == idNguoiNhan)
+                .OrderByDescending(tb => tb.ngayTao)
+                .ToListAsync();
+
+            return Ok(ds);
         }
 
         // PUT: api/yeucaukiemke/{id}

@@ -189,12 +189,20 @@ const FormTaoPhieuNhap = () => {
                         chieuCao: sp?.chieuCao || 1
                     };
                 });
-                axios.post('https://localhost:5288/api/thongbao', {
-                    tieuDe: "📥 Phiếu nhập mới",
-                    noiDung: `Phiếu nhập #${res.data.id} vừa được tạo bởi ${username}. Vui lòng kiểm tra và duyệt.`,
-                    idNguoiNhan: 2,  // 👈 thay bằng id thực tế
-                    lienKet: `/quanlyphieunhap`
-                });
+                axios.get('https://localhost:5288/api/taikhoan/thukho')
+                    .then(res2 => {
+                        const thuKhoList = res2.data;
+
+                        thuKhoList.forEach(nguoiNhan => {
+                            axios.post('https://localhost:5288/api/thongbao', {
+                                tieuDe: "📥 Phiếu nhập mới",
+                                noiDung: `Phiếu nhập #${res.data.id} vừa được tạo bởi ${username}. Vui lòng kiểm tra và duyệt.`,
+                                idNguoiNhan: nguoiNhan.idTaiKhoan,
+                                lienKet: `/quanlyphieunhap?focus=${res.data.id}`
+                            });
+                        });
+                    });
+
                 navigate('/goiyvitri', {
                     state: {
                         idPhieuNhap: res.data.id, // ✅ rất quan trọng!

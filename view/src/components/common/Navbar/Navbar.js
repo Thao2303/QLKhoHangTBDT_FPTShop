@@ -14,6 +14,7 @@ const Navbar = () => {
 
     const user = JSON.parse(localStorage.getItem("user"));
     const username = user ? user.tenTaiKhoan : "Người dùng";
+    const [showUserMenu, setShowUserMenu] = useState(false);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -37,6 +38,7 @@ const Navbar = () => {
                 idThongBao: message.idThongBao || Date.now(),
                 noiDung: message.noiDung || "📭 Không có nội dung",
                 ngayTao: new Date(message.ngayTao || Date.now()),
+                lienKet: message.lienKet || "",
                 daXem: false
             };
             setThongBaoList(prev => prev.some(tb => tb.noiDung === newNoti.noiDung) ? prev : [newNoti, ...prev]);
@@ -76,6 +78,15 @@ const Navbar = () => {
                 });
             }
         }
+        else if (noiDung.toLowerCase().includes("kiểm kê")) {
+            const match = noiDung.match(/#?(\d+)/); // nếu có mã ID
+            if (match) {
+                navigate("/thuc-hien-kiem-ke/" + match[1]); // hoặc đường dẫn của bạn
+            } else {
+                navigate("/quan-ly-yeu-cau-kiem-ke"); // fallback nếu không có id
+            }
+        }
+
     };
 
 
@@ -146,9 +157,19 @@ const Navbar = () => {
                 </div>
 
               
-                <div className="user-info">
-                    <span>{username}</span>
+                <div className="user-info" onClick={() => setShowUserMenu(!showUserMenu)}>
+                    <span>{username} <span className="arrow">&#9662;</span></span>
+                    {showUserMenu && (
+                        <div className="user-menu">
+                            <button onClick={() => navigate("/doi-mat-khau")}>Đổi mật khẩu</button>
+                            <button onClick={() => {
+                                localStorage.removeItem("user");
+                                navigate("/login");
+                            }}>Đăng xuất</button>
+                        </div>
+                    )}
                 </div>
+
             </div>
         </nav>
     );

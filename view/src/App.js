@@ -11,7 +11,7 @@ import FormTaoPhieuNhap from './components/nhapkho/FormTaoPhieuNhap';
 
 //Tài khoản
 import QuanLyTaiKhoan from './components/taikhoan/QuanLyTaiKhoan';
-
+import ConfirmAccount from './components/auth/ConfirmAccount'
 //Sơ đồ kho
 import SoDoKho from './components/sodokho/SoDoKho'; 
 
@@ -71,7 +71,7 @@ import ResetPassword from "./components/auth/ResetPassword";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import UnauthorizedPage from "./components/auth/UnauthorizedPage";
 import Login from "./components/auth/Login"; 
-
+import DoiMatKhauPage from "./components/auth/DoiMatKhau"
 import FormTaoPhieuXuatThuKho from './components/xuatkho/FormTaoPhieuXuatThuKho'
 
 //Dashboard
@@ -82,7 +82,10 @@ import DashboardSanPham from './components/dashboard/DashboardSanPham'
 import Dashboard from "./components/dashboard/Dashboard";
 
 
+
 const App = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
     return (
         <Router> 
             <Routes>
@@ -134,9 +137,10 @@ const App = () => {
                 <Route path="/quan-ly-dai-ly" element={<QuanLyDaiLy />} />
 
                 <Route path="quan-ly-ncc" element={<QuanLyNhaCungCap /> } />
-
+                <Route path="xac-nhan-tai-khoan" element={<ConfirmAccount /> } />
                 <Route path="/quan-ly-ton-kho" element={<QuanLyTonKho />} />
                 <Route path="/quan-ly-ton-theo-lo" element={<QuanLyTonTheoLo />} />
+                <Route path="/doi-mat-khau" element={<DoiMatKhauPage userId={user.idTaiKhoan} />} />
 
                 <Route path="/chuyen-vi-tri-san-pham" element={<ChuyenViTriSanPham />} />
                 <Route path="/quan-ly-vi-tri-san-pham" element={<QuanLyViTriSanPham />} />

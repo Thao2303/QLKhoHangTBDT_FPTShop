@@ -142,8 +142,10 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         idNguoiNhan = tk.idTaiKhoan,
                         noiDung = content,
                         ngayTao = DateTime.Now,
-                        daXem = false
+                        daXem = false,
+                        lienKet = $"/quanlyphieunhap?focus={phieuNhap.idPhieuNhap}" // ✅ Thêm đường dẫn
                     });
+
                 }
 
                 return Ok(new { message = "Tạo phiếu nhập thành công", id = phieuNhap.idPhieuNhap });

@@ -138,6 +138,8 @@ const QuanLyTonKho = () => {
                                     <th>Mã SP</th>
                                     <th>Danh mục</th>
                                     <th>Tên sản phẩm</th>
+                                    <th>Hình ảnh</th>
+
                                     <th>Thương hiệu</th>
                                     <th>Tồn hệ thống</th>
                                     <th>Tối thiểu</th>
@@ -151,16 +153,22 @@ const QuanLyTonKho = () => {
                                         <td>{sp.maSanPham}</td>
                                         <td>{sp.danhMuc}</td>
                                         <td style={{ whiteSpace: "pre-wrap", maxWidth: 250, wordWrap: "break-word" }}>{sp.tenSanPham}</td>
+                                      
+                                        <td>
+                                            {sp.hinhAnh ? (
+                                                <img
+                                                    src={sp.hinhAnh.startsWith("http") ? sp.hinhAnh : `https://localhost:5288${sp.hinhAnh}`}
+                                                    alt="ảnh"
+                                                    style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6 }}
+                                                />
+                                            ) : (
+                                                <span style={{ fontStyle: "italic", color: "#888" }}>Không có</span>
+                                            )}
+                                        </td>
                                         <td>{sp.thuongHieu}</td>
                                         <td>{sp.tonHeThong}</td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                value={sp.soLuongToiThieu}
-                                                onChange={(e) => handleUpdateSoLuongToiThieu(sp.idSanPham, e.target.value)}
-                                                style={{ width: 60 }}
-                                            />
-                                        </td>
+                                        <td>{sp.soLuongToiThieu}</td>
+                                       
                                         <td style={{ whiteSpace: "pre-wrap", maxWidth: 250, wordWrap: "break-word" }}>{sp.moTa}</td>
 
                                         <td>{getTrangThai(sp.tonHeThong, sp.soLuongToiThieu)}</td>

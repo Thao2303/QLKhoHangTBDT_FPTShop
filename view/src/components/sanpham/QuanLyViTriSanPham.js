@@ -22,7 +22,7 @@ const QuanLyViTriSanPham = () => {
     const [tangLoc, setTangLoc] = useState("");
     const [popup, setPopup] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 20;
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -104,7 +104,7 @@ const QuanLyViTriSanPham = () => {
 
                 <Navbar />
                 <div className="container">
-                    <h2>📦 Quản lý vị trí sản phẩm</h2>
+                    <h1 className="title">📦 Quản lý vị trí sản phẩm</h1>
 
                     <div className="search-form">
                         <input type="text" placeholder="Tìm theo tên sản phẩm" value={tuKhoa} onChange={(e) => setTuKhoa(e.target.value)} className="search-input" />
@@ -129,23 +129,31 @@ const QuanLyViTriSanPham = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedGroups.map((group) => (
-                                group.map((item, idx) => (
-                                    <tr key={`${item.idViTri}-${item.idSanPham}`}>
-                                        <td>{idx === 0 ? stt++ : ""}</td>
-                                        <td>{idx === 0 ? item.idSanPham : ""}</td>
-                                        <td>{idx === 0 ? item.tenSanPham : ""}</td>
-                                        <td>Dãy {item.day} - Cột {item.cot} - Tầng {item.tang}</td>
-                                        <td>{item.soLuong}</td>
+                            {paginatedGroups.map((group, index) => {
+                                const firstItem = group[0];
+                                const viTriText = group.map(item =>
+                                    `Dãy ${item.day} - Cột ${item.cot} - Tầng ${item.tang} (SL: ${item.soLuong})`
+                                ).join("<br/>");
+
+                                return (
+                                    <tr key={`group-${firstItem.idSanPham}`}>
+                                        <td>{stt++}</td>
+                                        <td>{firstItem.idSanPham}</td>
+                                        <td>{firstItem.tenSanPham}</td>
+                                        <td dangerouslySetInnerHTML={{ __html: viTriText }} />
+                                        <td>{group.reduce((sum, item) => sum + item.soLuong, 0)}</td>
                                         <td>
-                                            <button onClick={() => handleXem(item)}>🔍</button>
-                                            <button onClick={() => handleChuyen(item.idSanPham)}>✏️</button>
-                                            <button onClick={() => handleXoa(item.idViTri, item.idSanPham)}>🗑</button>
+                                            <button onClick={() => handleXem(firstItem)}>🔍</button>
+                                            <button onClick={() => handleChuyen(firstItem.idSanPham)}>✏️</button>
+                                            <button onClick={() => handleXoa(firstItem.idViTri, firstItem.idSanPham)}>🗑</button>
                                         </td>
+
                                     </tr>
-                                ))
-                            ))}
+                                );
+                            })}
                         </tbody>
+
+
                     </table>
 
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />

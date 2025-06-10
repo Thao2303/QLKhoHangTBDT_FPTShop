@@ -44,7 +44,12 @@ const QuanLyYeuCauXuatKho = () => {
     const fetchData = async () => {
         try {
             const res = await fetch("https://localhost:5288/api/yeucauxuatkho");
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Lỗi server: ${res.status} - ${text}`);
+            }
             const data = await res.json();
+
             setDanhSachYeuCau(data);
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu yêu cầu:", error);

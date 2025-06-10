@@ -16,6 +16,8 @@ const FormYeuCauKiemKePopup = ({ visible, onClose, onSubmit, initialData = null 
         tenUyVien1: "",
         tenUyVien2: ""
     });
+    const nguoiDung = JSON.parse(localStorage.getItem("user"));
+    const idNguoiThucHien = nguoiDung?.idTaiKhoan;
 
     useEffect(() => {
         axios.get("https://localhost:5288/api/kiemke/tonghop")
@@ -61,7 +63,7 @@ const FormYeuCauKiemKePopup = ({ visible, onClose, onSubmit, initialData = null 
         const payload = {
             ...form,
             trangThai: 0,
-            nguoiTao: 1,
+            nguoiTao: idNguoiThucHien,
             chiTietYeuCau: Array.from(selectedIds).map(id => ({ idSanPham: id }))
         };
 

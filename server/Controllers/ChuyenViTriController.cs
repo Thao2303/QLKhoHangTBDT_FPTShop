@@ -15,25 +15,36 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         {
             _context = context;
         }
-
         [HttpPost]
         public IActionResult ChuyenViTri([FromBody] ChuyenViTriDto dto)
         {
             if (dto.soLuong <= 0)
                 return BadRequest("Số lượng phải lớn hơn 0");
 
+            // 1) Lấy bản ghi ở vị trí cũ
             var viTriCu = _context.ChiTietLuuTru
                 .FirstOrDefault(x => x.idSanPham == dto.idSanPham && x.idViTri == dto.idViTriCu);
 
             if (viTriCu == null || viTriCu.soLuong < dto.soLuong)
                 return BadRequest("Không đủ số lượng ở vị trí cũ để chuyển");
 
-            // Trừ vị trí cũ
+            // 2) Trừ số lượng ở vị trí cũ
             viTriCu.soLuong -= dto.soLuong;
             if (viTriCu.soLuong == 0)
                 _context.ChiTietLuuTru.Remove(viTriCu);
 
-            // Cộng vị trí mới
+            // 3) Tính thể tích sản phẩm
+            decimal tongTheTich = 0;
+            var sanPham = _context.SanPham.FirstOrDefault(sp => sp.idSanPham == dto.idSanPham);
+            if (sanPham != null)
+            {
+                decimal theTichMotSP = (sanPham.chieuDai ?? 0)
+                                     * (sanPham.chieuRong ?? 0)
+                                     * (sanPham.chieuCao ?? 0);
+                tongTheTich = theTichMotSP * dto.soLuong;
+            }
+
+            // 4) Cộng số lượng vào vị trí mới
             var viTriMoi = _context.ChiTietLuuTru
                 .FirstOrDefault(x => x.idSanPham == dto.idSanPham && x.idViTri == dto.idViTriMoi);
 
@@ -48,30 +59,25 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     idSanPham = dto.idSanPham,
                     idViTri = dto.idViTriMoi,
                     soLuong = dto.soLuong,
-                    thoiGianLuu = DateTime.Now
+                    thoiGianLuu = DateTime.Now,
+                    idPhieuNhap = viTriCu.idPhieuNhap // ✅ đảm bảo không null
                 });
             }
 
-            // ✅ Cập nhật lại DaDung cho vị trí cũ và mới
-            var sanPham = _context.SanPham.FirstOrDefault(sp => sp.idSanPham == dto.idSanPham);
-            if (sanPham != null)
-            {
-                var theTichMotSP = (sanPham.chieuDai ?? 0) * (sanPham.chieuRong ?? 0) * (sanPham.chieuCao ?? 0);
-                var tongTheTich = theTichMotSP * dto.soLuong;
+            // 5) Cập nhật DaDung cho vị trí
+            var viTriEntityCu = _context.ViTri.FirstOrDefault(v => v.IdViTri == dto.idViTriCu);
+            if (viTriEntityCu != null)
+                viTriEntityCu.DaDung -= (int)Math.Ceiling((double)tongTheTich);
 
-                var viTriEntityCu = _context.ViTri.FirstOrDefault(v => v.IdViTri == dto.idViTriCu);
-                if (viTriEntityCu != null)
-                    viTriEntityCu.DaDung -= (int)Math.Ceiling(tongTheTich);
+            var viTriEntityMoi = _context.ViTri.FirstOrDefault(v => v.IdViTri == dto.idViTriMoi);
+            if (viTriEntityMoi != null)
+                viTriEntityMoi.DaDung += (int)Math.Ceiling((double)tongTheTich);
 
-                var viTriEntityMoi = _context.ViTri.FirstOrDefault(v => v.IdViTri == dto.idViTriMoi);
-                if (viTriEntityMoi != null)
-                    viTriEntityMoi.DaDung += (int)Math.Ceiling(tongTheTich);
-            }
-
+            // 6) Lưu thay đổi
             _context.SaveChanges();
+
             return Ok(new { message = "✅ Đã chuyển vị trí thành công" });
         }
 
     }
-
 }

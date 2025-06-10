@@ -1,5 +1,4 @@
-﻿// ✅ FormTaiKhoan.js - Popup chỉnh sửa tài khoản (dùng tenTaiKhoan thay hoTen, fix lỗi API)
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import './account-style.css';
 
 const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
@@ -10,8 +9,8 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
         idChucVu: '',
         ngayCap: ''
     });
-
     const [chucVus, setChucVus] = useState([]);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetch("https://localhost:5288/api/chucvu")
@@ -38,6 +37,7 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
                 ngayCap: new Date().toISOString().split("T")[0]
             });
         }
+        setError('');
     }, [initialData]);
 
     const handleChange = (e) => {
@@ -47,23 +47,35 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+
         const body = {
             ...formData,
             trangThai: true,
-            ngayCap: new Date(formData.ngayCap).toISOString().split("T")[0]
+            ngayCap: new Date(formData.ngayCap).toISOString()
         };
 
+        const url = `https://localhost:5288/api/taikhoan${initialData ? '/' + initialData.idTaiKhoan : ''}`;
+        const method = initialData ? 'PUT' : 'POST';
+
         try {
-            const response = await fetch(`https://localhost:5288/api/taikhoan${initialData ? '/' + initialData.id : ''}`, {
-                method: initialData ? 'PUT' : 'POST',
+            const response = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
             });
-            if (!response.ok) throw new Error('Lỗi khi gửi dữ liệu');
+
+            if (!response.ok) {
+                const errText = await response.text();
+                setError(errText || 'Lỗi không xác định từ server');
+                return;
+            }
+
             onSubmit(body);
+            onClose();
         } catch (err) {
-            alert('Lỗi khi lưu tài khoản');
             console.error(err);
+            setError('Không thể gửi dữ liệu. Vui lòng thử lại.');
         }
     };
 
@@ -74,18 +86,15 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
             <form className="popup-box" onSubmit={handleSubmit}>
                 <h2 className="popup-title">{initialData ? 'Chỉnh sửa' : 'Thêm'} tài khoản</h2>
 
+                {error && <div className="alert alert-error">{error}</div>}
+
                 <label>Tên tài khoản</label>
                 <input className="input" name="tenTaiKhoan" value={formData.tenTaiKhoan} onChange={handleChange} required />
 
                 <label>Email</label>
                 <input className="input" name="email" type="email" value={formData.email} onChange={handleChange} required />
 
-                {!initialData && (
-                    <>
-                        <label>Mật khẩu</label>
-                        <input className="input" name="matKhau" type="password" value={formData.matKhau} onChange={handleChange} required />
-                    </>
-                )}
+                
 
                 <label>Chức vụ</label>
                 <select className="input" name="idChucVu" value={formData.idChucVu} onChange={handleChange} required>
