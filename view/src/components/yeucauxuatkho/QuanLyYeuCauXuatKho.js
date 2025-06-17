@@ -13,7 +13,7 @@ import jsPDF from "jspdf";
 import * as XLSX from 'xlsx';
 import { saveAs } from "file-saver";
 import { useRef } from "react";
-
+import PrintableYeuCauXuat from "./PrintableYeuCauXuat";
 const removeVietnameseTones = (str) => {
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 };
@@ -163,52 +163,101 @@ const QuanLyYeuCauXuatKho = () => {
     const exportPDF = async () => {
         const element = exportRef.current;
 
-        if (!element) return alert("Không tìm thấy nội dung!");
+        if (!element) {
+            alert("Không tìm thấy nội dung cần in.");
+            return;
+        }
 
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false
-        });
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                logging: false
+            });
 
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "mm", "a4");
-        const width = pdf.internal.pageSize.getWidth();
-        const height = (canvas.height * width) / canvas.width;
+            const imgData = canvas.toDataURL("image/png", 1.0);
 
-        pdf.addImage(imgData, "PNG", 0, 0, width, height);
-        pdf.save(`yeu_cau_xuat_${popupData?.idYeuCauXuatKho || "phieu"}.pdf`);
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`yeu_cau_xuat_${popupData?.idYeuCauXuatKho || "phieu"}.pdf`);
+        } catch (error) {
+            console.error("❌ Lỗi khi xuất PDF:", error);
+            alert("Không thể tạo PDF. Vui lòng thử lại.");
+        }
     };
+
 
     const exportExcel = () => {
         const wb = XLSX.utils.book_new();
-
-        const header = [
+        const wsData = [
             ["FPT Shop"],
             ["PHIẾU YÊU CẦU XUẤT KHO"],
             [],
-            [`Mã yêu cầu: ${popupData.idYeuCauXuatKho}`],
-            [`Đại lý: ${popupData.daiLy?.tenDaiLy}`],
-            [`Ngày yêu cầu: ${popupData.ngayYeuCau}`],
-            [`Lý do xuất: ${popupData.lyDoXuat}`],
-            [`Hình thức: ${popupData.hinhThucXuat}`],
-            [`Vận chuyển: ${popupData.phuongThucVanChuyen}`],
-            [`Ghi chú: ${popupData.ghiChu || "Không có"}`],
+            [`Mã yêu cầu:`, popupData.idYeuCauXuatKho],
+            [`Đại lý:`, popupData.daiLy?.tenDaiLy],
+            [`Ngày yêu cầu:`, new Date(popupData.ngayYeuCau).toLocaleString()],
+            [`Lý do xuất:`, popupData.lyDoXuat || "Không có"],
+            [`Hình thức:`, popupData.hinhThucXuat || "Không có"],
+            [`Vận chuyển:`, popupData.phuongThucVanChuyen || "Không có"],
+            [`Ghi chú:`, popupData.ghiChu || "Không có"],
             [],
-            ["Tên SP", "Số lượng yêu cầu", "Tồn kho"]
+            ["STT", "Tên sản phẩm", "Số lượng yêu cầu", "Tồn kho", "Ghi chú"]
         ];
 
-        const rows = popupData.chiTietYeuCauXuatKhos.map(ct => [
-            ct.sanPham?.tenSanPham || `SP ${ct.idSanPham}`,
-            ct.soLuong,
-            tonKhoMap[ct.idSanPham]
-        ]);
+        const rows = popupData.chiTietYeuCauXuatKhos.map((ct, idx) => {
+            const ton = tonKhoMap[ct.idSanPham];
+            const ok = typeof ton === 'number' && ton >= ct.soLuong;
+            const ghiChu = ton === 'Lỗi' ? '⚠️ Không lấy được' : !ok ? 'Không đủ' : '✔️ Đủ';
 
-        const ws = XLSX.utils.aoa_to_sheet([...header, ...rows]);
-        XLSX.utils.book_append_sheet(wb, ws, "YeuCauXuat");
+            return [
+                idx + 1,
+                ct.sanPham?.tenSanPham || `SP ${ct.idSanPham}`,
+                ct.soLuong,
+                ton,
+                ghiChu
+            ];
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet([...wsData, ...rows]);
+
+        // Merge dòng tiêu đề
+        ws["!merges"] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } }
+        ];
+
+        // Set column width cho dễ đọc
+        ws["!cols"] = [
+            { wch: 5 },  // STT
+            { wch: 30 }, // Tên SP
+            { wch: 15 }, // Số lượng
+            { wch: 12 }, // Tồn kho
+            { wch: 20 }  // Ghi chú
+        ];
+
+        // Style: tô đậm tiêu đề
+        const boldCell = (cell) => {
+            if (!cell.s) cell.s = {};
+            cell.s.font = { bold: true };
+        };
+
+        boldCell(ws["A1"]);
+        boldCell(ws["A2"]);
+
+        for (let col = 0; col <= 4; col++) {
+            const colLetter = String.fromCharCode(65 + col); // A, B, C...
+            const headerCell = `${colLetter}${12}`; // Dòng tiêu đề table (dòng 13)
+            if (ws[headerCell]) boldCell(ws[headerCell]);
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, "YeuCauXuatKho");
         XLSX.writeFile(wb, `yeu_cau_xuat_${popupData.idYeuCauXuatKho}.xlsx`);
     };
+
 
     return (
         <div className="layout-wrapper">
@@ -218,7 +267,7 @@ const QuanLyYeuCauXuatKho = () => {
          
 
                 <div className="container">
-                    <h1 className="title">Quản lý yêu cầu xuất kho</h1>
+                    <h1 className="title">QUẢN LÝ YÊU CẦU XUẤT KHO</h1>
 
                     <div className="search-form">
                         <input
@@ -360,7 +409,7 @@ const QuanLyYeuCauXuatKho = () => {
                                 >
                                     ×
                                 </button>
-                                <h1 className="title">📄 Chi tiết yêu cầu #{popupData.idYeuCauXuatKho}</h1>
+                                <h1 className="title">📄 CHI TIẾT YÊU CẦU #{popupData.idYeuCauXuatKho}</h1>
                                
 
                                 <p><strong>🏢 Đại lý:</strong> {popupData.daiLy?.tenDaiLy}</p>
@@ -431,6 +480,12 @@ const QuanLyYeuCauXuatKho = () => {
                                     <button className="cancel-button" onClick={() => setPopupData(null)}>Đóng</button>
                                 </div>
                             </div>
+                            <div style={{ position: "absolute", left: "-9999px", top: "0" }}>
+                                <div ref={exportRef}>
+                                    <PrintableYeuCauXuat yeuCau={popupData} chiTiet={popupData.chiTietYeuCauXuatKhos} tonKhoMap={tonKhoMap} />
+                                </div>
+                            </div>
+
                         </div>
                     )}
 

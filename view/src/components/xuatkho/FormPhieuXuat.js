@@ -49,7 +49,7 @@ const FormPhieuXuat = ({ onCreated }) => {
 
     return (
         <div className="form-container">
-            <h2>Tạo Phiếu Xuất Kho</h2>
+            <h2>TẠO PHIẾU XUẤT KHO</h2>
             <div className="form-section">
                 <label>Yêu cầu xuất kho đã xác nhận</label>
                 <select value={selectedYC} onChange={(e) => handleSelectYeuCau(e.target.value)}>

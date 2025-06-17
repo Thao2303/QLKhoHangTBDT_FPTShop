@@ -47,9 +47,9 @@ const QuanLyPhieuNhapKho = () => {
     const exportRef = useRef();
     const [searchNguoiTao, setSearchNguoiTao] = useState("");
     const [selectedNguoiTao, setSelectedNguoiTao] = useState(null);
-
-    const queryParams = new URLSearchParams(location.search);
+       const queryParams = new URLSearchParams(location.search);
     const focusId = queryParams.get("focus");
+    const [internalFocusId, setInternalFocusId] = useState(focusId);
 
     useEffect(() => {
         fetch(`${API_BASE_URL}/phieunhap`)
@@ -76,6 +76,22 @@ const QuanLyPhieuNhapKho = () => {
                 .catch(console.error);
         }
     }, [location.search]);
+
+
+    useEffect(() => {
+        const idPhieu = location.state?.moPopupPhieuNhapId;
+        if (idPhieu) {
+            fetch(`${API_BASE_URL}/phieunhap/${idPhieu}`)
+                .then(res => res.json())
+                .then(phieu => {
+                    setPopupData(phieu);
+                    return fetch(`${API_BASE_URL}/phieunhap/chitiet/${idPhieu}`);
+                })
+                .then(res => res.json())
+                .then(setChiTietSanPham)
+                .catch(console.error);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         const idPhieu = location.state?.moPopupPhieuNhapId;
@@ -260,18 +276,7 @@ const QuanLyPhieuNhapKho = () => {
             const phieu = data.find(p => p.idPhieuNhap === id);
             const idNguoiTao = phieu?.idTaiKhoan;
 
-            if (idNguoiTao) {
-                await fetch(`${API_BASE_URL}/thongbao`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        tieuDe: "✅ Phiếu đã được duyệt",
-                        noiDung: `Phiếu nhập #${id} đã được duyệt.`,
-                        idNguoiNhan: idNguoiTao,
-                        lienKet: `/xem-phieu/${id}`
-                    })
-                });
-            }
+          
 
         } catch (error) {
             alert("❌ Duyệt thất bại!");
@@ -330,6 +335,26 @@ const QuanLyPhieuNhapKho = () => {
         }
     };
 
+    useEffect(() => {
+        const id = parseInt(focusId);
+        if (!id || !filteredPhieuNhaps.length) return;
+
+        const index = filteredPhieuNhaps.findIndex(p => p.idPhieuNhap === id);
+        if (index === -1) return;
+
+        const page = Math.floor(index / itemsPerPage) + 1;
+        setCurrentPage(page);
+        setInternalFocusId(focusId); // lưu lại để style dòng
+
+        // 🕒 Xoá focus khỏi URL sau 1 giây để không mất style liền
+        setTimeout(() => {
+            const newParams = new URLSearchParams(location.search);
+            newParams.delete("focus");
+            navigate(`${location.pathname}?${newParams.toString()}`, { replace: true });
+        }, 1000);
+    }, [focusId, filteredPhieuNhaps]);
+
+
     return (
         <div className="layout-wrapper">
             <Sidebar />
@@ -337,7 +362,7 @@ const QuanLyPhieuNhapKho = () => {
                 <div className="main-layout">
                     <Navbar />
                     <div className="container">
-                        <h1 className="title">✉️ Quản lý phiếu nhập kho</h1>
+                        <h1 className="title">✉️ QUẢN LÝ PHIẾU NHẬP KHO</h1>
 
                         <div className="search-form">
                             <input type="text" placeholder="Mã phiếu" value={searchMaPhieu} onChange={handleInputChange(setSearchMaPhieu)} className="search-input" />
@@ -427,8 +452,13 @@ const QuanLyPhieuNhapKho = () => {
                                 {paginatedData.map((phieu, index) => (
                                     <tr
                                         key={phieu.idPhieuNhap}
-                                        style={phieu.idPhieuNhap.toString() === focusId ? { backgroundColor: "#fff7d6", fontWeight: "bold" } : {}}
+                                        style={
+                                            phieu.idPhieuNhap.toString() === internalFocusId
+                                                ? { backgroundColor: "#fff7d6", fontWeight: "bold" }
+                                                : {}
+                                        }
                                     >
+
 
                                         <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                                         <td>{phieu.idPhieuNhap}</td>
@@ -593,6 +623,9 @@ const QuanLyPhieuNhapKho = () => {
 
                             </div>
                         )}
+
+                       
+
                     </div>
                 </div>
             </div>

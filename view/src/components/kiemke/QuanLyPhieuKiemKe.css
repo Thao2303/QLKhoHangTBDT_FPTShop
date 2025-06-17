@@ -1,10 +1,5 @@
 ﻿
-.title {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
-}
+
 
 .table {
     width: 100%;
@@ -46,8 +41,9 @@
     display: flex;
     justify-content: center;
     align-items: flex-start; /* 👈 Thay vì center, đẩy popup xuống dưới */
-    padding-top: 70px; /* 👈 Thêm khoảng trống tránh Navbar */
+    padding-top: 30px; /* 👈 Thêm khoảng trống tránh Navbar */
     z-index: 999;
+    
 }
 
 .popup-inner {
@@ -81,14 +77,18 @@
 
 
 .btn-close {
+    margin-top: 30px;
     margin-bottom: 30px;
+    width: 70px;
     padding: 8px 16px;
     background: #007bff;
     color: #fff;
     border: none;
     border-radius: 4px;
-    float: right;
+    text-align: center;
+    margin-left: auto; /* 👈 Đẩy sang phải */
 }
+
 
 .text-red {
     color: red;

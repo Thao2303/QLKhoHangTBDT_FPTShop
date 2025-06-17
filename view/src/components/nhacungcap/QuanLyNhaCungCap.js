@@ -96,18 +96,25 @@ const QuanLyNhaCungCap = () => {
         e.preventDefault();
         const method = selected ? "PUT" : "POST";
         const url = selected ? `${API}/${selected.idNhaCungCap}` : API;
+        const body = selected
+            ? { ...form, idNhaCungCap: selected.idNhaCungCap }
+            : form;
+
         const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(form)
+            body: JSON.stringify(body)
         });
+
         if (!res.ok) return alert("Lỗi khi lưu nhà cung cấp");
+
         const newList = await fetch(API).then(r => r.json());
         setDs(newList);
         setShowForm(false);
         setSelected(null);
         setForm({ tenNhaCungCap: "", diaChi: "", email: "", nhanVienLienHe: "", sdt: "", idPhuongXa: "" });
     };
+
     const handleEdit = (ncc) => {
         const xa = xaMap[ncc.idPhuongXa];
         const huyenId = xa?.idQuanHuyen;
@@ -155,7 +162,7 @@ const QuanLyNhaCungCap = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">Quản lý nhà cung cấp</h1>
+                    <h1 className="title">QUẢN LÝ NHÀ CUNG CẤP</h1>
 
                     <div className="search-form" style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "16px" }}>
                         <input className="input" placeholder="Tìm kiếm nhà cung cấp..." value={search} onChange={(e) => setSearch(e.target.value)} />

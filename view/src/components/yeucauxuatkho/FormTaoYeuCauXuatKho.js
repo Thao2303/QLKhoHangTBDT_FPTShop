@@ -141,7 +141,7 @@ const FormTaoYeuCauXuatKho = () => {
                     </span>
                 </div>
                 <div className="form-container">
-                    <h2>📦 Gửi Yêu Cầu Xuất Kho</h2>
+                    <h2>📦 GỬI YÊU CẦU XUẤT KHO</h2>
                     <form onSubmit={handleSubmit} className="form-grid">
                         <div className="form-section">
                             <label>Danh mục</label>

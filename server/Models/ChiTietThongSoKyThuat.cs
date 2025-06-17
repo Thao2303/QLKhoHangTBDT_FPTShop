@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("CHITIETTHONGSOKYTHUAT")]
     public class ChiTietThongSoKyThuat
     {
         [Key, Column(Order = 0)]

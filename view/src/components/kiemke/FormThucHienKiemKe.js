@@ -206,7 +206,7 @@ const FormThucHienKiemKe = () => {
                 </div>
 
                 <div className="form-container">
-                    <h1 className="title">📋 Thực hiện kiểm kê sản phẩm theo vị trí</h1>
+                    <h1 className="title">📋 THỰC HIỆN KIỂM KÊ SẢN PHẨM THEO VỊ TRÍ</h1>
 
                     <div className="table-scroll">
                         <table className="data-table">

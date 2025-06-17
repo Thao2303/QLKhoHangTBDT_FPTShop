@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using QuanLyKhoHangFPTShop.server.Models;
-
+[Table("PHIEUXUAT")]
 public class PhieuXuat
 {
     [Key]

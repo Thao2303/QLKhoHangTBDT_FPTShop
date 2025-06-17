@@ -26,8 +26,9 @@ const DashboardPhieuNhap = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [filterYear, setFilterYear] = useState(dayjs().year());
     const [sortOrder, setSortOrder] = useState('none');
-    const [startDate, setStartDate] = useState(dayjs().startOf('month').toDate());
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+
     const itemsPerPage = 5;
     const exportRef = useRef();
 
@@ -48,14 +49,20 @@ const DashboardPhieuNhap = () => {
 
     const trangThaiMap = { 1: 'Chờ duyệt', 2: 'Đã duyệt', 3: 'Từ chối', 4: 'Hoàn hàng' };
     const trangThaiOptions = Object.entries(trangThaiMap).map(([k, v]) => ({ value: Number(k), label: v }));
-    const years = Array.from({ length: 5 }, (_, i) => dayjs().year() - i);
+    const uniqueYears = Array.from(
+        new Set(phieuNhaps.map(p => dayjs(p.ngayNhap).year()))
+    ).sort((a, b) => b - a); // sort giảm dần
+
     const filteredPhieuNhaps = phieuNhaps.filter(p => {
         const matchNCC = filterNCC ? p.nhaCungCap?.tenNhaCungCap === filterNCC.value : true;
         const matchNguoiTao = filterNguoiTao ? p.nguoiTao === filterNguoiTao.value : true;
         const matchThang = filterThang ? dayjs(p.ngayNhap).format('YYYY-MM') === filterThang : true;
         const matchTrangThai = filterTrangThai ? p.trangThai === filterTrangThai.value : true;
         const matchKeyword = searchKeyword ? p.idPhieuNhap.toString().includes(searchKeyword) || p.nguoiTao?.toLowerCase().includes(searchKeyword.toLowerCase()) : true;
-        const matchDate = p.ngayNhap && new Date(p.ngayNhap) >= startDate && new Date(p.ngayNhap) <= endDate;
+        const matchDate =
+            (!startDate || new Date(p.ngayNhap) >= startDate) &&
+            (!endDate || new Date(p.ngayNhap) <= endDate);
+
         const matchYear = p.ngayNhap && dayjs(p.ngayNhap).year().toString() === filterYear.toString();
         return matchNCC && matchNguoiTao && matchTrangThai && matchKeyword && matchDate && matchYear && matchThang;
     });
@@ -137,8 +144,11 @@ const DashboardPhieuNhap = () => {
                         <div>
                             <label>Năm: </label>
                             <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
-                                {years.map(y => <option key={y} value={y}>{y}</option>)}
+                                {uniqueYears.map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
                             </select>
+
                             <label style={{ marginLeft: '10px' }}>Sắp xếp: </label>
                             <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
                                 <option value="none">Bình thường</option>
@@ -148,9 +158,9 @@ const DashboardPhieuNhap = () => {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'right', justifyContent: 'right', marginTop: '10px' }}>
-                        <span>Từ:</span>
+                        <span>Từ ngày:</span>
                         <DatePicker selected={startDate} onChange={date => setStartDate(date)} />
-                        <span>Đến:</span>
+                        <span>Đến ngày:</span>
                         <DatePicker selected={endDate} onChange={date => setEndDate(date)} />
                     </div>
                     <div style={{ marginBottom: '16px', marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'right' }}>
@@ -172,12 +182,23 @@ const DashboardPhieuNhap = () => {
                     <div style={{ display: 'flex', gap: '32px', marginTop: '40px', justifyContent: 'center' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <h3 style={{ marginBottom: '10px' }}>📅 Số phiếu theo tháng</h3>
-                            <BarChart width={580} height={300} data={dataTheoThang}>
+                            <BarChart
+                                width={580}
+                                height={300}
+                                data={dataTheoThang}
+                                barCategoryGap={10} // 👈 ngăn Recharts tạo overlay chồng
+                            >
                                 <XAxis dataKey="thang" interval={0} />
                                 <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="soPhieu" fill="#8884d8" activeBar={<></>} />
+                                <Tooltip cursor={{ fill: "transparent" }} />  {/* 👈 Tắt nền highlight xám */}
+                                <Bar
+                                    dataKey="soPhieu"
+                                    fill="#8884d8"
+                                    radius={[6, 6, 0, 0]}
+                                    activeBar={false}
+                                />
                             </BarChart>
+
                         </div>
                         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <h3>📌 Trạng thái phiếu</h3>

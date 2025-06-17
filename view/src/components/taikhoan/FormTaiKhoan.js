@@ -7,12 +7,19 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
         email: '',
         matKhau: '',
         idChucVu: '',
-        ngayCap: ''
+        ngayCap: '',
+        idDaiLy: ''
     });
+    const [daiLys, setDaiLys] = useState([]);
+
     const [chucVus, setChucVus] = useState([]);
     const [error, setError] = useState('');
 
     useEffect(() => {
+        fetch("https://localhost:5288/api/daily")
+            .then(res => res.json())
+            .then(data => setDaiLys(data))
+            .catch(err => console.error("Lỗi lấy đại lý:", err));
         fetch("https://localhost:5288/api/chucvu")
             .then((res) => res.json())
             .then((data) => setChucVus(data))
@@ -42,21 +49,42 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+
+        if (name === 'idChucVu') {
+            const tenChucVu = chucVus.find(cv => cv.idChucVu === parseInt(value))?.tenChucVu;
+
+            if (tenChucVu === 'Thủ kho') {
+                setFormData(prev => ({ ...prev, idChucVu: value, idDaiLy: 1 }));
+            } else {
+                setFormData(prev => ({ ...prev, idChucVu: value, idDaiLy: '' }));
+            }
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
+        const isEdit = !!initialData;
+
         const body = {
-            ...formData,
-            trangThai: true,
-            ngayCap: new Date(formData.ngayCap).toISOString()
+            idTaiKhoan: initialData?.idTaiKhoan,
+            tenTaiKhoan: formData.tenTaiKhoan,
+            email: formData.email,
+            idChucVu: formData.idChucVu,
+            ngayCap: new Date(formData.ngayCap).toISOString(),
+            trangThai: initialData?.trangThai ?? true,
+            idDaiLy: formData.idDaiLy ? parseInt(formData.idDaiLy) : null,
+
+            matKhau: isEdit ? (initialData.matKhau || '') : '123456', // ✅ mặc định mật khẩu khi thêm mới
+            doiMatKhau: isEdit ? (initialData.doiMatKhau || false) : true
         };
 
-        const url = `https://localhost:5288/api/taikhoan${initialData ? '/' + initialData.idTaiKhoan : ''}`;
-        const method = initialData ? 'PUT' : 'POST';
+        const url = `https://localhost:5288/api/taikhoan${isEdit ? '/' + initialData.idTaiKhoan : ''}`;
+        const method = isEdit ? 'PUT' : 'POST';
 
         try {
             const response = await fetch(url, {
@@ -79,12 +107,13 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
         }
     };
 
+
     if (!visible) return null;
 
     return (
         <div className="popup-overlay">
             <form className="popup-box" onSubmit={handleSubmit}>
-                <h2 className="popup-title">{initialData ? 'Chỉnh sửa' : 'Thêm'} tài khoản</h2>
+                <h2 className="popup-title">{initialData ? 'CHỈNH SỬA' : 'THÊM'} TÀI KHOẢN</h2>
 
                 {error && <div className="alert alert-error">{error}</div>}
 
@@ -103,6 +132,23 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
                         <option key={cv.idChucVu} value={cv.idChucVu}>{cv.tenChucVu}</option>
                     ))}
                 </select>
+                {(() => {
+                    const chucVu = chucVus.find(cv => cv.idChucVu === parseInt(formData.idChucVu))?.tenChucVu;
+                    if (chucVu === 'Đại lý bán hàng' || chucVu === 'Giám đốc đại lý') {
+                        return (
+                            <>
+                                <label>Đại lý</label>
+                                <select className="input" name="idDaiLy" value={formData.idDaiLy} onChange={handleChange} required>
+                                    <option value="">-- Chọn đại lý --</option>
+                                    {daiLys.map(dl => (
+                                        <option key={dl.idDaiLy} value={dl.idDaiLy}>{dl.tenDaiLy}</option>
+                                    ))}
+                                </select>
+                            </>
+                        );
+                    }
+                    return null;
+                })()}
 
                 <label>Ngày cấp</label>
                 <input className="input" name="ngayCap" type="date" value={formData.ngayCap} onChange={handleChange} required />

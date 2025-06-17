@@ -28,22 +28,34 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             var nguoiTao = await _context.TaiKhoan
      .Include(tk => tk.DaiLy)
-
      .FirstOrDefaultAsync(tk => tk.idTaiKhoan == yc.idNguoiTao);
 
             yc.NguoiYeuCau = nguoiTao?.DaiLy?.TenDaiLy ?? "Ẩn danh";
+            yc.IdDaiLy = nguoiTao?.idDaiLy ?? 0; // ✅ Gán idDaiLy đúng theo người tạo
 
+
+            // Tách ChiTietYeuCauXuatKhos tạm thời ra để không lưu cùng lúc
+            var chiTietTam = yc.ChiTietYeuCauXuatKhos.ToList();
+            yc.ChiTietYeuCauXuatKhos.Clear();
 
             _context.YeuCauXuatKho.Add(yc);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); // Bây giờ IdYeuCauXuatKho đã được sinh ra
 
-            var thuKhoList = await _context.TaiKhoan
-     .Include(t => t.ChucVu)
-     .Where(t => t.ChucVu != null && t.ChucVu.tenChucVu == "Thủ kho")
-     .ToListAsync();
+            // Gán lại IdYeuCauXuatKho cho từng chi tiết và thêm lại vào context
+            foreach (var ct in chiTietTam)
+            {
+                ct.idYeuCauXuatKho = yc.IdYeuCauXuatKho;
+                _context.ChiTietYeuCauXuatKho.Add(ct);
+            }
 
+            await _context.SaveChangesAsync(); // Lưu chi tiết
+    
 
-            Console.WriteLine($"🔎 Số tài khoản Thủ kho tìm được: {thuKhoList.Count}");
+        // Gửi thông báo
+        var thuKhoList = await _context.TaiKhoan
+                .Include(t => t.ChucVu)
+                .Where(t => t.ChucVu != null && t.ChucVu.tenChucVu == "Thủ kho")
+                .ToListAsync();
 
             foreach (var tk in thuKhoList)
             {
@@ -64,12 +76,13 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     daXem = false,
                     idNguoiNhan = tk.idTaiKhoan
                 });
-
             }
 
             await _context.SaveChangesAsync();
+
             return Ok(yc);
         }
+
         [HttpPut("capnhattrangthai/{id}")]
         public async Task<IActionResult> CapNhatTrangThaiDaXuat(int id)
         {
@@ -174,14 +187,42 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<YeuCauXuatKho>>> GetYeuCauXuatKho()
+        public async Task<IActionResult> GetYeuCauXuatKho()
         {
-            return await _context.YeuCauXuatKho
+            var danhSach = await _context.YeuCauXuatKho
                 .Include(yc => yc.DaiLy)
                 .Include(yc => yc.TrangThaiXacNhan)
-                    .Include(y => y.NguoiTao)
+                .Include(y => y.NguoiTao)
                 .ToListAsync();
+
+            var result = danhSach.Select(yc => new
+            {
+                yc.IdYeuCauXuatKho,
+                yc.MaPhieu,
+                yc.DiaChi,
+                yc.LyDoXuat,
+                yc.HinhThucXuat,
+                yc.PhuongThucVanChuyen,
+                
+                yc.NgayYeuCau,
+                yc.IdTrangThaiXacNhan,
+                daiLy = new
+                {
+                    yc.DaiLy?.idDaiLy,
+                    yc.DaiLy?.TenDaiLy
+                },
+                nguoiTao = new
+                {
+                    yc.NguoiTao?.idTaiKhoan,
+                    yc.NguoiTao?.tenTaiKhoan
+                },
+                trangThai = yc.TrangThaiXacNhan?.tenTrangThaiXacNhan
+            });
+
+            return Ok(result);
+
         }
+
 
         [HttpGet("chitiet/{id}")]
         public async Task<IActionResult> GetChiTiet(int id)

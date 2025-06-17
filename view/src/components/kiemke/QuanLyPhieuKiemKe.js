@@ -54,7 +54,7 @@ const QuanLyPhieuKiemKe = () => {
                 <Navbar />
                 <div className="main-layout">
                     <div className="container">
-                    <h2 className="title">📋 Quản lý phiếu kiểm kê hàng hóa</h2>
+                    <h2 className="title">📋 QUẢN LÝ PHIẾU KIỂM KÊ HÀNG HÓA</h2>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                            
                             <button className="submit-btn" onClick={() => navigate("/tao-phieu-kiem-ke")}>
@@ -85,7 +85,8 @@ const QuanLyPhieuKiemKe = () => {
                                     <td>{phieu.ghiChu || "--"}</td>
                                     <td><span className={`trangthai tt-${phieu.trangThai}`}>{getTrangThaiLabel(phieu.trangThai)}</span></td>
                                     <td>
-                                        <button onClick={() => fetchChiTietPhieu(phieu.idKiemKe)}>👁 Xem</button>
+                                        <button onClick={() => navigate(`/xem-phieu-kiem-ke/${phieu.idYeuCauKiemKe}`)}>👁 Xem</button>
+
 
                                     </td>
                                 </tr>

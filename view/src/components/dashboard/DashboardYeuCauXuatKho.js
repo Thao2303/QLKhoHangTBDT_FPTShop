@@ -21,11 +21,13 @@ const DashboardYeuCauXuatKho = () => {
     const [filterDaiLy, setFilterDaiLy] = useState(null);
     const [filterNguoiTao, setFilterNguoiTao] = useState(null);
     const [searchKeyword, setSearchKeyword] = useState('');
-    const [startDate, setStartDate] = useState(dayjs().startOf('month').toDate());
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+
     const [currentPage, setCurrentPage] = useState(1);
     const exportRef = useRef();
     const itemsPerPage = 5;
+    const namOptions = [...new Set(yeuCaus.map(y => dayjs(y.ngayYeuCau).year()))].filter(Boolean).sort((a, b) => b - a);
 
     const trangThaiMap = { 1: 'Chờ duyệt', 2: 'Đã duyệt', 3: 'Từ chối', 4: 'Đã xuất kho' };
 
@@ -39,7 +41,9 @@ const DashboardYeuCauXuatKho = () => {
         const matchTrangThai = filterTrangThai ? yc.idTrangThaiXacNhan === filterTrangThai.value : true;
         const matchDaiLy = filterDaiLy ? yc.daiLy?.tenDaiLy === filterDaiLy.value : true;
         const matchNguoiTao = filterNguoiTao ? yc.nguoiTao?.tenDangNhap === filterNguoiTao.value : true;
-        const matchDate = yc.ngayYeuCau && new Date(yc.ngayYeuCau) >= startDate && new Date(yc.ngayYeuCau) <= endDate;
+        const matchDate = (!startDate || new Date(yc.ngayYeuCau) >= startDate) &&
+            (!endDate || new Date(yc.ngayYeuCau) <= endDate);
+
         const matchKeyword = searchKeyword ? yc.idYeuCauXuatKho.toString().includes(searchKeyword) : true;
         return matchTrangThai && matchDaiLy && matchNguoiTao && matchDate && matchKeyword;
     });
@@ -116,17 +120,26 @@ const DashboardYeuCauXuatKho = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container" ref={exportRef}>
-                    <h1 className="title">📑 Thống kê Yêu Cầu Xuất Kho</h1>
+                    <h1 className="title">📑 THỐNG KÊ YÊU CẦU XUẤT KHO</h1>
                  
 
                     <div style={{ display: 'flex', justifyContent: 'right', marginTop: '20px' }}>
                         <div>
                             <label>Năm: </label>
-                            <select value={new Date(startDate).getFullYear()} onChange={(e) => setStartDate(new Date(`${e.target.value}-01-01`))}>
-                                {Array.from({ length: 5 }, (_, i) => dayjs().year() - i).map(y => (
+                            <select
+                                value={startDate ? new Date(startDate).getFullYear() : ''}
+                                onChange={(e) => {
+                                    const year = e.target.value;
+                                    if (year) setStartDate(new Date(`${year}-01-01`));
+                                    else setStartDate(null);
+                                }}
+                            >
+                                <option value="">-- Chọn năm --</option>
+                                {namOptions.map(y => (
                                     <option key={y} value={y}>{y}</option>
                                 ))}
                             </select>
+
                             <label style={{ marginLeft: '10px' }}>Sắp xếp: </label>
                             <select>
                                 <option value="none">Bình thường</option>
@@ -164,7 +177,9 @@ const DashboardYeuCauXuatKho = () => {
                                 <YAxis />
                                 <Tooltip />
                                 <CartesianGrid stroke="#ccc" />
-                                <Bar dataKey="soYeuCau" fill="#8884d8" />
+                                <Tooltip cursor={{ fill: 'transparent' }} />
+                                <Bar dataKey="soYeuCau" fill="#8884d8" radius={[6, 6, 0, 0]} activeBar={false} />
+
                             </BarChart>
                         </div>
                         <div style={{ textAlign: 'center' }}>

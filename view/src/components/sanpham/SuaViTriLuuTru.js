@@ -161,7 +161,7 @@ const SuaViTriLuuTru = () => {
             <Sidebar />
             <div className="content-area">
                 <Navbar />
-                <h2 className="title">📦 Sửa vị trí lưu trữ sản phẩm</h2>
+                <h2 className="title">📦 SỬA VỊ TRÍ LƯU TRỮ SẢN PHẨM</h2>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
 
                 {products.map((sp, idx) => (

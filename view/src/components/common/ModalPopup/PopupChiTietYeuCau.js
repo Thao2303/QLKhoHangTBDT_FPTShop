@@ -8,7 +8,7 @@ const PopupChiTietYeuCau = ({ data, tonKhoMap, onClose, onTaoPhieu }) => {
         <div className="popup-overlay">
             <div className="popup-inner">
                 <button className="close-btn" onClick={onClose}>×</button>
-                <h2 className="title">📄 Chi tiết yêu cầu #{data.idYeuCauXuatKho}</h2>
+                <h2 className="title">📄 CHI TIẾT YÊU CẦU #{data.idYeuCauXuatKho}</h2>
 
                 <p><strong>🏢 Đại lý:</strong> {data.daiLy?.tenDaiLy}</p>
                 <p><strong>🧑 Người tạo:</strong> {data.nguoiTao?.tenTaiKhoan || "Ẩn danh"}</p>

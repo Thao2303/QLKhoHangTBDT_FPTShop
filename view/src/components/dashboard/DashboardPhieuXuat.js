@@ -25,8 +25,9 @@ const DashboardPhieuXuat = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [filterYear, setFilterYear] = useState(dayjs().year());
     const [sortOrder, setSortOrder] = useState('none');
-    const [startDate, setStartDate] = useState(dayjs().startOf('month').toDate());
-    const [endDate, setEndDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+
     const itemsPerPage = 5;
     const exportRef = useRef();
 
@@ -49,14 +50,20 @@ const DashboardPhieuXuat = () => {
         fetchData();
     }, []);
 
-    const years = Array.from({ length: 5 }, (_, i) => dayjs().year() - i);
+    const uniqueYears = Array.from(
+        new Set(phieuXuats.map(p => dayjs(p.ngayXuat).year()))
+    ).sort((a, b) => b - a);
+
 
     const filteredPhieuXuats = phieuXuats.filter(p => {
         const matchDaiLy = filterDaiLy ? p.yeuCauXuatKho?.daiLy?.tenDaiLy === filterDaiLy.value : true;
         const matchNguoiXuat = filterNguoiXuat ? p.nguoiXuat === filterNguoiXuat.value : true;
         const matchThang = filterThang ? dayjs(p.ngayXuat).format('YYYY-MM') === filterThang : true;
         const matchKeyword = searchKeyword ? p.idPhieuXuat.toString().includes(searchKeyword) || p.nguoiXuat?.toLowerCase().includes(searchKeyword.toLowerCase()) : true;
-        const matchDate = p.ngayXuat && new Date(p.ngayXuat) >= startDate && new Date(p.ngayXuat) <= endDate;
+        const matchDate =
+            (!startDate || new Date(p.ngayXuat) >= startDate) &&
+            (!endDate || new Date(p.ngayXuat) <= endDate);
+
         const matchYear = p.ngayXuat && dayjs(p.ngayXuat).year().toString() === filterYear.toString();
         return matchDaiLy && matchNguoiXuat && matchKeyword && matchDate && matchYear && matchThang;
     });
@@ -130,8 +137,9 @@ const DashboardPhieuXuat = () => {
                         <div>
                             <label>Năm: </label>
                             <select value={filterYear} onChange={(e) => setFilterYear(e.target.value)}>
-                                {years.map(y => <option key={y} value={y}>{y}</option>)}
+                                {uniqueYears.map(y => <option key={y} value={y}>{y}</option>)}
                             </select>
+
                             <label style={{ marginLeft: '10px' }}>Sắp xếp: </label>
                             <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
                                 <option value="none">Bình thường</option>
@@ -163,12 +171,13 @@ const DashboardPhieuXuat = () => {
                     <div style={{ display: 'flex', gap: '32px', marginTop: '40px', justifyContent: 'center' }}>
                         <div>
                             <h3>Số phiếu theo tháng</h3>
-                            <BarChart width={780} height={300} data={dataTheoThang}>
+                            <BarChart width={780} height={300} data={dataTheoThang} barCategoryGap={10}>
                                 <XAxis dataKey="thang" />
                                 <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="soPhieu" fill="#8884d8" />
+                                <Tooltip cursor={{ fill: "transparent" }} />
+                                <Bar dataKey="soPhieu" fill="#8884d8" radius={[6, 6, 0, 0]} activeBar={false} />
                             </BarChart>
+
                         </div>
               
                   
@@ -177,9 +186,14 @@ const DashboardPhieuXuat = () => {
               
                         <div>
                             <h3>Giá trị xuất theo tháng</h3>
-                            <LineChart width={780} height={300} data={dataTheoThang}>
+                            <LineChart width={580} height={300} data={dataTheoThang}>
                                 <XAxis dataKey="thang" />
-                                <YAxis tickFormatter={value => value.toLocaleString('vi-VN')} />
+                                <YAxis
+                                    tickFormatter={value => value.toLocaleString('vi-VN')}
+                                    width={100} // 👈 THÊM DÒNG NÀY để tránh bị cắt
+                                />
+
+
                                 <Tooltip />
                                 <CartesianGrid stroke="#ccc" />
                                 <Line type="monotone" dataKey="tongTien" stroke="#82ca9d" />

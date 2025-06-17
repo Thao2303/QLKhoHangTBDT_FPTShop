@@ -26,16 +26,16 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Include(v => v.KhuVuc)
                 .Select(v => new
                 {
-                    idViTri = v.IdViTri,
-                    day = v.Day,
-                    cot = v.Cot,
-                    tang = v.Tang,
-                    sucChua = v.SucChua,
-                    daDung = v.DaDung,
+                    idViTri = v.idViTri,
+                    day = v.day,
+                    cot = v.cot,
+                    tang = v.tang,
+                    sucChua = v.sucChua,
+                    daDung = v.daDung,
                     v.chieuDai,
                     v.chieuRong,
                     v.chieuCao,
-                    trangThai = v.TrangThai,
+                    trangThai = v.trangThai,
                     khuVuc = new
                     {
                         v.KhuVuc.idKhuVuc,
@@ -77,14 +77,14 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             _context.ViTri.Add(viTri);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetViTri), new { id = viTri.IdViTri }, viTri);
+            return CreatedAtAction(nameof(GetViTri), new { id = viTri.idViTri }, viTri);
         }
 
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutViTri(int id, ViTri viTri)
         {
-            if (id != viTri.IdViTri)
+            if (id != viTri.idViTri)
                 return BadRequest("ID không khớp.");
 
             if (viTri == null || viTri.idKhuVuc == 0)
@@ -114,7 +114,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
         private bool ViTriExists(int id)
         {
-            return _context.ViTri.Any(v => v.IdViTri == id);
+            return _context.ViTri.Any(v => v.idViTri == id);
         }
 
         [HttpDelete("{id}")]

@@ -30,6 +30,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Property<int>("idSanPham")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PhieuNhapidPhieuNhap")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("donGia")
                         .HasColumnType("decimal(18,2)");
 
@@ -51,9 +54,11 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idPhieuNhap", "idSanPham");
 
+                    b.HasIndex("PhieuNhapidPhieuNhap");
+
                     b.HasIndex("idSanPham");
 
-                    b.ToTable("ChiTietPhieuNhap");
+                    b.ToTable("CHITIETPHIEUNHAP");
                 });
 
             modelBuilder.Entity("DonViTinh", b =>
@@ -70,7 +75,7 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idDonViTinh");
 
-                    b.ToTable("DonViTinh");
+                    b.ToTable("DONVITINH");
                 });
 
             modelBuilder.Entity("PhieuXuat", b =>
@@ -106,10 +111,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("IdYeuCauXuatKho");
 
-                    b.ToTable("PhieuXuat");
+                    b.ToTable("PHIEUXUAT");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietKiemKe", b =>
                 {
                     b.Property<int>("idKiemKe")
                         .HasColumnType("int")
@@ -123,6 +128,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                         .HasColumnType("int")
                         .HasColumnOrder(2);
 
+                    b.Property<string>("ghiChu")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("phamChat")
                         .HasColumnType("nvarchar(max)");
 
@@ -132,22 +140,28 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Property<int>("soLuongThucTe")
                         .HasColumnType("int");
 
-                    b.HasKey("idKiemKe", "idSanPham");
+                    b.HasKey("idKiemKe", "idSanPham", "idViTri");
 
                     b.HasIndex("idSanPham");
 
                     b.HasIndex("idViTri");
 
-                    b.ToTable("ChiTietKiemKe");
+                    b.ToTable("CHITIETKIEMKE");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietLuuTru", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietLuuTru", b =>
                 {
                     b.Property<int>("idChiTietLuuTru")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idChiTietLuuTru"));
+
+                    b.Property<int?>("idLoHang")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idPhieuNhap")
+                        .HasColumnType("int");
 
                     b.Property<int>("idSanPham")
                         .HasColumnType("int");
@@ -163,14 +177,18 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idChiTietLuuTru");
 
+                    b.HasIndex("idLoHang");
+
+                    b.HasIndex("idPhieuNhap");
+
                     b.HasIndex("idSanPham");
 
                     b.HasIndex("idViTri");
 
-                    b.ToTable("ChiTietLuuTru");
+                    b.ToTable("CHITIETLUUTRU");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietPhieuXuat", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietPhieuXuat", b =>
                 {
                     b.Property<int>("IdPhieuXuat")
                         .HasColumnType("int")
@@ -188,16 +206,28 @@ namespace QuanLyKhoHangFPTShop.Migrations
                         .HasColumnType("int")
                         .HasColumnName("soLuong");
 
+                    b.Property<decimal?>("chietKhau")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("donGiaXuat")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("giaSauChietKhau")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("tongTien")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("IdPhieuXuat", "IdSanPham", "IdViTri");
 
                     b.HasIndex("IdSanPham");
 
                     b.HasIndex("IdViTri");
 
-                    b.ToTable("ChiTietPhieuXuat");
+                    b.ToTable("CHITIETPHIEUXUAT");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietThongSoKyThuat", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietThongSoKyThuat", b =>
                 {
                     b.Property<int>("idSanPham")
                         .HasColumnType("int")
@@ -215,10 +245,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idThongSo");
 
-                    b.ToTable("ChiTietThongSoKyThuat");
+                    b.ToTable("CHITIETTHONGSOKYTHUAT");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietYeuCauKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietYeuCauKiemKe", b =>
                 {
                     b.Property<int>("idYeuCauKiemKe")
                         .HasColumnType("int")
@@ -232,10 +262,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idSanPham");
 
-                    b.ToTable("ChiTietYeuCauKiemKe");
+                    b.ToTable("CHITIETYEUCAUKIEMKE");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietYeuCauXuatKho", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietYeuCauXuatKho", b =>
                 {
                     b.Property<int>("idYeuCauXuatKho")
                         .HasColumnType("int");
@@ -243,17 +273,22 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Property<int>("idSanPham")
                         .HasColumnType("int");
 
+                    b.Property<int?>("YeuCauXuatKhoIdYeuCauXuatKho")
+                        .HasColumnType("int");
+
                     b.Property<int>("soLuong")
                         .HasColumnType("int");
 
                     b.HasKey("idYeuCauXuatKho", "idSanPham");
 
+                    b.HasIndex("YeuCauXuatKhoIdYeuCauXuatKho");
+
                     b.HasIndex("idSanPham");
 
-                    b.ToTable("ChiTietYeuCauXuatKho");
+                    b.ToTable("CHITIETYEUCAUXUATKHO");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChucVu", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChucVu", b =>
                 {
                     b.Property<int>("idChucVu")
                         .ValueGeneratedOnAdd()
@@ -271,10 +306,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idChucVu");
 
-                    b.ToTable("ChucVu");
+                    b.ToTable("CHUCVU");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.DaiLy", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.DaiLy", b =>
                 {
                     b.Property<int>("idDaiLy")
                         .ValueGeneratedOnAdd()
@@ -296,10 +331,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idDaiLy");
 
-                    b.ToTable("DaiLy");
+                    b.ToTable("DAILY");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.DanhMuc", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.DanhMuc", b =>
                 {
                     b.Property<int>("idDanhMuc")
                         .ValueGeneratedOnAdd()
@@ -313,10 +348,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idDanhMuc");
 
-                    b.ToTable("DanhMuc");
+                    b.ToTable("DANHMUC");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.KhuVuc", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.KhuVuc", b =>
                 {
                     b.Property<int>("idKhuVuc")
                         .ValueGeneratedOnAdd()
@@ -336,10 +371,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idKhuVuc");
 
-                    b.ToTable("KhuVuc");
+                    b.ToTable("KHUVUC");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.KiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.KiemKe", b =>
                 {
                     b.Property<int>("idKiemKe")
                         .ValueGeneratedOnAdd()
@@ -362,14 +397,17 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Property<DateTime>("thoiGianThucHien")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("trangThai")
+                        .HasColumnType("int");
+
                     b.HasKey("idKiemKe");
 
                     b.HasIndex("idYeuCauKiemKe");
 
-                    b.ToTable("KiemKe");
+                    b.ToTable("KIEMKE");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.LoHang", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.LoHang", b =>
                 {
                     b.Property<int>("idLoHang")
                         .ValueGeneratedOnAdd()
@@ -399,10 +437,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idPhieuNhap");
 
-                    b.ToTable("LoHang");
+                    b.ToTable("LOHANG");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.NhaCungCap", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.NhaCungCap", b =>
                 {
                     b.Property<int>("idNhaCungCap")
                         .ValueGeneratedOnAdd()
@@ -437,10 +475,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idPhuongXa");
 
-                    b.ToTable("NhaCungCap");
+                    b.ToTable("NHACUNGCAP");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.PhieuNhap", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", b =>
                 {
                     b.Property<int>("idPhieuNhap")
                         .ValueGeneratedOnAdd()
@@ -463,10 +501,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idTaiKhoan");
 
-                    b.ToTable("PhieuNhap", (string)null);
+                    b.ToTable("PHIEUNHAP");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.PhuongXa", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.PhuongXa", b =>
                 {
                     b.Property<int>("idPhuongXa")
                         .ValueGeneratedOnAdd()
@@ -485,10 +523,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idQuanHuyen");
 
-                    b.ToTable("PhuongXa");
+                    b.ToTable("PHUONGXA");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.QuanHuyen", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.QuanHuyen", b =>
                 {
                     b.Property<int>("idQuanHuyen")
                         .ValueGeneratedOnAdd()
@@ -507,10 +545,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idTinhThanh");
 
-                    b.ToTable("QuanHuyen");
+                    b.ToTable("QUANHUYEN");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.SanPham", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.SanPham", b =>
                 {
                     b.Property<int>("idSanPham")
                         .ValueGeneratedOnAdd()
@@ -529,6 +567,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.Property<decimal>("donGiaBan")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("hinhAnh")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("idDanhMuc")
                         .HasColumnType("int");
@@ -580,10 +621,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idThuongHieu");
 
-                    b.ToTable("SanPham");
+                    b.ToTable("SANPHAM");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.SanPham_ThongSo", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.SanPham_ThongSo", b =>
                 {
                     b.Property<int>("idSanPham")
                         .HasColumnType("int");
@@ -602,10 +643,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("idThongSoKyThuat");
 
-                    b.ToTable("SanPham_ThongSo");
+                    b.ToTable("SANPHAMTHONGSO");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.TaiKhoan", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.TaiKhoan", b =>
                 {
                     b.Property<int>("idTaiKhoan")
                         .ValueGeneratedOnAdd()
@@ -613,11 +654,17 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idTaiKhoan"));
 
+                    b.Property<bool?>("doiMatKhau")
+                        .HasColumnType("bit");
+
                     b.Property<string>("email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("idChucVu")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("idDaiLy")
                         .HasColumnType("int");
 
                     b.Property<string>("matKhau")
@@ -628,22 +675,82 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Property<DateTime>("ngayCap")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("resetToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("resetTokenExpiry")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("tenTaiKhoan")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<bool>("trangThai")
+                    b.Property<bool?>("trangThai")
                         .HasColumnType("bit");
 
                     b.HasKey("idTaiKhoan");
 
                     b.HasIndex("idChucVu");
 
-                    b.ToTable("TaiKhoan");
+                    b.HasIndex("idDaiLy");
+
+                    b.ToTable("TAIKHOAN");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ThongSoKyThuat", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ThongBao", b =>
+                {
+                    b.Property<int>("idThongBao")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idThongBao"));
+
+                    b.Property<bool>("daXem")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("idNguoiNhan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("lienKet")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ngayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("noiDung")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("idThongBao");
+
+                    b.HasIndex("idNguoiNhan");
+
+                    b.ToTable("THONGBAO");
+                });
+
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ThongBaoHeThong", b =>
+                {
+                    b.Property<int>("idThongBaoHeThong")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idThongBaoHeThong"));
+
+                    b.Property<DateTime>("lanCuoiGui")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("maLoai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("idThongBaoHeThong");
+
+                    b.ToTable("THONGBAOHETHONG");
+                });
+
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ThongSoKyThuat", b =>
                 {
                     b.Property<int>("idThongSo")
                         .ValueGeneratedOnAdd()
@@ -657,10 +764,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idThongSo");
 
-                    b.ToTable("ThongSoKyThuat");
+                    b.ToTable("THONGSOKYTHUAT");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ThuongHieu", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ThuongHieu", b =>
                 {
                     b.Property<int>("idThuongHieu")
                         .ValueGeneratedOnAdd()
@@ -674,10 +781,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idThuongHieu");
 
-                    b.ToTable("ThuongHieu");
+                    b.ToTable("THUONGHIEU");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.TinhThanh", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.TinhThanh", b =>
                 {
                     b.Property<int>("idTinhThanh")
                         .ValueGeneratedOnAdd()
@@ -691,10 +798,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idTinhThanh");
 
-                    b.ToTable("TinhThanh");
+                    b.ToTable("TINHTHANH");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.TrangThaiXacNhan", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.TrangThaiXacNhan", b =>
                 {
                     b.Property<int>("idTrangThaiXacNhan")
                         .ValueGeneratedOnAdd()
@@ -708,38 +815,16 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasKey("idTrangThaiXacNhan");
 
-                    b.ToTable("TrangThaiXacNhan");
+                    b.ToTable("TRANGTHAIXACNHAN");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ViTri", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ViTri", b =>
                 {
-                    b.Property<int>("IdViTri")
+                    b.Property<int>("idViTri")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IdViTri"));
-
-                    b.Property<int>("Cot")
-                        .HasColumnType("int");
-
-                    b.Property<int>("DaDung")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Day")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<decimal>("SucChua")
-                        .HasColumnType("decimal(20, 2)");
-
-                    b.Property<int>("Tang")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TrangThai")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idViTri"));
 
                     b.Property<decimal>("chieuCao")
                         .HasColumnType("decimal(10, 2)");
@@ -750,17 +835,70 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Property<decimal>("chieuRong")
                         .HasColumnType("decimal(10, 2)");
 
+                    b.Property<int>("cot")
+                        .HasColumnType("int");
+
+                    b.Property<int>("daDung")
+                        .HasColumnType("int");
+
+                    b.Property<string>("day")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<int>("idKhuVuc")
                         .HasColumnType("int");
 
-                    b.HasKey("IdViTri");
+                    b.Property<decimal>("sucChua")
+                        .HasColumnType("decimal(20, 2)");
+
+                    b.Property<int>("tang")
+                        .HasColumnType("int");
+
+                    b.Property<string>("trangThai")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("idViTri");
 
                     b.HasIndex("idKhuVuc");
 
-                    b.ToTable("ViTri");
+                    b.ToTable("VITRI");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.YeuCauKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ViTriLuuTam", b =>
+                {
+                    b.Property<int>("idViTriLuuTam")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("idViTriLuuTam"));
+
+                    b.Property<int>("idPhieuNhap")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idSanPham")
+                        .HasColumnType("int");
+
+                    b.Property<int>("idViTri")
+                        .HasColumnType("int");
+
+                    b.Property<int>("soLuong")
+                        .HasColumnType("int");
+
+                    b.HasKey("idViTriLuuTam");
+
+                    b.HasIndex("idPhieuNhap");
+
+                    b.HasIndex("idSanPham");
+
+                    b.HasIndex("idViTri");
+
+                    b.ToTable("VITRILUUTAM");
+                });
+
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.YeuCauKiemKe", b =>
                 {
                     b.Property<int>("idYeuCauKiemKe")
                         .ValueGeneratedOnAdd()
@@ -805,7 +943,7 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("nguoiTao");
 
-                    b.ToTable("YeuCauKiemKe");
+                    b.ToTable("YEUCAUKIEMKE");
                 });
 
             modelBuilder.Entity("YeuCauXuatKho", b =>
@@ -867,6 +1005,10 @@ namespace QuanLyKhoHangFPTShop.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("phuongThucVanChuyen");
 
+                    b.Property<int>("idNguoiTao")
+                        .HasColumnType("int")
+                        .HasColumnName("idNguoiTao");
+
                     b.HasKey("IdYeuCauXuatKho");
 
                     b.HasIndex("IdDaiLy");
@@ -877,21 +1019,27 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.HasIndex("IdTrangThaiXacNhan");
 
-                    b.ToTable("YeuCauXuatKho");
+                    b.HasIndex("idNguoiTao");
+
+                    b.ToTable("YEUCAUXUATKHO");
                 });
 
             modelBuilder.Entity("ChiTietPhieuNhap", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.PhieuNhap", "PhieuNhap")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", null)
                         .WithMany("ChiTietPhieuNhap")
+                        .HasForeignKey("PhieuNhapidPhieuNhap");
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", "PhieuNhap")
+                        .WithMany()
                         .HasForeignKey("idPhieuNhap")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("PhieuNhap");
@@ -908,21 +1056,21 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("YeuCauXuatKho");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietKiemKe", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.KiemKe", "KiemKe")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.KiemKe", "KiemKe")
                         .WithMany("ChiTietKiemKe")
                         .HasForeignKey("idKiemKe")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ViTri", "ViTri")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ViTri", "ViTri")
                         .WithMany()
                         .HasForeignKey("idViTri")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -935,26 +1083,40 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("ViTri");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietLuuTru", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietLuuTru", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.LoHang", "LoHang")
+                        .WithMany()
+                        .HasForeignKey("idLoHang");
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", "PhieuNhap")
+                        .WithMany()
+                        .HasForeignKey("idPhieuNhap")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ViTri", "ViTri")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ViTri", "ViTri")
                         .WithMany()
                         .HasForeignKey("idViTri")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("LoHang");
+
+                    b.Navigation("PhieuNhap");
 
                     b.Navigation("SanPham");
 
                     b.Navigation("ViTri");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietPhieuXuat", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietPhieuXuat", b =>
                 {
                     b.HasOne("PhieuXuat", "PhieuXuat")
                         .WithMany("ChiTietPhieuXuats")
@@ -962,13 +1124,13 @@ namespace QuanLyKhoHangFPTShop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("IdSanPham")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ViTri", "ViTri")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ViTri", "ViTri")
                         .WithMany()
                         .HasForeignKey("IdViTri")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -981,15 +1143,15 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("ViTri");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietThongSoKyThuat", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietThongSoKyThuat", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ThongSoKyThuat", "ThongSoKyThuat")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ThongSoKyThuat", "ThongSoKyThuat")
                         .WithMany("ChiTietThongSoKyThuat")
                         .HasForeignKey("idThongSo")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1000,15 +1162,15 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("ThongSoKyThuat");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietYeuCauKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietYeuCauKiemKe", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.YeuCauKiemKe", "YeuCauKiemKe")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.YeuCauKiemKe", "YeuCauKiemKe")
                         .WithMany("ChiTietYeuCau")
                         .HasForeignKey("idYeuCauKiemKe")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1019,16 +1181,20 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("YeuCauKiemKe");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ChiTietYeuCauXuatKho", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ChiTietYeuCauXuatKho", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("YeuCauXuatKho", null)
+                        .WithMany("ChiTietYeuCauXuatKhos")
+                        .HasForeignKey("YeuCauXuatKhoIdYeuCauXuatKho");
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("YeuCauXuatKho", "YeuCauXuatKho")
-                        .WithMany("ChiTietYeuCauXuatKhos")
+                        .WithMany()
                         .HasForeignKey("idYeuCauXuatKho")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1038,9 +1204,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("YeuCauXuatKho");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.KiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.KiemKe", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.YeuCauKiemKe", "YeuCauKiemKe")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.YeuCauKiemKe", "YeuCauKiemKe")
                         .WithMany()
                         .HasForeignKey("idYeuCauKiemKe")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1049,18 +1215,18 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("YeuCauKiemKe");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.LoHang", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.LoHang", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.NhaCungCap", "NhaCungCap")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.NhaCungCap", "NhaCungCap")
                         .WithMany()
                         .HasForeignKey("idNhaCungCap")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.PhieuNhap", "PhieuNhap")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", "PhieuNhap")
                         .WithMany()
                         .HasForeignKey("idPhieuNhap")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("NhaCungCap");
@@ -1068,9 +1234,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("PhieuNhap");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.NhaCungCap", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.NhaCungCap", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.PhuongXa", "PhuongXa")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.PhuongXa", "PhuongXa")
                         .WithMany()
                         .HasForeignKey("idPhuongXa")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1079,15 +1245,15 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("PhuongXa");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.PhieuNhap", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.NhaCungCap", "NhaCungCap")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.NhaCungCap", "NhaCungCap")
                         .WithMany()
                         .HasForeignKey("idNhaCungCap")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.TaiKhoan", "TaiKhoan")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.TaiKhoan", "TaiKhoan")
                         .WithMany()
                         .HasForeignKey("idTaiKhoan")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1098,9 +1264,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("TaiKhoan");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.PhuongXa", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.PhuongXa", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.QuanHuyen", "QuanHuyen")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.QuanHuyen", "QuanHuyen")
                         .WithMany()
                         .HasForeignKey("idQuanHuyen")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1109,9 +1275,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("QuanHuyen");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.QuanHuyen", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.QuanHuyen", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.TinhThanh", "TinhThanh")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.TinhThanh", "TinhThanh")
                         .WithMany()
                         .HasForeignKey("idTinhThanh")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1120,9 +1286,9 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("TinhThanh");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.SanPham", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.SanPham", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.DanhMuc", "DanhMuc")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.DanhMuc", "DanhMuc")
                         .WithMany()
                         .HasForeignKey("idDanhMuc")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1134,13 +1300,13 @@ namespace QuanLyKhoHangFPTShop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.NhaCungCap", "NhaCungCap")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.NhaCungCap", "NhaCungCap")
                         .WithMany()
                         .HasForeignKey("idNhaCungCap")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ThuongHieu", "ThuongHieu")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ThuongHieu", "ThuongHieu")
                         .WithMany()
                         .HasForeignKey("idThuongHieu")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1155,15 +1321,15 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("ThuongHieu");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.SanPham_ThongSo", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.SanPham_ThongSo", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.SanPham", "SanPham")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
                         .WithMany()
                         .HasForeignKey("idSanPham")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ThongSoKyThuat", "ThongSoKyThuat")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ThongSoKyThuat", "ThongSoKyThuat")
                         .WithMany()
                         .HasForeignKey("idThongSoKyThuat")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1174,20 +1340,37 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("ThongSoKyThuat");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.TaiKhoan", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.TaiKhoan", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.ChucVu", "ChucVu")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ChucVu", "ChucVu")
                         .WithMany()
                         .HasForeignKey("idChucVu")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.DaiLy", "DaiLy")
+                        .WithMany()
+                        .HasForeignKey("idDaiLy");
+
                     b.Navigation("ChucVu");
+
+                    b.Navigation("DaiLy");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ViTri", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ThongBao", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.KhuVuc", "KhuVuc")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.TaiKhoan", "TaiKhoan")
+                        .WithMany()
+                        .HasForeignKey("idNguoiNhan")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TaiKhoan");
+                });
+
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ViTri", b =>
+                {
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.KhuVuc", "KhuVuc")
                         .WithMany("ViTris")
                         .HasForeignKey("idKhuVuc")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1196,9 +1379,36 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("KhuVuc");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.YeuCauKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ViTriLuuTam", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.TaiKhoan", "NguoiTaoTaiKhoan")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", "PhieuNhap")
+                        .WithMany()
+                        .HasForeignKey("idPhieuNhap")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.SanPham", "SanPham")
+                        .WithMany()
+                        .HasForeignKey("idSanPham")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.ViTri", "ViTri")
+                        .WithMany()
+                        .HasForeignKey("idViTri")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PhieuNhap");
+
+                    b.Navigation("SanPham");
+
+                    b.Navigation("ViTri");
+                });
+
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.YeuCauKiemKe", b =>
+                {
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.TaiKhoan", "NguoiTaoTaiKhoan")
                         .WithMany()
                         .HasForeignKey("nguoiTao");
 
@@ -1207,13 +1417,13 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
             modelBuilder.Entity("YeuCauXuatKho", b =>
                 {
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.DaiLy", "DaiLy")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.DaiLy", "DaiLy")
                         .WithMany()
                         .HasForeignKey("IdDaiLy")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.DanhMuc", "DanhMuc")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.DanhMuc", "DanhMuc")
                         .WithMany()
                         .HasForeignKey("IdDanhMuc")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1225,9 +1435,15 @@ namespace QuanLyKhoHangFPTShop.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyKhoHangFPTShop.Models.TrangThaiXacNhan", "TrangThaiXacNhan")
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.TrangThaiXacNhan", "TrangThaiXacNhan")
                         .WithMany()
                         .HasForeignKey("IdTrangThaiXacNhan")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyKhoHangFPTShop.server.Models.TaiKhoan", "NguoiTao")
+                        .WithMany()
+                        .HasForeignKey("idNguoiTao")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1237,6 +1453,8 @@ namespace QuanLyKhoHangFPTShop.Migrations
 
                     b.Navigation("DonViTinh");
 
+                    b.Navigation("NguoiTao");
+
                     b.Navigation("TrangThaiXacNhan");
                 });
 
@@ -1245,27 +1463,27 @@ namespace QuanLyKhoHangFPTShop.Migrations
                     b.Navigation("ChiTietPhieuXuats");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.KhuVuc", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.KhuVuc", b =>
                 {
                     b.Navigation("ViTris");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.KiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.KiemKe", b =>
                 {
                     b.Navigation("ChiTietKiemKe");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.PhieuNhap", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.PhieuNhap", b =>
                 {
                     b.Navigation("ChiTietPhieuNhap");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.ThongSoKyThuat", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.ThongSoKyThuat", b =>
                 {
                     b.Navigation("ChiTietThongSoKyThuat");
                 });
 
-            modelBuilder.Entity("QuanLyKhoHangFPTShop.Models.YeuCauKiemKe", b =>
+            modelBuilder.Entity("QuanLyKhoHangFPTShop.server.Models.YeuCauKiemKe", b =>
                 {
                     b.Navigation("ChiTietYeuCau");
                 });

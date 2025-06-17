@@ -564,3 +564,46 @@ input[type="number"] {
     justify-content: center;
     margin-top: 20px; /* khoảng cách phía trên nếu muốn */
 }
+.phanbo-sp {
+    margin-bottom: 32px;
+    padding: 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fafafa;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+    .phanbo-sp h4 {
+        margin-bottom: 8px;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .phanbo-sp p {
+        margin: 4px 0;
+    }
+
+    .phanbo-sp table {
+        width: 100%;
+        margin-top: 12px;
+        border-collapse: collapse;
+    }
+
+    .phanbo-sp th {
+        background-color: #007bff;
+        color: white;
+        padding: 8px;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .phanbo-sp td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        text-align: center;
+    }
+
+        .phanbo-sp td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }

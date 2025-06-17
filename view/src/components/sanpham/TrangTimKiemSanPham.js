@@ -88,7 +88,7 @@ const TrangTimKiemSanPham = () => {
                 <div className="main-layout" style={{ padding: '20px' }}>
                     <Navbar />
                     <div className="container">
-                        <h1 className="title">🔍 Tìm kiếm vị trí lưu trữ sản phẩm</h1>
+                        <h1 className="title">🔍 TÌM KIẾM VỊ TRÍ LƯU TRỮ SẢN PHẨM</h1>
 
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 16, marginBottom: 30, position: "relative" }}>
                             <div style={{ display: 'flex', flexDirection: 'column', width: 400 }}>

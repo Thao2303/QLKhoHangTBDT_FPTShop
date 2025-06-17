@@ -7,6 +7,8 @@ import Select from "react-select";
 import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
+import Pagination from "../common/Pagination/Pagination";
+
 const removeVietnameseTones = (str) => {
     return str.normalize("NFD")
         .replace(/[̀-ͯ]/g, "")
@@ -242,7 +244,7 @@ const QuanLySanPham = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">Quản lý sản phẩm</h1>
+                    <h1 className="title">QUẢN LÝ SẢN PHẨM</h1>
 
                     <div className="search-form">
                         <input
@@ -353,42 +355,26 @@ const QuanLySanPham = () => {
                         </tbody>
 
                     </table>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} />
 
-                    <div style={{ marginTop: 20 }}>
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setCurrentPage(i + 1)}
-                                style={{
-                                    marginRight: 6,
-                                    padding: "6px 12px",
-                                    backgroundColor: currentPage === i + 1 ? "#617BAD" : "#e0e0e0",
-                                    color: currentPage === i + 1 ? "#fff" : "#333",
-                                    border: "none",
-                                    borderRadius: 4
-                                }}
-                            >{i + 1}</button>
-                        ))}
-                    </div>
                     {popup && (
                         <div className="popup">
                             <div className="popup-inner">
-                                {/* Nút đóng cố định */}
-                                <button
-                                    className="close-fixed"
-                                    onClick={() => setPopup(false)}
-                                    title="Đóng"
+                                
+                                <h2 style={{ marginTop: 12 }}>{isEdit ? "✏️ Sửa sản phẩm" : "➕ Thêm sản phẩm"}</h2>
+
+                                <div
+                                    style={{
+                                        maxHeight: "70vh",
+                                        overflowY: "auto",
+                                        paddingRight: 10,
+                                        display: "grid",
+                                        gridTemplateColumns: "1fr 1fr",
+                                        gap: "16px"
+                                    }}
                                 >
-                                    ❌
-                                </button>
-
-                                <h3 style={{ marginTop: 12 }}>{isEdit ? "✏️ Sửa sản phẩm" : "➕ Thêm sản phẩm"}</h3>
-
-                                {/* Nội dung cuộn */}
-                                <div style={{ maxHeight: "70vh", overflowY: "auto", paddingRight: 10 }}>
-
                                     {["tenSanPham", "sku", "moTa", "mauSac"].map(key => (
-                                        <div key={key} style={{ marginBottom: 8 }}>
+                                        <div key={key}>
                                             <label style={{ fontWeight: 500 }}>{labelMap[key]}</label>
                                             <input
                                                 className="search-input"
@@ -399,7 +385,7 @@ const QuanLySanPham = () => {
                                     ))}
 
                                     {["khoiLuong", "chieuDai", "chieuRong", "chieuCao", "donGiaBan", "soLuongToiThieu", "soLuongHienCon"].map(key => (
-                                        <div key={key} style={{ marginBottom: 8 }}>
+                                        <div key={key}>
                                             <label style={{ fontWeight: 500 }}>{labelMap[key]}</label>
                                             <input
                                                 className="search-input"
@@ -410,7 +396,7 @@ const QuanLySanPham = () => {
                                         </div>
                                     ))}
 
-                                    <div style={{ marginBottom: 8 }}>
+                                    <div>
                                         <label style={{ fontWeight: 500 }}>{labelMap.ngaySanXuat}</label>
                                         <input
                                             className="search-input"
@@ -421,7 +407,7 @@ const QuanLySanPham = () => {
                                     </div>
 
                                     {["idDanhMuc", "idThuongHieu", "idNhaCungCap", "idDonViTinh"].map(key => (
-                                        <div key={key} style={{ marginBottom: 8 }}>
+                                        <div key={key}>
                                             <label style={{ fontWeight: 500 }}>{labelMap[key]}</label>
                                             <select
                                                 className="search-input"
@@ -443,57 +429,9 @@ const QuanLySanPham = () => {
                                             </select>
                                         </div>
                                     ))}
+                               
 
-                                    <div style={{ marginTop: 16, padding: 12, border: "1px solid #ccc", borderRadius: 8 }}>
-                                        <h4>🧬 Thông số kỹ thuật</h4>
-                                        <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                                            <select
-                                                className="search-input"
-                                                value={thongSoTam.idThongSo}
-                                                onChange={e => setThongSoTam({ ...thongSoTam, idThongSo: e.target.value })}
-                                            >
-                                                <option value="">-- Chọn thông số --</option>
-                                                {thongSoList.map(ts => (
-                                                    <option key={ts.idThongSo} value={ts.idThongSo}>{ts.tenThongSo}</option>
-                                                ))}
-                                            </select>
-                                            <input
-                                                className="search-input"
-                                                placeholder="Giá trị"
-                                                value={thongSoTam.giaTriThongSo}
-                                                onChange={e => setThongSoTam({ ...thongSoTam, giaTriThongSo: e.target.value })}
-                                            />
-                                            <button
-                                                onClick={() => {
-                                                    if (!thongSoTam.idThongSo || !thongSoTam.giaTriThongSo.trim()) return;
-                                                    setDsThongSo([...dsThongSo, thongSoTam]);
-                                                    setThongSoTam({ idThongSo: "", giaTriThongSo: "" });
-                                                }}
-                                            >➕</button>
-                                            <button
-                                                onClick={() => {
-                                                    const ten = prompt("Tên thông số mới:");
-                                                    if (!ten) return;
-                                                    fetch(`${API}/thongso`, {
-                                                        method: "POST",
-                                                        headers: { "Content-Type": "application/json" },
-                                                        body: JSON.stringify({ tenThongSo: ten })
-                                                    }).then(() => fetch(`${API}/thongso`).then(r => r.json()).then(setThongSoList));
-                                                }}
-                                            >➕ Thông số mới</button>
-                                        </div>
-                                        <ul style={{ marginLeft: 16 }}>
-                                            {dsThongSo.map((ts, idx) => {
-                                                const tsName = thongSoList.find(t => t.idThongSo == ts.idThongSo)?.tenThongSo || ts.idThongSo;
-                                                return (
-                                                    <li key={idx}>
-                                                        <strong>{tsName}:</strong> {ts.giaTriThongSo}
-                                                        <button onClick={() => setDsThongSo(dsThongSo.filter((_, i) => i !== idx))}>❌</button>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
+                                
 
                                     <div style={{ marginBottom: 8 }}>
                                         <label style={{ fontWeight: 500 }}>Ảnh sản phẩm (upload từ máy)</label>
@@ -513,8 +451,58 @@ const QuanLySanPham = () => {
                                             />
                                         </div>
                                     )}
-                                </div>
 
+                                </div>
+                                <div style={{ marginTop: 16, padding: 12, border: "1px solid #ccc", borderRadius: 8 }}>
+                                    <h4>🧬 Thông số kỹ thuật</h4>
+                                    <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                                        <select
+                                            className="search-input"
+                                            value={thongSoTam.idThongSo}
+                                            onChange={e => setThongSoTam({ ...thongSoTam, idThongSo: e.target.value })}
+                                        >
+                                            <option value="">-- Chọn thông số --</option>
+                                            {thongSoList.map(ts => (
+                                                <option key={ts.idThongSo} value={ts.idThongSo}>{ts.tenThongSo}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            className="search-input"
+                                            placeholder="Giá trị"
+                                            value={thongSoTam.giaTriThongSo}
+                                            onChange={e => setThongSoTam({ ...thongSoTam, giaTriThongSo: e.target.value })}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                if (!thongSoTam.idThongSo || !thongSoTam.giaTriThongSo.trim()) return;
+                                                setDsThongSo([...dsThongSo, thongSoTam]);
+                                                setThongSoTam({ idThongSo: "", giaTriThongSo: "" });
+                                            }}
+                                        >➕</button>
+                                        <button
+                                            onClick={() => {
+                                                const ten = prompt("Tên thông số mới:");
+                                                if (!ten) return;
+                                                fetch(`${API}/thongso`, {
+                                                    method: "POST",
+                                                    headers: { "Content-Type": "application/json" },
+                                                    body: JSON.stringify({ tenThongSo: ten })
+                                                }).then(() => fetch(`${API}/thongso`).then(r => r.json()).then(setThongSoList));
+                                            }}
+                                        >➕ Thông số mới</button>
+                                    </div>
+                                    <ul style={{ marginLeft: 16 }}>
+                                        {dsThongSo.map((ts, idx) => {
+                                            const tsName = thongSoList.find(t => t.idThongSo == ts.idThongSo)?.tenThongSo || ts.idThongSo;
+                                            return (
+                                                <li key={idx}>
+                                                    <strong>{tsName}:</strong> {ts.giaTriThongSo}
+                                                    <button onClick={() => setDsThongSo(dsThongSo.filter((_, i) => i !== idx))}>❌</button>
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                </div>
                                 {/* Footer cố định */}
                                 <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}>
                                     <button className="add-button" onClick={handleSubmit}>💾 Lưu</button>
@@ -525,7 +513,7 @@ const QuanLySanPham = () => {
                     )}
                     {detailPopup && spChiTiet && (
                         <div className="popup">
-                            <div className="popup-inner" style={{ maxWidth: 650, maxHeight: '90vh', overflowY: 'auto', padding: 24, position: 'relative' }}>
+                            <div className="popup-inner" style={{ maxWidth: 650, maxHeight: '87vh', overflowY: 'auto', padding: 24, position: 'relative' }}>
 
                                 {/* Nút X góc phải */}
                                 <button
@@ -591,7 +579,7 @@ const QuanLySanPham = () => {
                                 {/* Nút đóng cố định */}
                                 <div style={{
                                     position: 'sticky',
-                                    bottom: 0,
+                                   
                                     background: '#fff',
                                     paddingTop: 6,
                                     paddingBottom: 38,

@@ -135,7 +135,7 @@ function FormSuaYeuCauXuatKho() {
                 </div>
 
                 <div className="form-container">
-                    <h1 className="title">✏️ Sửa Yêu Cầu Xuất Kho #{id}</h1>
+                    <h1 className="title">✏️ SỬA YÊU CẦU XUẤT KHO #{id}</h1>
                   
                     <div className="form-grid">
                         <div className="form-section">

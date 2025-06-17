@@ -82,6 +82,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 tenTaiKhoan = dto.tenTaiKhoan,
                 email = dto.email,
                 idChucVu = dto.idChucVu,
+                idDaiLy = dto.idDaiLy,
                 ngayCap = dto.ngayCap,
                 trangThai = dto.trangThai,
                 matKhau = passwordHasher.HashPassword(null, plainPassword),
@@ -148,6 +149,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         {
             var taiKhoan = await _context.TaiKhoan
                 .Include(t => t.ChucVu)
+                .Include(t => t.DaiLy)
                 .FirstOrDefaultAsync(t => t.tenTaiKhoan == request.Username);
 
             if (taiKhoan == null) return Unauthorized("Tên tài khoản không tồn tại.");
@@ -167,7 +169,8 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 taiKhoan.tenTaiKhoan,
                 taiKhoan.email,
                 taiKhoan.ChucVu.tenChucVu,
-                doiMatKhau = taiKhoan.doiMatKhau
+                doiMatKhau = taiKhoan.doiMatKhau,
+                idDaiLy = taiKhoan.idDaiLy
             });
         }
 

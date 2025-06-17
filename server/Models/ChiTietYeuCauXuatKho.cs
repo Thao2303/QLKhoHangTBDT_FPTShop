@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("CHITIETYEUCAUXUATKHO")]
     public class ChiTietYeuCauXuatKho
     {
         public int idYeuCauXuatKho { get; set; }

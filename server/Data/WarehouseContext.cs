@@ -44,10 +44,52 @@ namespace QuanLyKhoHangFPTShop.server.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<ChiTietYeuCauXuatKho>()
+    .HasOne(x => x.SanPham)
+    .WithMany()
+    .HasForeignKey(x => x.idSanPham)
+    .OnDelete(DeleteBehavior.NoAction); // NGĂN cascade để tránh vòng xoá
+
+            modelBuilder.Entity<ChiTietYeuCauXuatKho>()
+                .HasOne(x => x.YeuCauXuatKho)
+                .WithMany()
+                .HasForeignKey(x => x.idYeuCauXuatKho)
+                .OnDelete(DeleteBehavior.Cascade); // Giữ nguyên cascade tại đây (tuỳ logic của bạn)
+
+            modelBuilder.Entity<ViTriLuuTam>()
+    .HasOne(v => v.SanPham)
+    .WithMany()
+    .HasForeignKey(v => v.idSanPham)
+    .OnDelete(DeleteBehavior.Restrict); // ✅ Đổi từ Cascade → Restrict
+
+            modelBuilder.Entity<ViTriLuuTam>()
+                .HasOne(v => v.PhieuNhap)
+                .WithMany()
+                .HasForeignKey(v => v.idPhieuNhap)
+                .OnDelete(DeleteBehavior.Restrict); // ✅
+
+            modelBuilder.Entity<ViTriLuuTam>()
+                .HasOne(v => v.ViTri)
+                .WithMany()
+                .HasForeignKey(v => v.idViTri)
+                .OnDelete(DeleteBehavior.Restrict); // ✅
+
 
             // Định nghĩa khóa chính cho ChiTietPhieuNhap
             modelBuilder.Entity<ChiTietPhieuNhap>()
        .HasKey(c => new { c.idPhieuNhap, c.idSanPham });
+            modelBuilder.Entity<ChiTietPhieuNhap>()
+    .HasOne(c => c.SanPham)
+    .WithMany()
+    .HasForeignKey(c => c.idSanPham)
+    .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ChiTietPhieuNhap>()
+    .HasOne(c => c.PhieuNhap)
+    .WithMany()
+    .HasForeignKey(c => c.idPhieuNhap)
+    .OnDelete(DeleteBehavior.Cascade); // cái này giữ nguyên
+
 
             // Định nghĩa khóa chính cho ChiTietPhieuXuat
             modelBuilder.Entity<ChiTietPhieuXuat>()
@@ -112,9 +154,7 @@ namespace QuanLyKhoHangFPTShop.server.Data
             modelBuilder.Entity<YeuCauXuatKho>()
                 .HasKey(y => y.IdYeuCauXuatKho); // Primary Key cho bảng YeuCauXuatKho
 
-            // Định nghĩa khóa chính cho PhieuNhap
-            modelBuilder.Entity<PhieuNhap>()
-                .ToTable("PhieuNhap");
+         
 
 
             modelBuilder.Entity<PhieuXuat>()
@@ -141,6 +181,12 @@ namespace QuanLyKhoHangFPTShop.server.Data
     .WithMany(k => k.ViTris)
     .HasForeignKey(v => v.idKhuVuc)
     .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<LoHang>()
+    .HasOne(l => l.PhieuNhap)
+    .WithMany()
+    .HasForeignKey(l => l.idPhieuNhap)
+    .OnDelete(DeleteBehavior.Restrict);
 
 
             modelBuilder.Entity<ChiTietLuuTru>()

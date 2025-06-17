@@ -216,7 +216,7 @@ const FormSuaPhieuNhap = () => {
                 </div>
 
                 <div className="form-container">
-                    <h1 className="title">📦 Sửa Phiếu Nhập #{id}</h1>
+                    <h1 className="title">📦 SỬA PHIẾU NHẬP #{id}</h1>
                
                     <form onSubmit={handleSubmit} className="form-grid">
                         <div className="form-section">

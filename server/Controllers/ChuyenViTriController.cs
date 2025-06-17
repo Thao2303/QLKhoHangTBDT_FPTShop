@@ -65,13 +65,13 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             }
 
             // 5) Cập nhật DaDung cho vị trí
-            var viTriEntityCu = _context.ViTri.FirstOrDefault(v => v.IdViTri == dto.idViTriCu);
+            var viTriEntityCu = _context.ViTri.FirstOrDefault(v => v.idViTri == dto.idViTriCu);
             if (viTriEntityCu != null)
-                viTriEntityCu.DaDung -= (int)Math.Ceiling((double)tongTheTich);
+                viTriEntityCu.daDung -= (int)Math.Ceiling((double)tongTheTich);
 
-            var viTriEntityMoi = _context.ViTri.FirstOrDefault(v => v.IdViTri == dto.idViTriMoi);
+            var viTriEntityMoi = _context.ViTri.FirstOrDefault(v => v.idViTri == dto.idViTriMoi);
             if (viTriEntityMoi != null)
-                viTriEntityMoi.DaDung += (int)Math.Ceiling((double)tongTheTich);
+                viTriEntityMoi.daDung += (int)Math.Ceiling((double)tongTheTich);
 
             // 6) Lưu thay đổi
             _context.SaveChanges();

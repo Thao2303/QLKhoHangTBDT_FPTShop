@@ -68,15 +68,15 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 from ct in _context.ChiTietYeuCauKiemKe
                 join sp in _context.SanPham on ct.idSanPham equals sp.idSanPham
                 join lt in _context.ChiTietLuuTru on sp.idSanPham equals lt.idSanPham
-                join vt in _context.ViTri on lt.idViTri equals vt.IdViTri
+                join vt in _context.ViTri on lt.idViTri equals vt.idViTri
                 where ct.idYeuCauKiemKe == id
-                group lt by new { sp.idSanPham, sp.tenSanPham, lt.idViTri, vt.Day, vt.Cot, vt.Tang } into g
+                group lt by new { sp.idSanPham, sp.tenSanPham, lt.idViTri, vt.day, vt.cot, vt.tang } into g
                 select new
                 {
                     g.Key.idSanPham,
                     g.Key.tenSanPham,
                     g.Key.idViTri,
-                    viTri = g.Key.Day + "-" + g.Key.Cot + "-" + g.Key.Tang,
+                    viTri = g.Key.day + "-" + g.Key.cot + "-" + g.Key.tang,
                     soLuongTaiViTri = g.Sum(x => x.soLuong)
                 }
             ).ToListAsync();

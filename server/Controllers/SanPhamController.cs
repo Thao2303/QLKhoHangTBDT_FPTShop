@@ -123,13 +123,13 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         public IActionResult GetViTriTheoLo(int id)
         {
             var result = (from ct in _context.ChiTietLuuTru
-                          join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
+                          join vt in _context.ViTri on ct.idViTri equals vt.idViTri
                           join lo in _context.LoHang on ct.idLoHang equals lo.idLoHang
                           where ct.idSanPham == id && ct.soLuong > 0
                           select new
                           {
                               ct.idViTri,
-                              tenViTri = $"Dãy {vt.Day} - Cột {vt.Cot} - Tầng {vt.Tang}",
+                              tenViTri = $"Dãy {vt.day} - Cột {vt.cot} - Tầng {vt.tang}",
                               ct.soLuong,
                               lo.idLoHang,
                               lo.tenLo
@@ -141,19 +141,36 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         public IActionResult GetViTriTheoSanPham(int id)
         {
             var result = (from ct in _context.ChiTietLuuTru
-                          join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
+                          join vt in _context.ViTri on ct.idViTri equals vt.idViTri
                           where ct.idSanPham == id && ct.soLuong > 0
+                          group ct by new { ct.idViTri, vt.day, vt.cot, vt.tang, vt.sucChua, vt.daDung } into g
                           select new
                           {
-                              idViTri = vt.IdViTri,
-                              tenViTri = $"Dãy {vt.Day} - Cột {vt.Cot} - Tầng {vt.Tang}",
-                              ct.soLuong,
-                              sucChua = vt.SucChua,
-                              daDung = vt.DaDung
+                              idViTri = g.Key.idViTri,
+                              day = g.Key.day,
+                              cot = g.Key.cot,
+                              tang = g.Key.tang,
+                              tenViTri = $"Dãy {g.Key.day} - Cột {g.Key.cot} - Tầng {g.Key.tang}",
+                              soLuong = g.Sum(x => x.soLuong),
+                              sucChua = g.Key.sucChua,
+                              daDung = g.Key.daDung
                           }).ToList();
 
             return Ok(result);
         }
+
+        [HttpPut("update-toithieu/{id}")]
+        public async Task<IActionResult> UpdateTonToiThieu(int id, [FromBody] int soLuongToiThieu)
+        {
+            var sp = await _context.SanPham.FindAsync(id);
+            if (sp == null) return NotFound();
+
+            sp.soLuongToiThieu = soLuongToiThieu;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "✅ Đã cập nhật tồn tối thiểu" });
+        }
+
 
     }
 

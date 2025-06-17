@@ -93,7 +93,7 @@ const FormYeuCauKiemKePopup = ({ visible, onClose, onSubmit, initialData = null 
     return (
         <div className="popup-overlay">
             <form className="popup-box" onSubmit={handleSubmit}>
-                <h1 className="title">{initialData ? "✏️ Sửa yêu cầu" : "📋 Tạo yêu cầu kiểm kê"}</h1>
+                <h1 className="title">{initialData ? "✏️ SỬA YÊU CẦU KIỂM KÊ" : "📋 TẠO YÊU CẦU KIỂM KÊ"}</h1>
               
                 <label>Mục đích</label>
                 <input className="input" value={form.mucDich} onChange={(e) => setForm({ ...form, mucDich: e.target.value })} required />

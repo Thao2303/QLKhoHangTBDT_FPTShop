@@ -36,7 +36,7 @@ const FormSuaYeuCauKiemKe = () => {
 
     return (
         <div className="form-container">
-            <h2>Sửa yêu cầu kiểm kê</h2>
+            <h2>SỬA YÊU CẦU KIỂM KÊ</h2>
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Mục đích:</label>

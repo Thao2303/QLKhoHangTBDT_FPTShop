@@ -169,56 +169,29 @@ const FormTaoPhieuXuat = () => {
 
                 <div className="form-container">
                 
-                    <h2>Tạo Phiếu Xuất Kho từ Yêu Cầu #{tuYeuCau?.idYeuCauXuatKho}</h2>
+                    <h1 className ="title">TẠO PHIẾU XUẤT KHO TỪ YÊU CẦU #{tuYeuCau?.idYeuCauXuatKho}</h1>
                     <form onSubmit={handleSubmit} className="form-grid">
                         <div className="form-section">
                             <label>Ngày xuất</label>
                             <input type="date" value={ngayXuat} onChange={(e) => setNgayXuat(e.target.value)} />
                         </div>
 
-                        <div className="form-section full-width">
+                        <div className="form-section">
                             <label>Ghi chú</label>
-                            <textarea value={ghiChu} onChange={(e) => setGhiChu(e.target.value)} />
+                            <input value={ghiChu} onChange={(e) => setGhiChu(e.target.value)} />
                         </div>
                        
                         <div className="added-products full-width">
                             <h3>Danh sách sản phẩm xuất:</h3>
                             {dsSanPham.map(sp => (
                                 <div key={sp.idSanPham} className="phanbo-sp">
-                                    <h4>{sp.tenSanPham} (Cần: {sp.soLuong})</h4>
-                                    <div className="form-row" style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
-                                        <div>
-                                            <label>Đơn giá</label>
-                                            <input
-                                                type="number"
-                                                placeholder="Đơn giá"
-                                                value={phanBoDonGia[sp.idSanPham] ?? sp.donGiaBan ?? 0}
-                                                onChange={e => setPhanBoDonGia(prev => ({
-                                                    ...prev,
-                                                    [sp.idSanPham]: e.target.value
-                                                }))}
-                                            />
-
-                                        </div>
-
-                                        <div>
-                                            <label>% Chiết khấu</label>
-                                            <input
-                                                type="number"
-                                                placeholder="%"
-                                                value={phanBoChietKhau[sp.idSanPham] || 0}
-                                                onChange={e => setPhanBoChietKhau(prev => ({
-                                                    ...prev,
-                                                    [sp.idSanPham]: e.target.value
-                                                }))}
-                                            />
-                                        </div>
-                                    </div>
-                                    <p>
-                                        Giá sau chiết khấu: <strong>
-                                            {(phanBoDonGia[sp.idSanPham] || 0) * (1 - (phanBoChietKhau[sp.idSanPham] || 0) / 100)} ₫
-                                        </strong>
+                                    <h4>🛒 <strong>{sp.tenSanPham}</strong></h4>
+                                    <p style={{ color: "#555", marginLeft: 12 }}>
+                                        Cần: <strong>{sp.soLuong}</strong> &nbsp;&nbsp;<br></br>
+                                        Đơn giá: <strong>{phanBoDonGia[sp.idSanPham]?.toLocaleString("vi-VN")} ₫</strong>
                                     </p>
+
+
 
                                     <p style={{
                                         fontStyle: 'italic',

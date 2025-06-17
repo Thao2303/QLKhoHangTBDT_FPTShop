@@ -39,6 +39,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         public async Task<ActionResult<PhieuXuat>> GetPhieuXuat(int id)
         {
             var phieuXuat = await _context.PhieuXuat
+              
      .Include(px => px.YeuCauXuatKho)
          .ThenInclude(yc => yc.TrangThaiXacNhan)
      .Include(px => px.YeuCauXuatKho)
@@ -215,9 +216,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Select(c => new
                 {
                     c.idViTri,
-                    c.ViTri.Day,
-                    c.ViTri.Cot,
-                    c.ViTri.Tang,
+                    c.ViTri.day,
+                    c.ViTri.cot,
+                    c.ViTri.tang,
                     SoLuongCon = c.soLuong
                 })
                 .ToListAsync();

@@ -75,7 +75,7 @@ const FormViTri = ({ visible, onClose, onSubmit, initialData }) => {
         <div className="popup-overlay">
             <form onSubmit={handleSubmit} className="popup-form">
                 <h2 className="text-lg font-semibold mb-4">
-                    {initialData ? "Sửa vị trí" : "Thêm vị trí"}
+                    {initialData ? "SỬA VỊ TRÍ" : "THÊM VỊ TRÍ"}
                 </h2>
 
                 <div style={{

@@ -64,7 +64,7 @@ const FormChinhSuaYeuCauKiemKe = () => {
 
     return (
         <div className="container">
-            <h2>✏️ Chỉnh sửa yêu cầu kiểm kê #{id}</h2>
+            <h2>✏️ CHỈNH SỬA YÊU CẦU KIỂM KÊ #{id}</h2>
 
             <label>Mục đích:</label>
             <input name="mucDich" value={form.mucDich} onChange={handleChange} />

@@ -5,10 +5,41 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import "./Sidebar.css";
+import { FaChevronRight } from "react-icons/fa";
+import {
+    Home, ClipboardList, History, Map, LogOut,
+    Boxes, Search, Warehouse, Users, PackageOpen, List, Menu, ChevronRight
+} from "lucide-react";
+import {
+    HiOutlineDocumentAdd,
+    HiArrowDownTray,
+    HiArrowUpTray,
+    HiMap,
+    HiUsers,
+    HiOutlineClipboardDocument,
+    HiOutlineBuildingStorefront,
+    HiOutlineBuildingLibrary,
+    HiOutlineMapPin,
+    HiArchiveBox,
+    HiCube,
+    HiOutlineArrowLeftOnRectangle
+} from "react-icons/hi2";
+
+import {
+    LuLayoutDashboard,
+    LuPackageOpen,
+    LuListTodo,
+    LuBoxes
+} from "react-icons/lu";
+
+import { FiSearch } from "react-icons/fi";
+import { BsListNested } from "react-icons/bs";
+import { MdReceiptLong, MdLocationOn } from "react-icons/md";
 
 const MenuItem = ({ to, icon, label, isCollapsed }) => {
     const location = useLocation();
     const isActive = location.pathname === to;
+  
 
     return (
         <li className={`sidebar-item ${isActive ? "active" : ""}`}>
@@ -16,7 +47,9 @@ const MenuItem = ({ to, icon, label, isCollapsed }) => {
                 to={to}
                 className="menu-link"
                 data-tooltip={isCollapsed ? label : ""}
+                onClick={(e) => e.stopPropagation()} // ✅ Thêm dòng này
             >
+
                 <div className="icon">{icon}</div>
                 {!isCollapsed && <span className="label">{label}</span>}
             </Link>
@@ -25,6 +58,7 @@ const MenuItem = ({ to, icon, label, isCollapsed }) => {
 };
 
 const MenuItemWithSub = ({ icon, label, children, isCollapsed }) => {
+
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -32,29 +66,31 @@ const MenuItemWithSub = ({ icon, label, children, isCollapsed }) => {
             <div
                 className="menu-link"
                 data-tooltip={isCollapsed ? label : ""}
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={(e) => {
+                    e.stopPropagation(); // ✅ NGĂN CLICK LAN RA
+                    setIsOpen(!isOpen);
+                }}
                 style={{ cursor: "pointer" }}
             >
+
                 <div className="icon">{icon}</div>
                 {!isCollapsed && (
                     <>
                         <span className="label" style={{ flex: 1 }}>{label}</span>
-                       <span style={{
-    display: "inline-block",
-    transition: "transform 0.3s ease",
-    transform: isOpen ? "rotate(90deg)" : "rotate(0deg)"
-}}>
+                        <FaChevronRight style={{
+                            transition: "transform 0.3s ease",
+                            transform: isOpen ? "rotate(90deg)" : "rotate(0deg)"
+                        }} />
 
-                            ▶
-                        </span>
                     </>
                 )}
             </div>
             {!isCollapsed && isOpen && (
-                <ul style={{ paddingLeft: 0 }}>
+                <ul className="sidebar-submenu">
                     {children}
                 </ul>
             )}
+
         </li>
     );
 };
@@ -64,7 +100,10 @@ const Sidebar = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     const role = user ? user.tenChucVu : "";
     const navigate = useNavigate();
-
+    const [openMenus, setOpenMenus] = useState({});
+    const toggleMenu = (label) => {
+        setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+    };
     const handleLogout = () => {
         localStorage.removeItem("user");
         navigate("/login");
@@ -91,62 +130,82 @@ const Sidebar = () => {
                 <ul className="sidebar-menu">
                     {role === "Thủ kho" && (
                         <>
-                            <MenuItemWithSub icon={<FaHome />} label="Dashboard" isCollapsed={isCollapsed}>
-                                <MenuItem to="/dashboard-phieu-nhap" icon={<FaClipboardList />} label="Phiếu nhập" isCollapsed={isCollapsed} />
-                                <MenuItem to="/dashboard-phieu-xuat" icon={<FaBoxOpen />} label="Phiếu xuất" isCollapsed={isCollapsed} />
-                                <MenuItem to="/dashboard-yeu-cau-xuat-kho" icon={<FaList />} label="Yêu cầu xuất kho" isCollapsed={isCollapsed} />
-                                <MenuItem to="/dashboard-san-pham" icon={<FaWarehouse />} label="Sản phẩm" isCollapsed={isCollapsed} />
+                            <MenuItemWithSub icon={<LuLayoutDashboard />} label="Dashboard" isCollapsed={isCollapsed}>
+                                <MenuItem to="/dashboard-phieu-nhap" icon={<HiArrowDownTray />} label="Phiếu nhập" isCollapsed={isCollapsed} />
+                                <MenuItem to="/dashboard-phieu-xuat" icon={<LuPackageOpen />} label="Phiếu xuất" isCollapsed={isCollapsed} />
+                                <MenuItem to="/dashboard-yeu-cau-xuat-kho" icon={<LuListTodo />} label="Yêu cầu xuất kho" isCollapsed={isCollapsed} />
+                                <MenuItem to="/dashboard-san-pham" icon={<LuBoxes />} label="Sản phẩm" isCollapsed={isCollapsed} />
                             </MenuItemWithSub>
 
-                            <MenuItem to="/quanlyphieunhap" icon={<FaClipboardList />} label="Quản lý nhập kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyyeucauxuat" icon={<FaClipboardList />} label="Quản lý YC xuất kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyphieuxuat" icon={<FaBoxOpen />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
-                            <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm vị trí SP" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<FaClipboardList />} label="Quản lý kiểm kê" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-ton-kho" icon={<FaWarehouse />} label="Tồn kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-vi-tri-san-pham" icon={<FaWarehouse />} label="Quản lý vị trí sản phẩm" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-tai-khoan" icon={<FaUsers />} label="Quản lý tài khoản" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyvitri" icon={<FaBoxes />} label="Quản lý vị trí" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-ncc" icon={<FaUsers />} label="Quản lý nhà cung cấp" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-dai-ly" icon={<FaUsers />} label="Quản lý đại lý" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-san-pham" icon={<FaBoxOpen />} label="Quản lý sản phẩm" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-danh-muc" icon={<FaList />} label="Quản lý danh mục SP" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyphieunhap" icon={<HiArrowDownTray />} label="Quản lý nhập kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyyeucauxuat" icon={<HiArrowUpTray />} label="Quản lý YC xuất kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyphieuxuat" icon={<MdReceiptLong />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
+                            <MenuItem to="/sodokho" icon={<HiMap />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/timkiem" icon={<FiSearch />} label="Tìm kiếm vị trí SP" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<HiOutlineClipboardDocument />} label="Kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-ton-kho" icon={<HiArchiveBox />} label="Tồn kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-vi-tri-san-pham" icon={<MdLocationOn />} label="Quản lý vị trí sản phẩm" isCollapsed={isCollapsed} />
+                            <MenuItemWithSub icon={<LuLayoutDashboard />} label="Quản lý chung" isCollapsed={isCollapsed}>
+                                <MenuItem to="/quan-ly-tai-khoan" icon={<HiUsers />} label="Quản lý tài khoản" isCollapsed={isCollapsed} />
+                                <MenuItem to="/quanlyvitri" icon={<HiOutlineMapPin />} label="Quản lý vị trí" isCollapsed={isCollapsed} />
+                                <MenuItem to="/quan-ly-ncc" icon={<HiOutlineBuildingStorefront />} label="Quản lý nhà cung cấp" isCollapsed={isCollapsed} />
+                                <MenuItem to="/quan-ly-dai-ly" icon={<HiOutlineBuildingLibrary />} label="Quản lý đại lý" isCollapsed={isCollapsed} />
+                                <MenuItem to="/quan-ly-san-pham" icon={<HiCube />} label="Quản lý sản phẩm" isCollapsed={isCollapsed} />
+                                <MenuItem to="/quan-ly-danh-muc" icon={<BsListNested />} label="Quản lý danh mục SP" isCollapsed={isCollapsed} />
+                            </MenuItemWithSub>
+                            
                         </>
                     )}
 
                     {role === "Nhân viên" && (
                         <>
-                            <MenuItem to="/dashboard" icon={<FaHome />} label="Dashboard" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyphieunhap" icon={<FaClipboardList />} label="Phiếu nhập" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyyeucauxuat" icon={<FaBoxOpen />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
-                            <MenuItem to="/lichsunhap" icon={<FaHistory />} label="Lịch sử nhập" isCollapsed={isCollapsed} />
-                            <MenuItem to="/lichsuxuat" icon={<FaHistory />} label="Lịch sử xuất" isCollapsed={isCollapsed} />
-                            <MenuItem to="/vitritrong" icon={<FaBoxes />} label="Vị trí trống" isCollapsed={isCollapsed} />
-                            <MenuItem to="/sodokho" icon={<FaMapMarkedAlt />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/timkiem" icon={<FaSearch />} label="Tìm kiếm" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<FaClipboardList />} label="Quản lý kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItemWithSub icon={<LuLayoutDashboard />} label="Dashboard" isCollapsed={isCollapsed}>
+                                <MenuItem to="/dashboard-phieu-nhap" icon={<HiArrowDownTray />} label="Phiếu nhập" isCollapsed={isCollapsed} />
+                                <MenuItem to="/dashboard-phieu-xuat" icon={<LuPackageOpen />} label="Phiếu xuất" isCollapsed={isCollapsed} />
+                                <MenuItem to="/dashboard-yeu-cau-xuat-kho" icon={<LuListTodo />} label="Yêu cầu xuất kho" isCollapsed={isCollapsed} />
+                                <MenuItem to="/dashboard-san-pham" icon={<LuBoxes />} label="Sản phẩm" isCollapsed={isCollapsed} />
+                            </MenuItemWithSub>
+
+                            <MenuItem to="/quanlyphieunhap" icon={<HiArrowDownTray />} label="Quản lý nhập kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyyeucauxuat" icon={<HiArrowUpTray />} label="Quản lý YC xuất kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyphieuxuat" icon={<MdReceiptLong />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
+                            <MenuItem to="/sodokho" icon={<HiMap />} label="Sơ đồ kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/timkiem" icon={<FiSearch />} label="Tìm kiếm vị trí SP" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-yeu-cau-kiem-ke" icon={<HiOutlineClipboardDocument />} label="Kiểm kê" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-ton-kho" icon={<HiArchiveBox />} label="Tồn kho" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quan-ly-vi-tri-san-pham" icon={<MdLocationOn />} label="Quản lý vị trí sản phẩm" isCollapsed={isCollapsed} />
+                            <MenuItemWithSub icon={<LuLayoutDashboard />} label="Quản lý chung" isCollapsed={isCollapsed}>
+                               
+                                <MenuItem to="/quanlyvitri" icon={<HiOutlineMapPin />} label="Quản lý vị trí" isCollapsed={isCollapsed} />
+                            
+                             
+                                <MenuItem to="/quan-ly-san-pham" icon={<HiCube />} label="Quản lý sản phẩm" isCollapsed={isCollapsed} />
+                                <MenuItem to="/quan-ly-danh-muc" icon={<BsListNested />} label="Quản lý danh mục SP" isCollapsed={isCollapsed} />
+                            </MenuItemWithSub>
                         </>
                     )}
 
                     {role === "Admin" && (
-                        <MenuItem to="/admin/quanlytaikhoan" icon={<FaUsers />} label="QL tài khoản" isCollapsed={isCollapsed} />
+                        <MenuItem to="/quan-ly-tai-khoan" icon={<HiUsers />} label="Quản lý tài khoản" isCollapsed={isCollapsed} />
                     )}
 
-                    {role === "Nhà cung cấp" && (
-                        <MenuItem to="/ncc/quanly" icon={<FaClipboardList />} label="Quản lý NCC" isCollapsed={isCollapsed} />
+                    {role === "Giám đốc đại lý" && (
+                        <>
+                            <MenuItem to="/dashboard-yeu-cau-xuat-kho" icon={<LuListTodo />} label="Dashboard" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyyeucauxuat" icon={<FaBoxOpen />} label="Quản lý YC xuất kho" isCollapsed={isCollapsed} />
+                        </>
                     )}
 
                     {role === "Đại lý bán hàng" && (
                         <>
-                            <MenuItem to="/tao-yeu-cau-xuat-kho" icon={<FaClipboardList />} label="Gửi YC xuất kho" isCollapsed={isCollapsed} />
-                            <MenuItem to="/quanlyyeucauxuat" icon={<FaBoxOpen />} label="Quản lý phiếu xuất" isCollapsed={isCollapsed} />
+                            <MenuItem to="/dashboard-dai-ly" icon={<LuListTodo />} label="Dashboard" isCollapsed={isCollapsed} />
+                            <MenuItem to="/quanlyyeucauxuat" icon={<FaBoxOpen />} label="Quản lý YC xuất kho" isCollapsed={isCollapsed} />
                         </>
                     )}
                 </ul>
 
                 <button className="logout-button" onClick={handleLogout}>
-                    <FaSignOutAlt className="icon" />
+                    <HiOutlineArrowLeftOnRectangle className="icon" />
                     {!isCollapsed && "Đăng xuất"}
                 </button>
             </div>

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("KIEMKE")]
     public class KiemKe
     {
         [Key]
@@ -23,7 +24,7 @@ namespace QuanLyKhoHangFPTShop.server.Models
         public int trangThai { get; set; } = 0;
         public ICollection<ChiTietKiemKe> ChiTietKiemKe { get; set; } = new List<ChiTietKiemKe>();
     }
-
+    [Table("CHITIETKIEMKE")]
     public class ChiTietKiemKe
     {
         [Key, Column(Order = 0)]

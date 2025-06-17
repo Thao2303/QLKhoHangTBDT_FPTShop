@@ -240,7 +240,7 @@ const FormTaoPhieuNhap = () => {
                 </div>
                 <div className="form-container">
                  
-                    <h1 className="title">Tạo Phiếu Nhập Kho</h1>
+                    <h1 className="title">TẠO PHIẾU NHẬP KHO</h1>
                     <form onSubmit={handleSubmit} className="form-grid">
                         <div className="form-section">
                             <label>Danh mục</label>

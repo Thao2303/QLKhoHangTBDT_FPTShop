@@ -327,7 +327,7 @@ SL: ${vt.soLuong}`,
                         </span>
                 </div>
                 <div className="form-container">
-                    <h2 className="title">🧜‍♂️ Gợi ý vị trí lưu trữ sản phẩm (tối ưu bằng GA)
+                    <h2 className="title">🧜‍♂️ CHỌN VỊ TRÍ LƯU TRỮ SẢN PHẨM 
                     </h2>
                     {loading && <p>⏳ Đang chạy thuật toán GA...</p>}
                     {error && <p style={{ color: 'red' }}>{error}</p>}

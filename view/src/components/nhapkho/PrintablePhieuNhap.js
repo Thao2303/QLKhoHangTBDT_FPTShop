@@ -22,7 +22,8 @@ const PrintablePhieuNhap = ({ phieu, chiTiet }) => {
                 <div><strong>Mã phiếu:</strong> {phieu.idPhieuNhap}</div>
                 <div><strong>Ngày nhập:</strong> {new Date(phieu.ngayNhap).toLocaleString()}</div>
                 <div><strong>Nhà cung cấp:</strong> {phieu.nhaCungCap?.tenNhaCungCap}</div>
-                <div><strong>Người lập phiếu:</strong> {phieu.nguoiTao}</div>
+                <div><strong>Người lập:</strong> {phieu.nguoiXuat?.tenTaiKhoan || "Ẩn danh"}</div>
+
                 <div><strong>Trạng thái:</strong> {
                     phieu.trangThai === 1 ? "Chờ duyệt" :
                         phieu.trangThai === 2 ? "Đã duyệt" :

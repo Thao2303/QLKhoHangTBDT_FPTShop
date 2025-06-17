@@ -63,10 +63,10 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Where(c => c.SanPham.tenSanPham.Contains(ten))
                 .Select(c => new
                 {
-                    c.ViTri.IdViTri,
-                    c.ViTri.Day,
-                    c.ViTri.Cot,
-                    c.ViTri.Tang,
+                    c.ViTri.idViTri,
+                    c.ViTri.day,
+                    c.ViTri.cot,
+                    c.ViTri.tang,
                     c.SanPham.tenSanPham,
                     c.soLuong
                 })
@@ -85,9 +85,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .GroupBy(ct => new
                 {
                     ct.idViTri,
-                    ct.ViTri.Day,
-                    ct.ViTri.Cot,
-                    ct.ViTri.Tang,
+                    ct.ViTri.day,
+                    ct.ViTri.cot,
+                    ct.ViTri.tang,
                     ct.SanPham.tenSanPham
                 })
                 .Select(g => new
@@ -97,9 +97,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     g.Key.tenSanPham,
                     vitri = new
                     {
-                        day = g.Key.Day,
-                        cot = g.Key.Cot,
-                        tang = g.Key.Tang
+                        day = g.Key.day,
+                        cot = g.Key.cot,
+                        tang = g.Key.tang
                     }
                 })
                 .ToListAsync();
@@ -119,9 +119,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     x.idSanPham,
                     x.SanPham.tenSanPham,
                     x.idViTri,
-                    day = x.ViTri.Day,
-                    cot = x.ViTri.Cot,
-                    tang = x.ViTri.Tang,
+                    day = x.ViTri.day,
+                    cot = x.ViTri.cot,
+                    tang = x.ViTri.tang,
                     x.soLuong
                 })
                 .ToListAsync();

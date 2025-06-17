@@ -58,7 +58,7 @@ import QuanLyTonTheoLo from "./components/tonkho/QuanLyTonTheoLo"
 //Sản phẩm
 
 import ChuyenViTriSanPham from "./components/sanpham/ChuyenViTriSanPham";
-
+import DashboardDaiLy from "./components/daily/DashboardDaiLy"
 //Đại lý
 import QuanLyDaiLy from "./components/daily/QuanLyDaiLy";
 
@@ -106,50 +106,61 @@ const App = () => {
                 <Route path="/sodokho" element={<SoDoKho />} />
 
                 <Route path="/" element={<Login />} /> 
-                <Route path="/quanlyphieunhap" element={<QuanLyPhieuNhapKho />} />
->               <Route path="/sua-phieu-nhap/:id" element={<FormSuaPhieuNhap />} />
-                <Route path="/them-phieu-nhap" element={<FormTaoPhieuNhap />} />
+                <Route path="/quanlyphieunhap" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}> <QuanLyPhieuNhapKho /> </PrivateRoute> } />
+>               <Route path="/sua-phieu-nhap/:id" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}> <FormSuaPhieuNhap /> </PrivateRoute> } />
+                <Route path="/them-phieu-nhap" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><FormTaoPhieuNhap /> </PrivateRoute>} />
         
-                <Route path="/goiyvitri" element={<GoiYViTriUI />} /> 
-                <Route path="/quanlyvitri" element={<QuanLyViTri />} />
-                <Route path="/sua-vitri-luutru" element={<SuaViTriLuuTru />} />
+                <Route path="/goiyvitri" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><GoiYViTriUI /> </PrivateRoute> } /> 
+                <Route path="/quanlyvitri" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyViTri /> </PrivateRoute> } />
+                <Route path="/sua-vitri-luutru" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><SuaViTriLuuTru /></PrivateRoute>} />
 
-                <Route path="/quanlyphieuxuat" element={<QuanLyPhieuXuat />} />
-                <Route path="/tao-phieu-xuat-kho" element={<><Navbar /><Sidebar /><FormPhieuXuat /></>} />
-                <Route path="/tao-phieu-xuat" element={<FormTaoPhieuXuat />} />
+                <Route path="/quanlyphieuxuat" element={<PrivateRoute allowedRoles={["Đại lý bán hàng","Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><QuanLyPhieuXuat /></PrivateRoute>} />
+                <Route path="/tao-phieu-xuat-kho" element={<PrivateRoute allowedRoles={[ "Thủ kho"]}><><Navbar /><Sidebar /><FormPhieuXuat /></></PrivateRoute>} />
+                <Route path="/tao-phieu-xuat" element={<PrivateRoute allowedRoles={["Thủ kho"]}><FormTaoPhieuXuat /></PrivateRoute>} />
 
-                <Route path="/tao-yeu-cau-xuat-kho" element={<><Navbar /><Sidebar /><FormTaoYeuCauXuatKho /></>} />
-                <Route path="/quanlyyeucauxuat" element={<><Navbar /><Sidebar /><QuanLyYeuCauXuatKho /></>} />
-                <Route path="/sua-yeu-cau-xuat-kho/:id" element={<FormSuaYeuCauXuatKho />} />
+                <Route path="/tao-yeu-cau-xuat-kho" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><><Navbar /><Sidebar /><FormTaoYeuCauXuatKho /></></PrivateRoute>} />
+                <Route path="/quanlyyeucauxuat" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><><Navbar /><Sidebar /><QuanLyYeuCauXuatKho /></></PrivateRoute>} />
+                <Route path="/sua-yeu-cau-xuat-kho/:id" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><FormSuaYeuCauXuatKho /></PrivateRoute>} />
                 
-                <Route path="/quan-ly-yeu-cau-kiem-ke" element={<QuanLyYeuCauKiemKe />} />
-                <Route path="/tao-yeu-cau-kiem-ke" element={<FormTaoYeuCauKiemKe />} />
-                <Route path="/quan-ly-phieu-kiem-ke" element={<QuanLyPhieuKiemKe />} />
-                <Route path="/thuc-hien-kiem-ke/:idYeuCauKiemKe" element={<FormThucHienKiemKe />} />
-                <Route path="/chinh-sua-yeu-cau-kiem-ke/:id" element={<FormChinhSuaYeuCauKiemKe />} />
-                <Route path="/xem-phieu-kiem-ke/:idYeuCauKiemKe" element={<XemPhieuKiemKe />} />
+                <Route path="/quan-ly-yeu-cau-kiem-ke" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyYeuCauKiemKe /></PrivateRoute>} />
+                <Route path="/tao-yeu-cau-kiem-ke" element={<PrivateRoute allowedRoles={["Thủ kho"]}><FormTaoYeuCauKiemKe /></PrivateRoute>} />
+                <Route path="/quan-ly-phieu-kiem-ke" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyPhieuKiemKe /></PrivateRoute>} />
+                <Route path="/thuc-hien-kiem-ke/:idYeuCauKiemKe" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><FormThucHienKiemKe /></PrivateRoute>} />
+                <Route path="/chinh-sua-yeu-cau-kiem-ke/:id" element={<PrivateRoute allowedRoles={["Thủ kho"]}><FormChinhSuaYeuCauKiemKe /></PrivateRoute>} />
+                <Route path="/xem-phieu-kiem-ke/:idYeuCauKiemKe" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><XemPhieuKiemKe /></PrivateRoute>} />
+                <Route path="/phieu-kiem-ke/:id" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><XemPhieuKiemKe /></PrivateRoute>} />
+                <Route path="/xem-phieu-kiem-ke/:idYeuCauKiemKe" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><XemPhieuKiemKe /></PrivateRoute>} />
 
-                <Route path="/quan-ly-danh-muc" element={<QuanLyDanhMuc />} />
+                <Route path="/quan-ly-danh-muc" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyDanhMuc /></PrivateRoute>} />
 
-                <Route path="/quan-ly-san-pham" element={<QuanLySanPham />} />
+                <Route path="/quan-ly-san-pham" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLySanPham /></PrivateRoute>} />
                 <Route path="/timkiem" element={<TrangTimKiemSanPham />} />
 
-                <Route path="/quan-ly-dai-ly" element={<QuanLyDaiLy />} />
+                <Route path="/quan-ly-dai-ly" element={<PrivateRoute allowedRoles={["Thủ kho"]}><QuanLyDaiLy /></PrivateRoute>} />
+                <Route
+                    path="/dashboard-dai-ly"
+                    element={
+                        <PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Thủ kho"]}>
+                            <DashboardDaiLy currentUser={user} />
+                        </PrivateRoute>
+                    }
+                />
 
-                <Route path="quan-ly-ncc" element={<QuanLyNhaCungCap /> } />
+
+                <Route path="quan-ly-ncc" element={<PrivateRoute allowedRoles={["Thủ kho"]}><QuanLyNhaCungCap /> </PrivateRoute>} />
                 <Route path="xac-nhan-tai-khoan" element={<ConfirmAccount /> } />
-                <Route path="/quan-ly-ton-kho" element={<QuanLyTonKho />} />
-                <Route path="/quan-ly-ton-theo-lo" element={<QuanLyTonTheoLo />} />
+                <Route path="/quan-ly-ton-kho" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyTonKho /></PrivateRoute>} />
+                <Route path="/quan-ly-ton-theo-lo" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyTonTheoLo /></PrivateRoute>} />
                 <Route path="/doi-mat-khau" element={<DoiMatKhauPage userId={user.idTaiKhoan} />} />
 
-                <Route path="/chuyen-vi-tri-san-pham" element={<ChuyenViTriSanPham />} />
-                <Route path="/quan-ly-vi-tri-san-pham" element={<QuanLyViTriSanPham />} />
-                <Route path="/tao-phieu-xuat-thukho" element={<FormTaoPhieuXuatThuKho />} />
+                <Route path="/chuyen-vi-tri-san-pham" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><ChuyenViTriSanPham /></PrivateRoute>} />
+                <Route path="/quan-ly-vi-tri-san-pham" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><QuanLyViTriSanPham /></PrivateRoute>} />
+                <Route path="/tao-phieu-xuat-thukho" element={<PrivateRoute allowedRoles={["Thủ kho"]}><FormTaoPhieuXuatThuKho /></PrivateRoute>} />
 
-                <Route path="/dashboard-phieu-nhap" element={<DashboardPhieuNhap />} />
-                <Route path="/dashboard-phieu-xuat" element={<DashboardPhieuXuat />} />
-                <Route path="/dashboard-yeu-cau-xuat-kho" element={<DashboardYeuCauXuatKho />} />
-                <Route path="/dashboard-san-pham" element={<DashboardSanPham />} />
+                <Route path="/dashboard-phieu-nhap" element={<PrivateRoute allowedRoles={["Nhân viên", "Thủ kho"]}><DashboardPhieuNhap /></PrivateRoute>} />
+                <Route path="/dashboard-phieu-xuat" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><DashboardPhieuXuat /></PrivateRoute>} />
+                <Route path="/dashboard-yeu-cau-xuat-kho" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><DashboardYeuCauXuatKho /></PrivateRoute>} />
+                <Route path="/dashboard-san-pham" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><DashboardSanPham /></PrivateRoute>} />
                 <Route path="/dashboard" element={<><Navbar /><Sidebar /><Dashboard /></>} />
                 <Route
                     path="/dashboard"

@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("YEUCAUKIEMKE")]
     public class YeuCauKiemKe
     {
         [Key]
@@ -34,7 +35,7 @@ namespace QuanLyKhoHangFPTShop.server.Models
 
         public ICollection<ChiTietYeuCauKiemKe> ChiTietYeuCau { get; set; } = new List<ChiTietYeuCauKiemKe>();
     }
-
+    [Table("CHITIETYEUCAUKIEMKE")]
     public class ChiTietYeuCauKiemKe
     {
         [Key]

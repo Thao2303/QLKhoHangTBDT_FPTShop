@@ -19,7 +19,7 @@ const ChiTietSanPhamViTri = ({ danhSach = [], viTri, onClose }) => {
     return (
         <div className="popup-inner">
  
-            <h1 className="title">✉️ Thông tin vị trí lưu trữ</h1>
+            <h1 className="title">✉️ THÔNG TIN VỊ TRÍ LƯU TRỮ</h1>
             {viTri ? (
                 <div className="vi-tri-grid">
                     <div><span>ID:</span> {viTri.idViTri}</div>
@@ -46,8 +46,7 @@ const ChiTietSanPhamViTri = ({ danhSach = [], viTri, onClose }) => {
                         <thead>
                             <tr>
                                 <th>Tên sản phẩm</th>
-                                <th>SKU</th>
-                                <th>Màu sắc</th>
+                              
                                 <th style={{ textAlign: "right" }}>Số lượng</th>
                                 <th>Thời gian lưu</th>
                             </tr>
@@ -56,8 +55,7 @@ const ChiTietSanPhamViTri = ({ danhSach = [], viTri, onClose }) => {
                             {danhSachGop.map((sp, index) => (
                                 <tr key={`sp-${index}`}>
                                     <td>{sp.tenSanPham}</td>
-                                    <td>{sp.sku}</td>
-                                    <td>{sp.mauSac}</td>
+                                
                                     <td style={{ textAlign: "right" }}>{sp.soLuong}</td>
                                     <td>
                                         {sp.thoiGianLuu

@@ -131,6 +131,18 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         {
             try
             {
+                // 🔄 Xoá phiếu kiểm kê cũ (nếu đã lưu nháp)
+                var kiemKeCu = await _context.KiemKe
+                    .Include(k => k.ChiTietKiemKe)
+                    .FirstOrDefaultAsync(k => k.idYeuCauKiemKe == dto.idYeuCauKiemKe);
+
+                if (kiemKeCu != null)
+                {
+                    _context.ChiTietKiemKe.RemoveRange(kiemKeCu.ChiTietKiemKe);
+                    _context.KiemKe.Remove(kiemKeCu);
+                    await _context.SaveChangesAsync();
+                }
+
                 var phieu = new KiemKe
                 {
                     idYeuCauKiemKe = dto.idYeuCauKiemKe,
@@ -209,16 +221,16 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             var viTriSanPham = await (
      from ct in _context.ChiTietKiemKe
      join sp in _context.SanPham on ct.idSanPham equals sp.idSanPham
-     join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
+     join vt in _context.ViTri on ct.idViTri equals vt.idViTri
      join lt in _context.ChiTietLuuTru on new { ct.idSanPham, ct.idViTri } equals new { lt.idSanPham, lt.idViTri }
      where ct.idKiemKe == kiemKe.idKiemKe
-     group lt by new { lt.idSanPham, sp.tenSanPham, lt.idViTri, vt.Day, vt.Cot, vt.Tang } into g
+     group lt by new { lt.idSanPham, sp.tenSanPham, lt.idViTri, vt.day, vt.cot, vt.tang } into g
      select new
      {
          g.Key.idSanPham,
          g.Key.tenSanPham,
          g.Key.idViTri,
-         viTri = g.Key.Day + "-" + g.Key.Cot + "-" + g.Key.Tang,
+         viTri = g.Key.day + "-" + g.Key.cot + "-" + g.Key.tang,
          soLuongTaiViTri = g.Sum(x => x.soLuong) // ✅ lấy từ lưu trữ thực tế
      }
  ).ToListAsync();

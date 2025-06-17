@@ -4,8 +4,11 @@ import Navbar from '../common/Navbar/Navbar';
 import axios from "axios";
 import "../nhapkho/FormTaoPhieuNhap.css";
 import * as XLSX from "xlsx";
-import { useReactToPrint } from "react-to-print";
+import PrintableTonKho from "./PrintableTonKho"; // thêm dòng này
+
 import Pagination from "../common/Pagination/Pagination";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 const removeVietnameseTones = (str) => {
     return str.normalize("NFD")
@@ -26,7 +29,7 @@ const QuanLyTonKho = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const printRef = useRef();
-    const handlePrint = useReactToPrint({ content: () => printRef.current });
+
 
     useEffect(() => {
         axios.get("https://localhost:5288/api/tonkho")
@@ -53,22 +56,50 @@ const QuanLyTonKho = () => {
     useEffect(() => {
         fetch("https://localhost:5288/api/tonkho/canhbao-tonkho", { method: "POST" });
     }, []);
+    const handleExportExcel = () => {
+        const wb = XLSX.utils.book_new();
+        const header = [
+            ["BÁO CÁO TỒN KHO"],
+            [],
+            ["Mã SP", "Danh mục", "Tên sản phẩm", "Thương hiệu", "Tồn hệ thống", "Tối thiểu", "Mô tả", "Trạng thái"]
+        ];
 
-    const exportToExcel = () => {
-        const data = filteredData.map(sp => ({
-            "Mã SP": sp.maSanPham,
-            "Tên SP": sp.tenSanPham,
-            "Danh mục": sp.danhMuc,
-            "Thương hiệu": sp.thuongHieu,
-            "Tồn kho": sp.tonHeThong,
-            "Tối thiểu": sp.soLuongToiThieu,
-            "Mô tả": sp.moTa
-        }));
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "TonKho");
-        XLSX.writeFile(workbook, "ton_kho.xlsx");
+        const rows = filteredData.map(sp => [
+            sp.maSanPham,
+            sp.danhMuc,
+            sp.tenSanPham,
+            sp.thuongHieu,
+            sp.tonHeThong,
+            sp.soLuongToiThieu,
+            sp.moTa,
+            getTrangThai(sp.tonHeThong, sp.soLuongToiThieu)
+        ]);
+
+        const sheet = XLSX.utils.aoa_to_sheet([...header, ...rows]);
+        XLSX.utils.book_append_sheet(wb, sheet, "TonKho");
+
+        XLSX.writeFile(wb, `bao_cao_ton_kho.xlsx`);
     };
+    const handleExportPDF = async () => {
+        const element = document.getElementById("tonkho-pdf");
+
+        if (!element) return;
+
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "mm", "a4");
+
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = (canvas.height * pageWidth) / canvas.width;
+
+        pdf.addImage(imgData, "PNG", 0, 0, pageWidth, pageHeight);
+        pdf.save("bao_cao_ton_kho.pdf");
+    };
+
 
     const resetSearch = () => {
         setSearchTerm("");
@@ -102,7 +133,7 @@ const QuanLyTonKho = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">📦 Quản lý tồn kho</h1>
+                    <h1 className="title">📦 QUẢN LÝ TỒN KHO</h1>
 
                     <div className="search-form">
                         <input
@@ -125,12 +156,17 @@ const QuanLyTonKho = () => {
                             <option value="1">⚠️ Cần nhập</option>
                             <option value="2">✅ Ổn định</option>
                         </select>
-                        <button onClick={exportToExcel} className="export-button">📤 Xuất Excel</button>
-                        <button onClick={handlePrint} className="export-button">🖨 In</button>
-                        <button onClick={resetSearch} className="reset-button">🔄 Reset</button>
+                                        <button onClick={resetSearch} className="reset-button">🔄 Reset</button>
                     </div>
 
                     <div style={{ overflowX: "auto" }} ref={printRef}>
+                        <div style={{ margin: "20px 0", textAlign: "right" }}>
+                            <button className="btn" onClick={handleExportExcel}>📊 Xuất Excel</button>
+                            <button className="btn btn-primary" onClick={handleExportPDF}>📄 Xuất PDF</button>
+                        </div>
+
+
+
                         <table className="data-table" style={{ width: "100%" }}>
 
                             <thead>
@@ -181,6 +217,12 @@ const QuanLyTonKho = () => {
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={(page) => setCurrentPage(page)} />
                 </div>
             </div>
+            <div style={{ position: "absolute", top: "-9999px", left: "-9999px" }}>
+                <div id="tonkho-pdf" ref={printRef}>
+                    <PrintableTonKho data={filteredData} />
+                </div>
+            </div>
+
         </div>
     );
 };

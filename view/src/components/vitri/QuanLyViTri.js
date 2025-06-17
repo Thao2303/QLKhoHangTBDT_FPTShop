@@ -116,7 +116,7 @@ const QuanLyViTri = () => {
                 <div className="main-layout">
                     <Navbar />
                     <div className="container">
-                        <h1 className="title">Quản lý vị trí trong kho</h1>
+                        <h1 className="title">QUẢN LÝ VỊ TRÍ TRONG KHO</h1>
 
                         <div className="search-form">
                             <input placeholder="Tìm mã vị trí" value={searchMaViTri} onChange={(e) => setSearchMaViTri(e.target.value)} className="search-input" />

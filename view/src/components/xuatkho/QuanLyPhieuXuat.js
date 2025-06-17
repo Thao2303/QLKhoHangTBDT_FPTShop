@@ -90,20 +90,29 @@ const QuanLyPhieuXuat = () => {
             return { ...ct, donGia, thanhTien, viTriStr };
         });
     };
-
     const handleChonYeuCau = async (yc) => {
         try {
-            // 🛠 Gọi API chi tiết đầy đủ: /api/yeucauxuatkho/{id} có include SanPham
-            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/${yc.idYeuCauXuatKho}`);
-            const fullYeuCau = await res.json();
+            // Nếu đã có sẵn chi tiết thì không cần gọi lại
+            if (!yc.chiTietYeuCauXuatKhos || yc.chiTietYeuCauXuatKhos.length === 0) {
+                const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+                yc.chiTietYeuCauXuatKhos = await res.json();
+            }
 
+            if (!yc.chiTietYeuCauXuatKhos || yc.chiTietYeuCauXuatKhos.length === 0) {
+                alert("Yêu cầu chưa có danh sách sản phẩm.");
+                return;
+            }
+
+            // ✅ Bổ sung chi tiết SP để chuyển qua Form tạo phiếu
             setPopupChonYC(false);
-            setPopupYCChiTiet(fullYeuCau); // ✅ Truyền đúng toàn bộ object
+            setPopupYCChiTiet(yc);
         } catch (err) {
             alert("Lỗi tải chi tiết yêu cầu");
             console.error(err);
         }
     };
+
+
     const exportPDF = async (anViTri = false) => {
         const element = document.createElement("div");
         element.style.position = "absolute";
@@ -175,7 +184,7 @@ const QuanLyPhieuXuat = () => {
                 <div className="main-layout">
                     <Navbar />
                     <div className="container">
-                        <h1 className="title">Quản lý phiếu xuất kho</h1>
+                        <h1 className="title">QUẢN LÝ PHIẾU XUẤT KHO</h1>
 
                         <div className="search-form">
                             <input type="text" placeholder="Mã phiếu" value={searchMa} onChange={(e) => setSearchMa(e.target.value)} className="search-input" />
@@ -301,7 +310,8 @@ const QuanLyPhieuXuat = () => {
                                             <button onClick={() => exportPDF(false)}>📄 Xuất PDF (đầy đủ)</button>
                                             <button onClick={() => exportPDF(true)}>📄 Xuất PDF (ẩn vị trí)</button>
 
-                                            <button onClick={exportPDF}>📄 Xuất PDF</button>
+                                            <button onClick={exportExcel}>📥 Xuất Excel</button>
+
                                             <button className="cancel-button" onClick={() => setPopup(null)}>Đóng</button>
                                         </div>
                                     </div>

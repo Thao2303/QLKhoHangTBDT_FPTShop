@@ -39,29 +39,46 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             var phieuNhaps = await _context.PhieuNhap
                 .Include(p => p.NhaCungCap)
                 .Include(p => p.TaiKhoan)
-                .Include(p => p.ChiTietPhieuNhap)
-                .Select(p => new
+                .ToListAsync();
+
+            var allChiTiet = await _context.ChiTietPhieuNhap.ToListAsync(); // 👈 Lấy toàn bộ chi tiết phiếu nhập 1 lần
+
+            var result = phieuNhaps.Select(p =>
+            {
+                var chiTietList = allChiTiet.Where(ct => ct.idPhieuNhap == p.idPhieuNhap).ToList();
+
+                int trangThai;
+                if (!chiTietList.Any())
+                    trangThai = 1;
+                else if (chiTietList.All(ct => ct.trangThai == 2))
+                    trangThai = 2;
+                else if (chiTietList.All(ct => ct.trangThai == 3))
+                    trangThai = 3;
+                else
+                    trangThai = 1;
+
+                return new
                 {
                     p.idPhieuNhap,
                     p.ngayNhap,
                     p.idTaiKhoan,
                     p.idNhaCungCap,
-                    nguoiTao = p.TaiKhoan.tenTaiKhoan,
+                    nguoiTao = p.TaiKhoan?.tenTaiKhoan,
                     nhaCungCap = new
                     {
-                        p.NhaCungCap.idNhaCungCap,
-                        p.NhaCungCap.tenNhaCungCap
+                        p.NhaCungCap?.idNhaCungCap,
+                        p.NhaCungCap?.tenNhaCungCap
                     },
                     taiKhoan = new
                     {
-                        p.TaiKhoan.idTaiKhoan,
-                        p.TaiKhoan.tenTaiKhoan
+                        p.TaiKhoan?.idTaiKhoan,
+                        p.TaiKhoan?.tenTaiKhoan
                     },
-                    trangThai = p.ChiTietPhieuNhap.Select(ct => (int?)ct.trangThai).FirstOrDefault() ?? 1
-                })
-                .ToListAsync();
+                    trangThai
+                };
+            });
 
-            return Ok(phieuNhaps);
+            return Ok(result);
         }
 
         [HttpPost]
@@ -269,17 +286,29 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 {
                     var msg = $"✅ Phiếu nhập #{id} của bạn đã được duyệt.";
 
-                    await _hubContext.Clients.User(nguoiTao.idTaiKhoan.ToString())
-                        .SendAsync("NhanThongBao", msg);
-
-                    _context.ThongBao.Add(new ThongBao
+                    var thongBao = new ThongBao
                     {
                         idNguoiNhan = nguoiTao.idTaiKhoan,
                         noiDung = msg,
                         ngayTao = DateTime.Now,
-                        daXem = false
-                    });
+                        daXem = false,
+                        lienKet = $"/quanlyphieunhap?focus={id}"
+                    };
+
+                    _context.ThongBao.Add(thongBao);
+                    await _context.SaveChangesAsync(); // ⏹️ Lưu để lấy idThongBao chuẩn từ DB
+
+                    await _hubContext.Clients.User(nguoiTao.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", new
+                        {
+                            noiDung = msg,
+                            ngayTao = thongBao.ngayTao,
+                            lienKet = thongBao.lienKet,
+                            idThongBao = thongBao.idThongBao  // ✅ lấy từ DB
+                        });
+
                 }
+                await _context.SaveChangesAsync();
 
                 return Ok(new { message = "✅ Đã duyệt, cập nhật tồn kho và vị trí thành công!" });
             }
@@ -324,25 +353,25 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
          viTri = (
     from vt in _context.ChiTietLuuTru
     where vt.idPhieuNhap == id && vt.idSanPham == ct.idSanPham
-    join v in _context.ViTri on vt.idViTri equals v.IdViTri
+    join v in _context.ViTri on vt.idViTri equals v.idViTri
     select new
     {
-        v.IdViTri,
-        v.Day,
-        v.Cot,
-        v.Tang,
+        v.idViTri,
+        v.day,
+        v.cot,
+        v.tang,
         soLuong = vt.soLuong
     }
 ).Union(
     from vt in _context.ViTriLuuTam
     where vt.idPhieuNhap == id && vt.idSanPham == ct.idSanPham
-    join v in _context.ViTri on vt.idViTri equals v.IdViTri
+    join v in _context.ViTri on vt.idViTri equals v.idViTri
     select new
     {
-        v.IdViTri,
-        v.Day,
-        v.Cot,
-        v.Tang,
+        v.idViTri,
+        v.day,
+        v.cot,
+        v.tang,
         soLuong = vt.soLuong
     }
 ).ToList()
@@ -422,38 +451,33 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 return BadRequest("ID phiếu nhập không khớp.");
 
             var phieuNhap = await _context.PhieuNhap
-                .Include(p => p.ChiTietPhieuNhap)
                 .FirstOrDefaultAsync(p => p.idPhieuNhap == id);
 
             if (phieuNhap == null)
                 return NotFound("Không tìm thấy phiếu nhập.");
-
-            var trangThai = phieuNhap.ChiTietPhieuNhap.Select(x => x.trangThai).FirstOrDefault();
-            if (trangThai == 2)
-                return BadRequest("⛔ Phiếu đã duyệt, không được phép sửa.");
 
             try
             {
                 // ✅ Cập nhật ngày nhập mới
                 phieuNhap.ngayNhap = dto.ngayNhap ?? DateTime.Now;
 
-
-                // ✅ Xoá tất cả ChiTietLuuTru cũ thuộc phiếu này
+                // ✅ Xoá vị trí lưu trữ cũ
                 var luuTruCu = await _context.ChiTietLuuTru
                     .Where(x => x.idPhieuNhap == id)
                     .ToListAsync();
                 _context.ChiTietLuuTru.RemoveRange(luuTruCu);
 
-                // ✅ Xoá toàn bộ chi tiết phiếu nhập cũ
-                _context.ChiTietPhieuNhap.RemoveRange(phieuNhap.ChiTietPhieuNhap);
+                // ✅ Xoá chi tiết phiếu nhập cũ (phải truy vấn lại từ DB!)
+                var oldChiTiet = await _context.ChiTietPhieuNhap
+                    .Where(ct => ct.idPhieuNhap == id)
+                    .ToListAsync();
+                _context.ChiTietPhieuNhap.RemoveRange(oldChiTiet);
 
-                await _context.SaveChangesAsync(); // Lưu lại các xoá trước
+                await _context.SaveChangesAsync(); // 💾 Lưu các xoá để tránh trùng khóa chính
 
-                // ✅ Thêm lại chi tiết phiếu nhập mới
+                // ✅ Thêm chi tiết mới
                 foreach (var ct in dto.chiTietPhieuNhaps)
                 {
-                    Console.WriteLine($"➡️ Add CT: idSP={ct.idSanPham}, SL={ct.soLuong}, ĐG={ct.donGia}, GhiChu={ct.ghiChu}");
-
                     if (ct.idSanPham <= 0 || ct.soLuong <= 0 || ct.donGia <= 0)
                         return BadRequest("Dữ liệu chi tiết phiếu nhập không hợp lệ!");
 
@@ -466,13 +490,11 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         donGia = ct.donGia,
                         tongTien = ct.soLuong * ct.donGia,
                         trangThai = 1,
-
                         nguoiGiaoHang = ct.nguoiGiaoHang ?? ""
                     });
                 }
 
                 await _context.SaveChangesAsync();
-
                 return Ok(new { message = "✅ Cập nhật phiếu nhập thành công!" });
             }
             catch (Exception ex)
@@ -480,7 +502,6 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 Console.WriteLine("❌ Lỗi UpdatePhieuNhapFull:");
                 Console.WriteLine("ID: " + dto.idPhieuNhap);
                 Console.WriteLine("Ngày nhập: " + dto.ngayNhap);
-                Console.WriteLine("Chi tiết:");
                 foreach (var ct in dto.chiTietPhieuNhaps)
                 {
                     Console.WriteLine($"- SP: {ct.idSanPham}, SL: {ct.soLuong}, ĐG: {ct.donGia}, Ghi chú: {ct.ghiChu}");
@@ -489,6 +510,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 return StatusCode(500, $"❌ Lỗi server: {ex.Message}");
             }
         }
+
 
 
     }

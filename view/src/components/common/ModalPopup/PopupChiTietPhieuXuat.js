@@ -13,7 +13,7 @@ const PopupChiTietPhieuXuat = ({ phieuXuat, onClose }) => {
         }}>
             <div style={{ background: '#fff', padding: 24, borderRadius: 8, width: 700, maxHeight: '90vh', overflowY: 'auto' }}>
                
-                <h1 className="title">📋 Chi tiết phiếu xuất #{phieuXuat.idPhieuXuat}</h1>
+                <h1 className="title">📋 CHI TIẾT PHIẾU XUẤT #{phieuXuat.idPhieuXuat}</h1>
                 <p><strong>🗓 Ngày xuất:</strong> {new Date(phieuXuat.ngayXuat).toLocaleString()}</p>
                 <p><strong>🧑 Người xuất:</strong> {phieuXuat.nguoiXuat || "Không rõ"}</p>
                 <p><strong>📝 Ghi chú:</strong> {phieuXuat.ghiChu || "Không có"}</p>

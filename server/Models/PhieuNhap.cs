@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
-    [Table("PhieuNhap")]
+    [Table("PHIEUNHAP")]
     public class PhieuNhap
     {
         [Key]

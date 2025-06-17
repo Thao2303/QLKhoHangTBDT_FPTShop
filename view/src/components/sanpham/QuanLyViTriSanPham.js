@@ -5,6 +5,7 @@ import Navbar from '../common/Navbar/Navbar';
 import "../nhapkho/FormTaoPhieuNhap.css";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../common/Pagination/Pagination";
+import ChiTietSanPhamViTri from "./ChiTietSanPhamViTri";
 
 const removeVietnameseTones = (str) => {
     return str.normalize("NFD")
@@ -27,8 +28,20 @@ const QuanLyViTriSanPham = () => {
 
     useEffect(() => {
         axios.get("https://localhost:5288/api/ChiTietLuuTru")
-            .then(res => setDanhSach(res.data))
-            .catch(err => console.error("Lỗi tải danh sách vị trí:", err));
+            .then(res => {
+                const gopViTri = {};
+                res.data.forEach(item => {
+                    const key = `${item.idSanPham}-${item.idViTri}`;
+                    if (!gopViTri[key]) {
+                        gopViTri[key] = { ...item };
+                    } else {
+                        gopViTri[key].soLuong += item.soLuong;
+                    }
+                });
+                setDanhSach(Object.values(gopViTri));
+            })
+            .catch(() => alert("❌ Lỗi khi tải dữ liệu chi tiết lưu trữ"));
+
     }, []);
 
     const handleReset = () => {
@@ -104,7 +117,7 @@ const QuanLyViTriSanPham = () => {
 
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">📦 Quản lý vị trí sản phẩm</h1>
+                    <h1 className="title">📦 QUẢN LÝ VỊ TRÍ SẢN PHẨM</h1>
 
                     <div className="search-form">
                         <input type="text" placeholder="Tìm theo tên sản phẩm" value={tuKhoa} onChange={(e) => setTuKhoa(e.target.value)} className="search-input" />
@@ -124,28 +137,32 @@ const QuanLyViTriSanPham = () => {
                                 <th>Mã SP</th>
                                 <th>Tên SP</th>
                                 <th>Vị trí</th>
-                                <th>SL tại vị trí</th>
+                                <th>Tổng số lượng</th>
                                 <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             {paginatedGroups.map((group, index) => {
                                 const firstItem = group[0];
-                                const viTriText = group.map(item =>
-                                    `Dãy ${item.day} - Cột ${item.cot} - Tầng ${item.tang} (SL: ${item.soLuong})`
-                                ).join("<br/>");
+                                const viTriText = group.map((item, idx) => (
+                                    <div key={idx}>
+                                        Dãy {item.day} - Cột {item.cot} - Tầng {item.tang} (SL: {item.soLuong})
+                                    </div>
+                                ));
+
 
                                 return (
                                     <tr key={`group-${firstItem.idSanPham}`}>
                                         <td>{stt++}</td>
                                         <td>{firstItem.idSanPham}</td>
                                         <td>{firstItem.tenSanPham}</td>
-                                        <td dangerouslySetInnerHTML={{ __html: viTriText }} />
+                                        <td>{viTriText}</td>
+
                                         <td>{group.reduce((sum, item) => sum + item.soLuong, 0)}</td>
                                         <td>
                                             <button onClick={() => handleXem(firstItem)}>🔍</button>
                                             <button onClick={() => handleChuyen(firstItem.idSanPham)}>✏️</button>
-                                            <button onClick={() => handleXoa(firstItem.idViTri, firstItem.idSanPham)}>🗑</button>
+                                            {/*    <button onClick={() => handleXoa(firstItem.idViTri, firstItem.idSanPham)}>🗑</button> */}    
                                         </td>
 
                                     </tr>
@@ -160,16 +177,14 @@ const QuanLyViTriSanPham = () => {
 
                     {popup && (
                         <div className="popup">
-                            <div className="popup-inner">
-                                <h3>📍 Chi tiết vị trí</h3>
-                                <p><strong>Sản phẩm:</strong> {popup.tenSanPham}</p>
-                                <p><strong>Mã SP:</strong> {popup.idSanPham}</p>
-                                <p><strong>Số lượng:</strong> {popup.soLuong}</p>
-                                <p><strong>Vị trí:</strong> Dãy {popup.day} - Cột {popup.cot} - Tầng {popup.tang}</p>
-                                <button onClick={() => setPopup(null)} className="close-btn">Đóng</button>
-                            </div>
+                            <ChiTietSanPhamViTri
+                                danhSach={danhSach.filter(d => d.idViTri === popup.idViTri)}
+                                viTri={popup}
+                                onClose={() => setPopup(null)}
+                            />
                         </div>
                     )}
+
                 </div>
             </div>
         </div>

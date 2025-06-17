@@ -3,26 +3,27 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("VITRI")]
     public class ViTri
     {
         [Key]
-        public int IdViTri { get; set; }
+        public int idViTri { get; set; }
 
         [Required]
         [MaxLength(10)]
-        public string Day { get; set; } = "";
+        public string day { get; set; } = "";
 
-        public int Cot { get; set; }
-        public int Tang { get; set; }
+        public int cot { get; set; }
+        public int tang { get; set; }
 
         [Required]
         [MaxLength(50)]
-        public string TrangThai { get; set; } = "Trống";
+        public string trangThai { get; set; } = "Trống";
 
         [Column(TypeName = "decimal(20, 2)")]
-        public decimal SucChua { get; set; }
+        public decimal sucChua { get; set; }
 
-        public int DaDung { get; set; } = 0;
+        public int daDung { get; set; } = 0;
 
         [Column(TypeName = "decimal(10, 2)")]
         public decimal chieuDai { get; set; }

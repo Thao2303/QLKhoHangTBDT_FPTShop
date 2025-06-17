@@ -19,7 +19,8 @@ const QuanLyTaiKhoan = () => {
     const [showForm, setShowForm] = useState(false);
     const [showDetail, setShowDetail] = useState(false);
 
-    const currentUser = { chucVu: "Admin" };
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+
     const itemsPerPage = 10;
 
     const fetchData = async () => {
@@ -34,6 +35,15 @@ const QuanLyTaiKhoan = () => {
             setLoading(false);
         }
     };
+    useEffect(() => {
+        const currentUser = JSON.parse(localStorage.getItem("user"));
+        const roles = currentUser?.tenChucVu?.split(",") || [];
+
+        if (!roles.includes("Admin") && !roles.includes("Thủ kho")) {
+            window.location.href = "/not-found"; // Không có quyền
+        }
+    }, []);
+
 
     useEffect(() => {
         fetchData();
@@ -77,7 +87,7 @@ const QuanLyTaiKhoan = () => {
                 <div className="main-layout">
                     <Navbar />
                     <div className="container">
-                        <h1 className="title">Quản lý tài khoản</h1>
+                        <h1 className="title">QUẢN LÝ TÀI KHOẢN</h1>
 
                         <div className="search-form">
                             <input placeholder="Tài khoản / Email" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} className="search-input" />
@@ -102,9 +112,9 @@ const QuanLyTaiKhoan = () => {
                             </div>
                         </div>
 
-                        {currentUser.chucVu === 'Admin' && (
+                       
                             <button className="add-button" onClick={() => { setShowForm(true); setSelectedData(null); }}>+ Thêm tài khoản</button>
-                        )}
+                        
 
                         <table className="data-table">
                             <thead>
@@ -132,7 +142,11 @@ const QuanLyTaiKhoan = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            <button className="edit-btn" onClick={() => setShowDetail(tk)}>👁</button>
+                                            <button className="edit-btn" onClick={() => {
+                                                setSelectedData(tk);
+                                                setShowDetail(true);
+                                            }}>👁</button>
+
                                             {currentUser.chucVu === 'Admin' && <>
                                                 <button className="edit-btn" onClick={() => { setSelectedData(tk); setShowForm(true); }}>✏</button>
                                                 <button className="delete-btn" onClick={() => handleToggleTrangThai(tk.idTaiKhoan, tk.trangThai)}>
@@ -151,7 +165,15 @@ const QuanLyTaiKhoan = () => {
             </div>
 
             <FormTaiKhoan visible={showForm} onClose={() => setShowForm(false)} onSubmit={handleSubmit} initialData={selectedData} />
-            <ChiTietTaiKhoan visible={showDetail} onClose={() => setShowDetail(false)} data={selectedData} />
+            <ChiTietTaiKhoan
+                visible={showDetail}
+                onClose={() => {
+                    setShowDetail(false);
+                    setSelectedData(null);
+                }}
+                data={selectedData}
+            />
+
         </div>
     );
 };

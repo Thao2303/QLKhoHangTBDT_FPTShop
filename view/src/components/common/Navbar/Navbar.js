@@ -34,15 +34,22 @@ const Navbar = () => {
             .catch(() => { });
 
         connectSignalR((message) => {
+            if (!message || !message.noiDung) return; // 💥 Bỏ qua nếu chưa có nội dung
+
             const newNoti = {
                 idThongBao: message.idThongBao || Date.now(),
-                noiDung: message.noiDung || "📭 Không có nội dung",
+                noiDung: message.noiDung,
                 ngayTao: new Date(message.ngayTao || Date.now()),
                 lienKet: message.lienKet || "",
                 daXem: false
             };
-            setThongBaoList(prev => prev.some(tb => tb.noiDung === newNoti.noiDung) ? prev : [newNoti, ...prev]);
-        }, nav);
+
+            setThongBaoList(prev => {
+                const exists = prev.some(tb => tb.idThongBao === newNoti.idThongBao);
+                return exists ? prev : [newNoti, ...prev];
+            });
+        });
+
         return () => stopSignalR();
     }, []);
 
@@ -65,7 +72,16 @@ const Navbar = () => {
         if (typeof noiDung !== "string") return;
 
         if (noiDung.includes("phiếu nhập")) {
-            navigate("/quanlyphieunhap");
+            const match = noiDung.match(/#(\d+)/);
+            if (match) {
+                navigate("/quanlyphieunhap", {
+                    state: { moPopupPhieuNhapId: match[1] }
+                });
+            } else {
+                navigate("/quanlyphieunhap");
+            }
+        
+
         } else if (noiDung.includes("phiếu xuất")) {
             navigate("/quanlyphieuxuat");
         } else if (noiDung.includes("tồn kho")) {
@@ -114,10 +130,7 @@ const Navbar = () => {
     return (
         <nav className="navbar">
             <div className="navbar-left">
-                <div className="search-box">
-                    <FaSearch className="search-icon" />
-                    <input type="text" placeholder="Nhập từ khóa tìm kiếm..." />
-                </div>
+              
             </div>
 
             <div className="navbar-right">

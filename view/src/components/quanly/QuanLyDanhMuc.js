@@ -4,6 +4,7 @@ import Navbar from '../common/Navbar/Navbar';
 import Sidebar from '../common/Sidebar/Sidebar';
 import "../nhapkho/FormTaoPhieuNhap.css";
 import "../nhapkho/QuanLyPhieuNhapKho.css";
+import Pagination from "../common/Pagination/Pagination";
 
 const removeVietnameseTones = (str) => {
     return str
@@ -92,7 +93,7 @@ const QuanLyDanhMuc = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">Quản lý danh mục</h1>
+                    <h1 className="title">QUẢN LÝ DANH MỤC SẢN PHẨM</h1>
 
                     <div className="search-form">
                         <input
@@ -134,25 +135,12 @@ const QuanLyDanhMuc = () => {
                         </tbody>
                     </table>
 
-                    <div style={{ marginTop: 20 }}>
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setCurrentPage(i + 1)}
-                                style={{
-                                    marginRight: 6,
-                                    padding: "6px 12px",
-                                    backgroundColor: currentPage === i + 1 ? "#617BAD" : "#e0e0e0",
-                                    color: currentPage === i + 1 ? "#fff" : "#333",
-                                    border: "none",
-                                    borderRadius: 4,
-                                    cursor: "pointer"
-                                }}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                    </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+
 
                     {(popupAdd || popupEdit) && (
                         <div className="popup">

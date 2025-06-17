@@ -51,6 +51,26 @@ const PopupChonYeuCau = ({ onChon, onClose }) => {
         }
     };
 
+    const handleXemChiTietAndChon = async (yc) => {
+        try {
+            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+            const chiTiet = await res.json();
+
+            if (!chiTiet || chiTiet.length === 0) {
+                alert("Yêu cầu này chưa có sản phẩm.");
+                return;
+            }
+
+            yc.chiTietYeuCauXuatKhos = chiTiet;
+            console.log("➡️ Gửi yc có SP:", yc);
+            onChon(yc); // Truyền yc đã có sản phẩm
+        } catch (err) {
+            alert("Không thể tải chi tiết yêu cầu.");
+            console.error(err);
+        }
+    };
+
+
     const locDanhSach = danhSach.filter((yc) => {
         const maYC = yc.idYeuCauXuatKho.toString().includes(searchMaYC);
         const tenDL = (yc.daiLy?.tenDaiLy || "").toLowerCase().includes(searchDaiLy.toLowerCase());
@@ -67,7 +87,7 @@ const PopupChonYeuCau = ({ onChon, onClose }) => {
     return (
         <div className="popup-overlay">
             <div className="popup-box">
-                <h2 className="title">📋 Chọn yêu cầu xuất kho</h2>
+                <h2 className="title">📋 CHỌN YÊU CẦU XUẤT KHO</h2>
 
                 <div className="filter-bar">
                     <input
@@ -109,8 +129,13 @@ const PopupChonYeuCau = ({ onChon, onClose }) => {
                                     📌 {yc.lyDoXuat}
                                 </div>
                                 <div style={{ marginTop: 6 }}>
-                                    <button className="btn btn-primary" onClick={() => onChon(yc)}>✅ Chọn</button>
-                                    <button className="btn btn-secondary" onClick={() => handleXemChiTiet(yc)}>🔍 Xem chi tiết</button>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleXemChiTietAndChon(yc)}
+                                    >
+                                        ✅ Chọn
+                                    </button>
+
                                 </div>
                                 <hr />
                             </div>

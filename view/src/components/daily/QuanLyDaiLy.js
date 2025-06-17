@@ -47,17 +47,24 @@ const QuanLyDaiLy = () => {
     const handleSubmit = async (data) => {
         const method = selected ? "PUT" : "POST";
         const url = selected ? `${API}/${selected.idDaiLy}` : API;
+        const payload = selected
+            ? { ...data, idDaiLy: selected.idDaiLy }
+            : data;
+
         const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         });
+
         if (!res.ok) return alert("Lỗi khi lưu đại lý");
+
         const newList = await fetch(API).then(r => r.json());
         setDanhSach(newList);
         setShowForm(false);
         setSelected(null);
     };
+
 
     const handleDelete = async (id) => {
         if (!window.confirm("Bạn có chắc muốn xoá?")) return;
@@ -67,6 +74,7 @@ const QuanLyDaiLy = () => {
     const handleEdit = (dl) => {
         setSelected(dl);
         setForm({ tenDaiLy: dl.tenDaiLy, diaChi: dl.diaChi, sdt: dl.sdt });
+
         setShowForm(true);
     };
     return (
@@ -75,7 +83,7 @@ const QuanLyDaiLy = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">Quản lý đại lý</h1>
+                    <h1 className="title">QUẢN LÝ ĐẠI LÝ</h1>
                     <div className="search-form" style={{ display: "center", justifyContent: "center", gap: "10px"}}>
                         <input
                             className="input"
@@ -87,7 +95,15 @@ const QuanLyDaiLy = () => {
                         <button className="btn btn-cancel"  onClick={() => setSearch("")} >🔄 Reset</button>
                     </div>
 
-                    <button className="btn btn-primary" onClick={() => { setSelected(null); setShowForm(true); }}>+ Thêm đại lý</button>
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
+                        <button className="btn btn-primary" onClick={() => {
+                            setSelected(null);
+                            setForm({ tenDaiLy: "", diaChi: "", sdt: "" });
+                            setShowForm(true);
+                        }}>
+                            + Thêm đại lý
+                        </button>
+                    </div>
                     <div className="table-wrapper">
                         <table className="data-table">
                             <thead>
@@ -121,12 +137,33 @@ const QuanLyDaiLy = () => {
 
                     {showForm && (
                         <div className="popup-overlay">
-                            <form className="popup-box" onSubmit={(e) => { e.preventDefault(); handleSubmit(selected || form); }}>
+                            <form className="popup-box" onSubmit={(e) => { e.preventDefault(); handleSubmit(form); }}>
+
                                 <h2 className="popup-title">{selected ? "Chỉnh sửa" : "Thêm"} đại lý</h2>
-                                <input className="input" placeholder="Tên đại lý" required defaultValue={selected?.tenDaiLy || ""} onChange={(e) => selected ? selected.tenDaiLy = e.target.value : null} />
-                                <input className="input" placeholder="Địa chỉ" required defaultValue={selected?.diaChi || ""} onChange={(e) => selected ? selected.diaChi = e.target.value : null} />
-                                <input className="input" placeholder="SĐT" required defaultValue={selected?.sdt || ""} onChange={(e) => selected ? selected.sdt = e.target.value : null} />
-                                <div className="popup-actions">
+                                <input
+                                    className="input"
+                                    placeholder="Tên đại lý"
+                                    required
+                                    value={form.tenDaiLy}
+                                    onChange={(e) => setForm({ ...form, tenDaiLy: e.target.value })}
+                                />
+
+                                <input
+                                    className="input"
+                                    placeholder="Địa chỉ"
+                                    required
+                                    value={form.diaChi}
+                                    onChange={(e) => setForm({ ...form, diaChi: e.target.value })}
+                                />
+
+                                <input
+                                    className="input"
+                                    placeholder="SĐT"
+                                    required
+                                    value={form.sdt}
+                                    onChange={(e) => setForm({ ...form, sdt: e.target.value })}
+                                />
+<div className="popup-actions">
                                     <button type="submit" className="btn btn-primary">Lưu</button>
                                     <button type="button" className="btn btn-cancel" onClick={() => setShowForm(false)}>Huỷ</button>
                                 </div>

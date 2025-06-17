@@ -120,7 +120,7 @@ const DashboardSanPham = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container" ref={exportRef}>
-                    <h1 className="title">📦 Thống kê Sản Phẩm</h1>
+                    <h1 className="title">📦 THỐNG KÊ SẢN PHẨM</h1>
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
                         <input

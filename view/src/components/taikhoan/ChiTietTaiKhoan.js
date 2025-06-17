@@ -8,7 +8,7 @@ const ChiTietTaiKhoan = ({ visible, onClose, data }) => {
     return (
         <div className="popup-overlay">
             <div className="popup-box">
-                <h2 className="popup-title">Thông tin tài khoản</h2>
+                <h2 className="popup-title">THÔNG TIN TÀI KHOẢN</h2>
                 <p><strong>Họ tên:</strong> {data.hoTen}</p>
                 <p><strong>Email:</strong> {data.email}</p>
                 <p><strong>Chức vụ:</strong> {data.chucVu}</p>

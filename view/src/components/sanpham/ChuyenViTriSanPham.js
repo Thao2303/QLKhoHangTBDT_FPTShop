@@ -109,7 +109,7 @@ const ChuyenViTriSanPham = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="form-container">
-                    <h1 className="title">🔄 Chuyển vị trí sản phẩm</h1>
+                    <h1 className="title2">🔄 Chuyển vị trí sản phẩm</h1>
                     <form onSubmit={handleSubmit} className="form-grid">
                         <div className="form-section">
                             <label>Chọn sản phẩm</label>

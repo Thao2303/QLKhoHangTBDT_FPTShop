@@ -88,7 +88,7 @@ const QuanLyYeuCauKiemKe = () => {
             <div className="content-area">
                 <Navbar />
                 <div className="container">
-                    <h1 className="title">📋 Quản lý yêu cầu kiểm kê</h1>
+                    <h1 className="title">📋 QUẢN LÝ YÊU CẦU KIỂM KÊ</h1>
 
                     <div className="search-form">
                         <input className="search-input" placeholder="Tìm theo mục đích..." value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)} />
@@ -185,8 +185,8 @@ const QuanLyYeuCauKiemKe = () => {
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                     {popupData && (
                         <div className="popup">
-                            <div className="popup-inner" style={{ maxHeight: "90vh", overflowY: "auto", position: "relative" }}>
-                                <div style={{ position: 'absolute', top: '10px', right: '15px', zIndex: 10 }}>
+                            <div className="popup-inner" style={{ maxHeight: "88vh", overflowY: "auto", position: "relative" }}>
+                                <div style={{ position: 'absolute', top: '-20px', right: '15px', zIndex: 10 }}>
                                     <button className="close-btn"
                                         onClick={() => setPopupData(null)}
                                         style={{
@@ -203,7 +203,7 @@ const QuanLyYeuCauKiemKe = () => {
                                     </button>
                                 </div>
 
-                                <h3>📄 Chi tiết yêu cầu kiểm kê #{popupData.idYeuCauKiemKe}</h3>
+                                <h1 className= "title">📄 CHI TIẾT YÊU CẦU KIỂM KÊ #{popupData.idYeuCauKiemKe}</h1>
                                 <p><strong>📅 Ngày tạo:</strong> {new Date(popupData.ngayTao).toLocaleString()}</p>
                                 <p><strong>🎯 Mục đích:</strong> {popupData.mucDich || "--"}</p>
                                 <p><strong>📍 Vị trí kiểm kê:</strong> {popupData.viTriKiemKe || "--"}</p>
