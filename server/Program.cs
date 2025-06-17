@@ -60,25 +60,32 @@ builder.Services.Configure<MvcOptions>(options =>
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Warehouse API", Version = "v1" });
+
+    // Nếu có generate file XML comment thì bật cái này (tùy chọn)
+    // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    // c.IncludeXmlComments(xmlPath);
+});
+
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// ✅ Bật Swagger cho mọi môi trường
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Warehouse API V1");
-        c.RoutePrefix = string.Empty;
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Warehouse API V1");
+    c.RoutePrefix = string.Empty;
+});
 
 app.UseCors("AllowFrontend");
-
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapHub<ThongBaoHub>("/hub/thongbao");
 app.UseStaticFiles();
 app.Run();
-builder.Logging.AddConsole();
+
