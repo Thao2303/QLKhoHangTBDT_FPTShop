@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
-    [Table("DanhMuc")]
+    [Table("DANHMUC")]
     public class DanhMuc
     {
         [Key]

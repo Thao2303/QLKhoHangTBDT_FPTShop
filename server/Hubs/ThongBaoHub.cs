@@ -22,5 +22,15 @@ namespace QuanLyKhoHangFPTShop.server.Hubs
             return base.OnConnectedAsync();
         }
 
+        public Task AddToGroup(string userId)
+        {
+            return Groups.AddToGroupAsync(Context.ConnectionId, userId);
+        }
+
+        public Task RemoveFromGroup(string userId)
+        {
+            return Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
+        }
+
     }
 }

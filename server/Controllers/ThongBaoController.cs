@@ -51,6 +51,15 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             await _context.SaveChangesAsync();
             return Ok(tb);
         }
+
+        [HttpGet("taikhoan/ten/{tenTaiKhoan}")]
+        public async Task<IActionResult> LayIdTheoTen(string tenTaiKhoan)
+        {
+            var acc = await _context.TaiKhoan.FirstOrDefaultAsync(x => x.tenTaiKhoan == tenTaiKhoan);
+            if (acc == null) return NotFound();
+            return Ok(new { acc.idTaiKhoan });
+        }
+
     }
 
 

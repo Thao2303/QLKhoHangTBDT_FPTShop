@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("TAIKHOAN")]
     public class TaiKhoan
     {
         [Key]
@@ -21,8 +22,8 @@ namespace QuanLyKhoHangFPTShop.server.Models
         [EmailAddress]
         public string email { get; set; }
 
-        public bool trangThai { get; set; } = true;
-
+        public bool? trangThai { get; set; } = true;
+        public bool? doiMatKhau { get; set; } = false;
         public DateTime ngayCap { get; set; }
 
         public int idChucVu { get; set; }

@@ -32,7 +32,8 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     thuongHieu = sp.ThuongHieu.tenThuongHieu,
                     tonHeThong = sp.soLuongHienCon,
                     sp.soLuongToiThieu,
-                    sp.moTa
+                    sp.moTa,
+                    sp.hinhAnh
                 })
                 .ToList();
 

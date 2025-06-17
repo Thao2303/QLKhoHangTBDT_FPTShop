@@ -2,12 +2,14 @@
 
 // GA Core
 function runGeneticAlgorithm(products, locations, generations = 30, populationSize = 20, oldPositions = {}) {
+    const validLocations = locations.filter(loc => loc.trangThai !== 0 && (loc.sucChua - loc.daDung > 0));
+
     const population = Array.from({ length: populationSize }, () =>
-        generateRandomSolution(products, locations, oldPositions)
+        generateRandomSolution(products, validLocations, oldPositions)
     );
 
     for (let g = 0; g < generations; g++) {
-        population.sort((a, b) => fitness(b, products, locations, oldPositions) - fitness(a, products, locations, oldPositions));
+        population.sort((a, b) => fitness(b, products, validLocations, oldPositions) - fitness(a, products, validLocations, oldPositions));
         const parents = population.slice(0, 5);
         const children = [];
         while (children.length < populationSize - parents.length) {
@@ -93,11 +95,16 @@ function fitness(solution, products, locations, oldPositions) {
             if (used[vt] > cap) totalWaste += used[vt] - cap;
 
             if ((oldPositions[sp.idSanPham] || []).includes(vt)) bonus += 10;
-
             if ((sp.soLanNhap || 0) > 10 && isNearReceivingArea(loc)) bonus += 5;
             if ((sp.soLanXuat || 0) > 10 && isNearShippingArea(loc)) bonus += 5;
+
             if (sp.zoneGoiY && loc.day === sp.zoneGoiY) bonus += 3;
+            if (sp.idDanhMuc && loc.khuVuc?.idDanhMuc === sp.idDanhMuc) bonus += 5;
+            if ((sp.trongLuong || 0) > 10 && loc.tang > 2) bonus -= 10;
         }
+
+        // Phạt nếu sản phẩm bị chia ra quá nhiều vị trí
+        if ((solution[sp.idSanPham] || []).length > 2) bonus -= 5;
     }
 
     return totalUsed - totalWaste + bonus;

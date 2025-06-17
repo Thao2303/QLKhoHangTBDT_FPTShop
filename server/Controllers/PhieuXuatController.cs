@@ -26,17 +26,20 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             return await _context.PhieuXuat
                 .Include(px => px.YeuCauXuatKho)
                     .ThenInclude(yc => yc.DaiLy)
-
                 .Include(px => px.ChiTietPhieuXuats)
                     .ThenInclude(ct => ct.SanPham)
+                .Include(px => px.ChiTietPhieuXuats)
+                    .ThenInclude(ct => ct.ViTri) // 🔥 THÊM DÒNG NÀY
                 .ToListAsync();
         }
+
 
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PhieuXuat>> GetPhieuXuat(int id)
         {
             var phieuXuat = await _context.PhieuXuat
+              
      .Include(px => px.YeuCauXuatKho)
          .ThenInclude(yc => yc.TrangThaiXacNhan)
      .Include(px => px.YeuCauXuatKho)
@@ -112,7 +115,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     return BadRequest($"Sản phẩm ID {ct.IdSanPham} không đủ tồn kho (hiện còn {sp.soLuongHienCon}, cần {ct.SoLuong}).");
 
                 sp.soLuongHienCon -= ct.SoLuong;
-
+           //     var thanhTien = ct.SoLuong * sp.donGiaBan;
                 // ❌ KHÔNG dùng idLoHang nữa, lấy bất kỳ bản ghi ChiTietLuuTru theo idSanPham + idViTri
                 var luuTru = await _context.ChiTietLuuTru
                     .Where(l => l.idSanPham == ct.IdSanPham && l.idViTri == ct.IdViTri)
@@ -123,13 +126,25 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     return BadRequest($"Không tìm thấy vị trí lưu trữ cho SP {ct.IdSanPham} - VT {ct.IdViTri}");
 
                 luuTru.soLuong -= ct.SoLuong;
+                var donGia = sp.donGiaBan; // 💡 LẤY GIÁ BÁN HIỆN TẠI
+
+                var chietKhau = ct.ChietKhau ?? 0;
+                var giaSauChietKhau = donGia * (1 - chietKhau / 100m);
+                var thanhTien = ct.SoLuong * giaSauChietKhau;
 
                 phieu.ChiTietPhieuXuats.Add(new ChiTietPhieuXuat
                 {
                     IdSanPham = ct.IdSanPham,
                     IdViTri = ct.IdViTri,
-                    SoLuong = ct.SoLuong
+                    SoLuong = ct.SoLuong,
+                    donGiaXuat = donGia,
+                    chietKhau = chietKhau,
+                    giaSauChietKhau = giaSauChietKhau,
+                    tongTien = thanhTien
                 });
+
+
+
             }
 
             _context.PhieuXuat.Add(phieu);
@@ -201,9 +216,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Select(c => new
                 {
                     c.idViTri,
-                    c.ViTri.Day,
-                    c.ViTri.Cot,
-                    c.ViTri.Tang,
+                    c.ViTri.day,
+                    c.ViTri.cot,
+                    c.ViTri.tang,
                     SoLuongCon = c.soLuong
                 })
                 .ToListAsync();

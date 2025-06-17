@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("SANPHAM")]
     public class SanPham
     {
         [Key]
@@ -32,7 +33,7 @@ namespace QuanLyKhoHangFPTShop.server.Models
         public decimal? chieuRong { get; set; }
         public decimal? chieuCao { get; set; }
         public string? hinhAnh { get; set; }
-
+      
 
         [ForeignKey("idDonViTinh")]
         public DonViTinh DonViTinh { get; set; }

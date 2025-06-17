@@ -8,5 +8,6 @@
         public bool trangThai { get; set; }
         public DateTime ngayCap { get; set; }
         public int idChucVu { get; set; }
+        public int idDaiLy { get; set; }
     }
 }

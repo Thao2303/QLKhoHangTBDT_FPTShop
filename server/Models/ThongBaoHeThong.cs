@@ -1,5 +1,8 @@
-﻿namespace QuanLyKhoHangFPTShop.server.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace QuanLyKhoHangFPTShop.server.Models
 {
+    [Table("THONGBAOHETHONG")]
     public class ThongBaoHeThong
     {
         public int idThongBaoHeThong { get; set; }

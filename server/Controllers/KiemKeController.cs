@@ -83,12 +83,15 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 chiTietPhieuKiemKes = kiemKe.ChiTietKiemKe.Select(ct => new
                 {
                     ct.idSanPham,
+                    ct.idViTri, // ✅ cần dòng này
                     ct.SanPham.tenSanPham,
                     ct.soLuongTheoHeThong,
                     ct.soLuongThucTe,
                     chenhLech = ct.soLuongThucTe - ct.soLuongTheoHeThong,
-                    ct.phamChat
-                })
+                    ct.phamChat,
+                    ct.ghiChu
+                }),
+
             });
         }
 
@@ -128,6 +131,18 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         {
             try
             {
+                // 🔄 Xoá phiếu kiểm kê cũ (nếu đã lưu nháp)
+                var kiemKeCu = await _context.KiemKe
+                    .Include(k => k.ChiTietKiemKe)
+                    .FirstOrDefaultAsync(k => k.idYeuCauKiemKe == dto.idYeuCauKiemKe);
+
+                if (kiemKeCu != null)
+                {
+                    _context.ChiTietKiemKe.RemoveRange(kiemKeCu.ChiTietKiemKe);
+                    _context.KiemKe.Remove(kiemKeCu);
+                    await _context.SaveChangesAsync();
+                }
+
                 var phieu = new KiemKe
                 {
                     idYeuCauKiemKe = dto.idYeuCauKiemKe,
@@ -147,7 +162,8 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         g.Key.idSanPham,
                         g.Key.idViTri,
                         soLuongThucTe = g.Sum(x => x.soLuongThucTe),
-                        phamChat = string.Join(", ", g.Select(x => x.phamChat).Where(p => !string.IsNullOrEmpty(p)).Distinct())
+                        phamChat = string.Join(", ", g.Select(x => x.phamChat).Where(p => !string.IsNullOrEmpty(p)).Distinct()),
+                        ghiChu = string.Join(" | ", g.Select(x => x.ghiChu).Where(p => !string.IsNullOrWhiteSpace(p)).Distinct())
                     });
 
                 var danhSachChiTiet = new List<ChiTietKiemKe>();
@@ -166,10 +182,12 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         idKiemKe = phieu.idKiemKe,
                         idSanPham = item.idSanPham,
                         idViTri = item.idViTri,
-                        soLuongThucTe = item.soLuongThucTe,
+                        soLuongThucTe = item.soLuongThucTe ?? 0,
                         soLuongTheoHeThong = soLuongTheoHeThong,
-                        phamChat = item.phamChat
+                        phamChat = item.phamChat,
+                        ghiChu = item.ghiChu
                     });
+
                 }
 
                 _context.ChiTietKiemKe.AddRange(danhSachChiTiet);
@@ -201,25 +219,33 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             if (kiemKe == null) return NotFound();
 
             var viTriSanPham = await (
-                from ct in _context.ChiTietKiemKe
-                join sp in _context.SanPham on ct.idSanPham equals sp.idSanPham
-                join vt in _context.ViTri on ct.idViTri equals vt.IdViTri
-                where ct.idKiemKe == kiemKe.idKiemKe
-                group ct by new { sp.idSanPham, sp.tenSanPham, ct.idViTri, vt.Day, vt.Cot, vt.Tang } into g
-                select new
-                {
-                    g.Key.idSanPham,
-                    g.Key.tenSanPham,
-                    g.Key.idViTri,
-                    viTri = g.Key.Day + "-" + g.Key.Cot + "-" + g.Key.Tang,
-                    soLuongTaiViTri = g.Sum(x => x.soLuongThucTe)
-                }
-            ).ToListAsync();
+     from ct in _context.ChiTietKiemKe
+     join sp in _context.SanPham on ct.idSanPham equals sp.idSanPham
+     join vt in _context.ViTri on ct.idViTri equals vt.idViTri
+     join lt in _context.ChiTietLuuTru on new { ct.idSanPham, ct.idViTri } equals new { lt.idSanPham, lt.idViTri }
+     where ct.idKiemKe == kiemKe.idKiemKe
+     group lt by new { lt.idSanPham, sp.tenSanPham, lt.idViTri, vt.day, vt.cot, vt.tang } into g
+     select new
+     {
+         g.Key.idSanPham,
+         g.Key.tenSanPham,
+         g.Key.idViTri,
+         viTri = g.Key.day + "-" + g.Key.cot + "-" + g.Key.tang,
+         soLuongTaiViTri = g.Sum(x => x.soLuong) // ✅ lấy từ lưu trữ thực tế
+     }
+ ).ToListAsync();
+
+
 
             var tenNguoiThucHien = await _context.TaiKhoan
                 .Where(t => t.idTaiKhoan == kiemKe.idNguoiThucHien)
                 .Select(t => t.tenTaiKhoan)
                 .FirstOrDefaultAsync();
+
+            var sanPhamList = await _context.SanPham
+    .Select(sp => new { sp.idSanPham, sp.tenSanPham, sp.soLuongHienCon })
+    .ToListAsync();
+
 
             return Ok(new
             {
@@ -236,15 +262,109 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 chiTietPhieuKiemKes = kiemKe.ChiTietKiemKe.Select(ct => new
                 {
                     ct.idSanPham,
+                    ct.idViTri,
                     ct.SanPham.tenSanPham,
                     ct.soLuongTheoHeThong,
                     ct.soLuongThucTe,
                     chenhLech = ct.soLuongThucTe - ct.soLuongTheoHeThong,
-                    ct.phamChat
+                    ct.phamChat,
+                    ct.ghiChu
                 }),
-                viTriSanPham
+                viTriSanPham,
+                sanPhamList
             });
         }
+        [HttpPost("luu-nhap")]
+        public async Task<IActionResult> LuuPhieuKiemKeTam([FromBody] KiemKeTaoRequestDto dto)
+        {
+            try
+            {
+                int idYeuCau = dto.idYeuCauKiemKe;
+
+                // 🔍 Xóa kiểm kê cũ (nếu có — lưu nháp trước đó)
+                var kiemKeCu = await _context.KiemKe
+                    .Include(k => k.ChiTietKiemKe)
+                    .FirstOrDefaultAsync(k => k.idYeuCauKiemKe == idYeuCau);
+
+                if (kiemKeCu != null)
+                {
+                    _context.ChiTietKiemKe.RemoveRange(kiemKeCu.ChiTietKiemKe);
+                    _context.KiemKe.Remove(kiemKeCu);
+                    await _context.SaveChangesAsync();
+                }
+
+                // 🆕 Tạo bản kiểm kê mới
+                var phieu = new KiemKe
+                {
+                    idYeuCauKiemKe = dto.idYeuCauKiemKe,
+                    idNguoiThucHien = dto.idNguoiThucHien,
+                    ngayKiemKe = dto.ngayKiemKe ?? DateTime.Now,
+                    thoiGianThucHien = DateTime.Now,
+                    ghiChu = dto.ghiChu
+                };
+
+                await _context.KiemKe.AddAsync(phieu);
+                await _context.SaveChangesAsync();
+
+                var chiTietGop = dto.chiTiet
+     .Where(x => x != null && x.idSanPham > 0 && x.idViTri > 0)
+     .GroupBy(x => new { x.idSanPham, x.idViTri })
+     .Select(g => new
+     {
+         g.Key.idSanPham,
+         g.Key.idViTri,
+         soLuongThucTe = g.Sum(x => x.soLuongThucTe ?? 0),
+         phamChat = string.Join(", ", g.Select(x => x.phamChat ?? "").Where(p => !string.IsNullOrWhiteSpace(p)).Distinct()),
+         ghiChu = string.Join(" | ", g.Select(x => x.ghiChu ?? "").Where(p => !string.IsNullOrWhiteSpace(p)).Distinct())
+     }).ToList();
+
+
+                var danhSachChiTiet = new List<ChiTietKiemKe>();
+
+                foreach (var item in chiTietGop)
+                {
+                    int soLuongTheoHeThong = await _context.ChiTietLuuTru
+                        .Where(x => x.idSanPham == item.idSanPham && x.idViTri == item.idViTri)
+                        .SumAsync(x => (int?)x.soLuong) ?? 0;
+
+                    danhSachChiTiet.Add(new ChiTietKiemKe
+                    {
+                        idKiemKe = phieu.idKiemKe,
+                        idSanPham = item.idSanPham,
+                        idViTri = item.idViTri,
+                        soLuongThucTe = item.soLuongThucTe,
+                        soLuongTheoHeThong = soLuongTheoHeThong,
+                        phamChat = item.phamChat,
+                        ghiChu = item.ghiChu
+                    });
+                }
+
+                _context.ChiTietKiemKe.AddRange(danhSachChiTiet);
+                // 🔄 Cập nhật trạng thái về "đang thực hiện" (-1)
+                var yeuCau = await _context.YeuCauKiemKe.FindAsync(dto.idYeuCauKiemKe);
+                if (yeuCau != null && yeuCau.trangThai == 0)
+                    yeuCau.trangThai = -1;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "💾 Đã lưu nháp kiểm kê", id = phieu.idKiemKe });
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ LỖI lưu nháp: " + ex.Message);
+                Console.WriteLine("STACK: " + ex.StackTrace);
+                return StatusCode(500, new
+                {
+                    message = "❌ Lỗi khi lưu nháp kiểm kê",
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace
+                });
+            }
+        }
+
+
+
 
     }
 }

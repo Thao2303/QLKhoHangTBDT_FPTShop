@@ -24,6 +24,8 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             return await _context.DaiLy.ToListAsync();
         }
 
+
+
         [HttpGet("{id}")]
         public async Task<ActionResult<DaiLy>> GetDaiLy(int id)
         {
@@ -53,8 +55,21 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             _context.Entry(daiLy).State = EntityState.Modified;
 
-            return NoContent();
+            try
+            {
+                await _context.SaveChangesAsync(); // ✅ thêm dòng này để lưu vào DB
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.DaiLy.Any(e => e.idDaiLy == id))
+                    return NotFound();
+                else
+                    throw;
+            }
+
+            return NoContent(); // thành công
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDaiLy(int id)

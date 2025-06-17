@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.server.Models;
 using QuanLyKhoHangFPTShop.server.Data;
 using QuanLyKhoHangFPTShop.server.Dtos;
+using Microsoft.AspNetCore.SignalR;
+using QuanLyKhoHangFPTShop.server.Hubs;
 
 namespace QuanLyKhoHangFPTShop.server.Controllers
 {
@@ -12,11 +14,14 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
     public class YeuCauKiemKeController : ControllerBase
     {
         private readonly WarehouseContext _context;
+        private readonly IHubContext<ThongBaoHub> _hubContext;
 
-        public YeuCauKiemKeController(WarehouseContext context)
+        public YeuCauKiemKeController(WarehouseContext context, IHubContext<ThongBaoHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -63,15 +68,15 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 from ct in _context.ChiTietYeuCauKiemKe
                 join sp in _context.SanPham on ct.idSanPham equals sp.idSanPham
                 join lt in _context.ChiTietLuuTru on sp.idSanPham equals lt.idSanPham
-                join vt in _context.ViTri on lt.idViTri equals vt.IdViTri
+                join vt in _context.ViTri on lt.idViTri equals vt.idViTri
                 where ct.idYeuCauKiemKe == id
-                group lt by new { sp.idSanPham, sp.tenSanPham, lt.idViTri, vt.Day, vt.Cot, vt.Tang } into g
+                group lt by new { sp.idSanPham, sp.tenSanPham, lt.idViTri, vt.day, vt.cot, vt.tang } into g
                 select new
                 {
                     g.Key.idSanPham,
                     g.Key.tenSanPham,
                     g.Key.idViTri,
-                    viTri = g.Key.Day + "-" + g.Key.Cot + "-" + g.Key.Tang,
+                    viTri = g.Key.day + "-" + g.Key.cot + "-" + g.Key.tang,
                     soLuongTaiViTri = g.Sum(x => x.soLuong)
                 }
             ).ToListAsync();
@@ -135,6 +140,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             _context.YeuCauKiemKe.Add(yeuCau);
             await _context.SaveChangesAsync();
 
+            // Thêm chi tiết yêu cầu
             foreach (var item in dto.chiTietYeuCau)
             {
                 var chiTiet = new ChiTietYeuCauKiemKe
@@ -145,8 +151,51 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 _context.ChiTietYeuCauKiemKe.Add(chiTiet);
             }
 
+            // Lấy danh sách người nhận
+            var danhSachTen = new List<string> { yeuCau.tenTruongBan, yeuCau.tenUyVien1, yeuCau.tenUyVien2 };
+
+            var nguoiNhans = await _context.TaiKhoan
+                .Where(tk => danhSachTen.Contains(tk.tenTaiKhoan))
+                .Select(tk => new { tk.idTaiKhoan, tk.tenTaiKhoan })
+                .ToListAsync();
+
+            // Gửi thông báo đến từng người
+            foreach (var nguoi in nguoiNhans.DistinctBy(x => x.idTaiKhoan))
+            {
+                string noiDung = $"📋 Bạn được phân công thực hiện kiểm kê: \"{yeuCau.mucDich}\" tại \"{yeuCau.viTriKiemKe}\".";
+                string lienKet = $"/thuc-hien-kiem-ke/{yeuCau.idYeuCauKiemKe}";
+
+                _context.ThongBao.Add(new ThongBao
+                {
+                    idNguoiNhan = nguoi.idTaiKhoan,
+                    noiDung = noiDung,
+                    ngayTao = DateTime.Now,
+                    daXem = false,
+                    lienKet = lienKet
+                });
+
+                await _hubContext.Clients.User(nguoi.idTaiKhoan.ToString()).SendAsync("NhanThongBao", new
+                {
+                    idThongBao = 0, // client có thể bỏ qua ID 0 nếu muốn
+                    noiDung = noiDung,
+                    ngayTao = DateTime.Now,
+                    lienKet = lienKet
+                });
+            }
+
             await _context.SaveChangesAsync();
             return Ok(new { message = "Tạo yêu cầu kiểm kê thành công", id = yeuCau.idYeuCauKiemKe });
+        }
+
+        [HttpGet("thongbao/nguoi/{idNguoiNhan}")]
+        public async Task<IActionResult> LayThongBaoTheoId(int idNguoiNhan)
+        {
+            var ds = await _context.ThongBao
+                .Where(tb => tb.idNguoiNhan == idNguoiNhan)
+                .OrderByDescending(tb => tb.ngayTao)
+                .ToListAsync();
+
+            return Ok(ds);
         }
 
         // PUT: api/yeucaukiemke/{id}

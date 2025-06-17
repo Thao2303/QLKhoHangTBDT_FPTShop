@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using QuanLyKhoHangFPTShop.server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using QuanLyKhoHangFPTShop.server.Data;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ builder.Services.AddControllers()
     {
         opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         opt.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        opt.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     });
 
 // ✅ Bỏ ép lỗi model binding tự động 400 Bad Request
