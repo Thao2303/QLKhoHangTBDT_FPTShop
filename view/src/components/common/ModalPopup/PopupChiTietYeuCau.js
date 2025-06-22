@@ -3,7 +3,13 @@ import React from "react";
 import { format } from "date-fns";
 import './popup-style.css';
 
-const PopupChiTietYeuCau = ({ data, tonKhoMap, onClose, onTaoPhieu }) => {
+const PopupChiTietYeuCau = ({ data, onClose, onTaoPhieu, onDuyet, onTuChoi, isThuKho, tonKhoMap }) => {
+
+    const daDuKienDu = data.chiTietYeuCauXuatKhos?.every(ct => {
+        const ton = tonKhoMap?.[ct.idSanPham];
+        return typeof ton === 'number' && ton >= ct.soLuong;
+    });
+
     return (
         <div className="popup-overlay">
             <div className="popup-inner">
@@ -22,8 +28,8 @@ const PopupChiTietYeuCau = ({ data, tonKhoMap, onClose, onTaoPhieu }) => {
                         <tr>
                             <th>Sản phẩm</th>
                             <th>Số lượng</th>
-                            <th>Tồn kho</th>
-                            <th>Ghi chú</th>
+                            {isThuKho && <th>Tồn kho</th>}
+                            {isThuKho && <th>Ghi chú</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -34,10 +40,12 @@ const PopupChiTietYeuCau = ({ data, tonKhoMap, onClose, onTaoPhieu }) => {
                                 <tr key={idx}>
                                     <td>{ct.sanPham?.tenSanPham}</td>
                                     <td>{ct.soLuong}</td>
-                                    <td>{ton}</td>
-                                    <td style={{ color: ton === 'Lỗi' ? 'orange' : !ok ? 'red' : 'green' }}>
-                                        {ton === 'Lỗi' ? '⚠️ Lỗi' : !ok ? 'Không đủ' : '✔️ Đủ'}
-                                    </td>
+                                    {isThuKho && <td>{ton}</td>}
+                                    {isThuKho && (
+                                        <td style={{ color: ton === 'Lỗi' ? 'orange' : !ok ? 'red' : 'green' }}>
+                                            {ton === 'Lỗi' ? '⚠️ Lỗi' : !ok ? 'Không đủ' : '✔️ Đủ'}
+                                        </td>
+                                    )}
                                 </tr>
                             );
                         })}
@@ -45,7 +53,18 @@ const PopupChiTietYeuCau = ({ data, tonKhoMap, onClose, onTaoPhieu }) => {
                 </table>
 
                 <div className="popup-footer">
-                    <button className="export-btn" onClick={() => onTaoPhieu(data)}>📦 Tạo phiếu xuất</button>
+                    {isThuKho && data.idTrangThaiXacNhan === 1 && (
+                        <>
+                            {daDuKienDu && (
+                                <button className="approve-btn" onClick={() => onDuyet(data.idYeuCauXuatKho)}>✔️ Duyệt yêu cầu</button>
+                            )}
+                            <button className="reject-btn" style={{ marginLeft: 8 }} onClick={() => onTuChoi(data.idYeuCauXuatKho)}>❌ Từ chối yêu cầu</button>
+                        </>
+                    )}
+
+                    {isThuKho && data.idTrangThaiXacNhan === 2 && (
+                        <button className="export-btn" onClick={() => onTaoPhieu(data)}>📦 Tạo phiếu xuất</button>
+                    )}
                     <button className="cancel-button" onClick={onClose}>Đóng</button>
                 </div>
             </div>

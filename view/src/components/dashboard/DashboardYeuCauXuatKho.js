@@ -28,11 +28,12 @@ const DashboardYeuCauXuatKho = () => {
     const exportRef = useRef();
     const itemsPerPage = 5;
     const namOptions = [...new Set(yeuCaus.map(y => dayjs(y.ngayYeuCau).year()))].filter(Boolean).sort((a, b) => b - a);
+    const [selectedYear, setSelectedYear] = useState(dayjs().year());
 
     const trangThaiMap = { 1: 'Chờ duyệt', 2: 'Đã duyệt', 3: 'Từ chối', 4: 'Đã xuất kho' };
 
     useEffect(() => {
-        axios.get('https://localhost:5288/api/yeucauxuatkho')
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho')
             .then(res => setYeuCaus(res.data || []))
             .catch(err => console.error(err));
     }, []);
@@ -47,6 +48,25 @@ const DashboardYeuCauXuatKho = () => {
         const matchKeyword = searchKeyword ? yc.idYeuCauXuatKho.toString().includes(searchKeyword) : true;
         return matchTrangThai && matchDaiLy && matchNguoiTao && matchDate && matchKeyword;
     });
+
+    const namHienTai = dayjs().year();
+    const thangHienTai = dayjs().month() + 1;
+    const thangCoDuLieu = Array.from({ length: 12 }, (_, i) => i + 1).filter(thang =>
+        filteredData.some(p => {
+            const date = dayjs(p.ngayYeuCau);
+            return date.year() === Number(selectedYear) && date.month() + 1 === thang;
+        })
+    );
+
+    const dataTheoThang = thangCoDuLieu.map(thang => {
+        const soYeuCau = filteredData.filter(p => {
+            const date = dayjs(p.ngayYeuCau);
+            return date.year() === Number(selectedYear) && date.month() + 1 === thang;
+        }).length;
+
+        return { thang: `Th${thang}`, soYeuCau };
+    });
+
 
     const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -81,11 +101,7 @@ const DashboardYeuCauXuatKho = () => {
     const daiLyOptions = [...new Set(yeuCaus.map(yc => yc.daiLy?.tenDaiLy))].filter(Boolean).map(name => ({ value: name, label: name }));
     const nguoiTaoOptions = [...new Set(yeuCaus.map(yc => yc.nguoiTao?.tenDangNhap))].filter(Boolean).map(name => ({ value: name, label: name }));
 
-    const dataTheoThang = Array.from({ length: 12 }, (_, i) => {
-        const thang = i + 1;
-        const soYeuCau = filteredData.filter(p => dayjs(p.ngayYeuCau).month() + 1 === thang).length;
-        return { thang: `Th${thang}`, soYeuCau };
-    });
+
 
     const trangThaiCounts = filteredData.reduce((acc, yc) => {
         const key = trangThaiMap[yc.idTrangThaiXacNhan] || 'Khác';

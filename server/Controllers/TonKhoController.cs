@@ -66,33 +66,34 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Where(tk => tk.ChucVu.tenChucVu == "Thủ kho")
                 .ToListAsync();
 
-            foreach (var sp in sanPhamsCanNhap)
+            var danhSachCanhBao = sanPhamsCanNhap.Select(sp =>
+       $"• {sp.tenSanPham} còn {sp.soLuongHienCon}/{sp.soLuongToiThieu}").ToList();
+
+            string noiDung = "⚠️ Các sản phẩm tồn kho thấp:\n" + string.Join("\n", danhSachCanhBao);
+
+            foreach (var thuKho in thuKhoList)
             {
-                var ton = sp.soLuongHienCon;
+                await _hubContext.Clients.User(thuKho.idTaiKhoan.ToString())
+                    .SendAsync("NhanThongBao", new { noiDung, ngayTao = DateTime.Now });
 
-                string noiDung = $"⚠️ Sản phẩm \"{sp.tenSanPham}\" tồn kho chỉ còn {ton}, thấp hơn mức tối thiểu {sp.soLuongToiThieu}. Vui lòng kiểm tra nhập hàng.";
+                var daTonTai = await _context.ThongBao.AnyAsync(tb =>
+    tb.idNguoiNhan == thuKho.idTaiKhoan &&
+    tb.noiDung == noiDung &&
+    tb.ngayTao > DateTime.Now.AddMinutes(-5));
 
-                foreach (var thuKho in thuKhoList)
+                if (!daTonTai)
                 {
-                    // Gửi SignalR realtime
-                    await _hubContext.Clients.User(thuKho.idTaiKhoan.ToString())
-                        .SendAsync("NhanThongBao", new
-                        {
-                            noiDung,
-                            ngayTao = DateTime.Now
-                        });
-
-                    // Lưu vào bảng ThongBao
                     _context.ThongBao.Add(new ThongBao
                     {
                         idNguoiNhan = thuKho.idTaiKhoan,
-                        noiDung = noiDung,           // ✅ sửa ở đây
+                        noiDung = noiDung,
                         ngayTao = DateTime.Now,
                         daXem = false
                     });
-
                 }
+
             }
+
 
             // Cập nhật thời gian gửi cảnh báo
             if (thongBaoTonKho == null)

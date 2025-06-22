@@ -58,7 +58,7 @@ const QuanLySanPham = () => {
     const [detailPopup, setDetailPopup] = useState(false);
     const [spChiTiet, setSpChiTiet] = useState(null);
 
-    const API = "https://localhost:5288/api";
+    const API = "https://qlkhohangtbdt-fptshop-be2.onrender.com/api";
 
     const [thongSoList, setThongSoList] = useState([]); // Danh sách tất cả thông số từ API
     const [dsThongSo, setDsThongSo] = useState([]);     // Danh sách thông số đã chọn
@@ -133,7 +133,7 @@ const QuanLySanPham = () => {
             const formData = new FormData();
             formData.append("file", resizedBlob, file.name);
 
-            const res = await fetch("https://localhost:5288/api/upload/image", {
+            const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/upload/image", {
                 method: "POST",
                 body: formData,
             });
@@ -142,7 +142,7 @@ const QuanLySanPham = () => {
             if (data?.url) {
                 // 🧹 Xoá ảnh cũ nếu có
                 if (form.hinhAnh && form.hinhAnh.startsWith("/images/")) {
-                    await fetch(`https://localhost:5288/api/upload/delete?fileName=${form.hinhAnh.split("/").pop()}`, { method: "DELETE" });
+                    await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/upload/delete?fileName=${form.hinhAnh.split("/").pop()}`, { method: "DELETE" });
                 }
                 setForm((prev) => ({ ...prev, hinhAnh: data.url }));
             }

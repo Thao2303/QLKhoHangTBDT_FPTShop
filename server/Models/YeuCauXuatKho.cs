@@ -47,6 +47,10 @@ public class YeuCauXuatKho
     [Column("ngayYeuCau")]
     public DateTime NgayYeuCau { get; set; } = DateTime.Now;
 
+    [Column("giamDocDuyet")]
+    public bool giamDocDuyet { get; set; } = false;
+
+
     public ICollection<ChiTietYeuCauXuatKho> ChiTietYeuCauXuatKhos { get; set; } = new List<ChiTietYeuCauXuatKho>();
 
     [ForeignKey("IdDaiLy")]

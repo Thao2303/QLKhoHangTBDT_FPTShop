@@ -33,12 +33,12 @@ const DashboardPhieuXuat = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get('https://localhost:5288/api/phieuxuat');
+            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat');
             setPhieuXuats(res.data || []);
 
             const map = {};
             for (const px of res.data) {
-                const resCt = await axios.get(`https://localhost:5288/api/phieuxuat/${px.idPhieuXuat}`);
+                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${px.idPhieuXuat}`);
                 const chiTiet = resCt.data.chiTietPhieuXuats || [];
                 map[px.idPhieuXuat] = chiTiet.map(ct => ({
                     ...ct,
@@ -89,13 +89,28 @@ const DashboardPhieuXuat = () => {
     });
     const topDaiLy = Object.entries(daiLyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Không có';
 
-    const dataTheoThang = Array.from({ length: 12 }, (_, i) => {
+    const namHienTai = dayjs().year();
+    const thangHienTai = dayjs().month() + 1;
+    const soThang = Number(filterYear) === namHienTai ? thangHienTai : 12;
+
+    const dataTheoThang = Array.from({ length: soThang }, (_, i) => {
         const thang = i + 1;
-        const soPhieu = filteredPhieuXuats.filter(p => dayjs(p.ngayXuat).month() + 1 === thang).length;
-        const tongTienThang = filteredPhieuXuats.filter(p => dayjs(p.ngayXuat).month() + 1 === thang)
-            .flatMap(p => chiTietMap[p.idPhieuXuat] || []).reduce((sum, ct) => sum + (ct.thanhTien || 0), 0);
+        const soPhieu = filteredPhieuXuats.filter(p => {
+            const date = dayjs(p.ngayXuat);
+            return date.year() === Number(filterYear) && date.month() + 1 === thang;
+        }).length;
+
+        const tongTienThang = filteredPhieuXuats
+            .filter(p => {
+                const date = dayjs(p.ngayXuat);
+                return date.year() === Number(filterYear) && date.month() + 1 === thang;
+            })
+            .flatMap(p => chiTietMap[p.idPhieuXuat] || [])
+            .reduce((sum, ct) => sum + (ct.thanhTien || 0), 0);
+
         return { thang: `Th${thang}`, soPhieu, tongTien: tongTienThang };
     });
+
 
     const exportPDF = async () => {
         const element = exportRef.current;
@@ -186,7 +201,7 @@ const DashboardPhieuXuat = () => {
               
                         <div>
                             <h3>Giá trị xuất theo tháng</h3>
-                            <LineChart width={580} height={300} data={dataTheoThang}>
+                            <LineChart width={880} height={300} margin={{ top: 20, right: 40, left: 100, bottom: 0 }}  data={dataTheoThang}>
                                 <XAxis dataKey="thang" />
                                 <YAxis
                                     tickFormatter={value => value.toLocaleString('vi-VN')}

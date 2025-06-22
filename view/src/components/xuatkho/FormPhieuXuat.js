@@ -8,7 +8,7 @@ const FormPhieuXuat = ({ onCreated }) => {
     const [chiTietYC, setChiTietYC] = useState([]);
 
     useEffect(() => {
-        axios.get("https://localhost:5288/api/yeucauxuatkho")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho")
             .then(res => {
                 const list = res.data.filter(x => x.idTrangThaiXacNhan === 2);
                 setYeuCauList(list);
@@ -17,7 +17,7 @@ const FormPhieuXuat = ({ onCreated }) => {
 
     const handleSelectYeuCau = async (id) => {
         setSelectedYC(id);
-        const res = await axios.get(`https://localhost:5288/api/yeucauxuatkho/chitiet/${id}`);
+        const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${id}`);
         setChiTietYC(res.data);
     };
 
@@ -36,8 +36,8 @@ const FormPhieuXuat = ({ onCreated }) => {
         };
 
         try {
-            await axios.post("https://localhost:5288/api/phieuxuat/kiemtra-tonkho", payload.chiTietPhieuXuats);
-            await axios.post("https://localhost:5288/api/phieuxuat", payload);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/kiemtra-tonkho", payload.chiTietPhieuXuats);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat", payload);
             alert("✅ Đã tạo phiếu xuất thành công!");
             setSelectedYC('');
             setChiTietYC([]);

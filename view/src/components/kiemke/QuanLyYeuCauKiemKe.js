@@ -36,7 +36,7 @@ const QuanLyYeuCauKiemKe = () => {
     };
 
     const fetchData = () => {
-        fetch("https://localhost:5288/api/yeucaukiemke")
+        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke")
             .then(res => res.json())
             .then(data => setYeuCaus(data))
             .catch(() => alert("Lỗi tải dữ liệu"));
@@ -63,7 +63,7 @@ const QuanLyYeuCauKiemKe = () => {
 
     const openPopup = async (id) => {
         try {
-            const res = await fetch(`https://localhost:5288/api/yeucaukiemke/${id}`);
+            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${id}`);
             const data = await res.json();
             setPopupData(data);
         } catch {
@@ -74,7 +74,7 @@ const QuanLyYeuCauKiemKe = () => {
     const deleteYeuCau = async (id) => {
         if (!window.confirm("Bạn có chắc chắn muốn xoá yêu cầu này?")) return;
         try {
-            await fetch(`https://localhost:5288/api/yeucaukiemke/${id}`, { method: "DELETE" });
+            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${id}`, { method: "DELETE" });
             alert("🗑 Đã xoá yêu cầu.");
             fetchData();
         } catch {
@@ -152,7 +152,7 @@ const QuanLyYeuCauKiemKe = () => {
                                     <td>
                                         <button onClick={() => openPopup(yc.idYeuCauKiemKe)}>👁 Xem</button>
                                         <button onClick={async () => {
-                                            const res = await fetch(`https://localhost:5288/api/yeucaukiemke/${yc.idYeuCauKiemKe}`);
+                                            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${yc.idYeuCauKiemKe}`);
                                             const data = await res.json();
                                             setEditData(data);
                                             setShowPopup(true);
@@ -167,7 +167,7 @@ const QuanLyYeuCauKiemKe = () => {
 
                                         {yc.trangThai === 0 || yc.trangThai === -1 ? (
 
-                                            currentUser === yc.tenTruongBan || currentUser === yc.tenUyVien1 || currentUser === yc.tenUyVien2 || currentUser === yc.nguoiTao ? (
+                                            currentUser === yc.tenTruongBan || currentUser === yc.tenUyVien1 || currentUser === yc.tenUyVien2 ? (
                                                 <button onClick={() => navigate(`/thuc-hien-kiem-ke/${yc.idYeuCauKiemKe}`)}>📝 Kiểm kê</button>
                                             ) : (
                                                 <button disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>📝 Không được phân công</button>

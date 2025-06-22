@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyKhoHangFPTShop.server.Data;
 
@@ -11,9 +12,11 @@ using QuanLyKhoHangFPTShop.server.Data;
 namespace QuanLyKhoHangFPTShop.Migrations
 {
     [DbContext(typeof(WarehouseContext))]
-    partial class WarehouseContextModelSnapshot : ModelSnapshot
+    [Migration("20250617190327_AddGiamDocDuyetToYeuCauXuatKho")]
+    partial class AddGiamDocDuyetToYeuCauXuatKho
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

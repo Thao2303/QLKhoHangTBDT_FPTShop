@@ -5,12 +5,22 @@ let connection = null;
 export const connectSignalR = (onMessage) => {
     if (connection && connection.state === "Connected") return;
 
-    const user = JSON.parse(localStorage.getItem("user"));
+    const userRaw = localStorage.getItem("user");
+    if (!userRaw) return;
+
+    let user;
+    try {
+        user = JSON.parse(userRaw);
+    } catch (err) {
+        console.error("❌ Lỗi khi parse user từ localStorage:", err);
+        return;
+    }
+
     const userId = user?.idTaiKhoan;
     if (!userId) return;
 
     connection = new HubConnectionBuilder()
-        .withUrl(`https://localhost:5288/hub/thongbao?userId=${userId}`)
+        .withUrl(`https://qlkhohangtbdt-fptshop-be2.onrender.com/hub/thongbao?userId=${userId}`)
         .withAutomaticReconnect()
         .configureLogging(LogLevel.Information)
         .build();
@@ -27,7 +37,7 @@ export const connectSignalR = (onMessage) => {
 
         item.onclick = async () => {
             try {
-                await fetch(`https://localhost:5288/api/thongbao/danh-dau-da-doc/${data.idThongBao}`, {
+                await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${data.idThongBao}`, {
                     method: "PUT",
                 });
 
