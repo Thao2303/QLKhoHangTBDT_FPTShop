@@ -40,7 +40,7 @@ const QuanLyPhieuNhapKho = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const location = useLocation();
-    const API_BASE_URL = "https://localhost:5288/api";
+    const API_BASE_URL = "https://qlkhohangtbdt-fptshop-be2.onrender.com/api";
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem("user"));
     const isThuKho = user?.tenChucVu === "Thủ kho";

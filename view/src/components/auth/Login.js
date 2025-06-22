@@ -13,7 +13,7 @@ const Login = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem("user"));
         if (user) {
-            window.location.href = "/dashboard";
+            window.location.href = "/sodokho";
         }
     }, []);
 
@@ -23,7 +23,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post('https://localhost:5288/api/TaiKhoan/login', {
+            const response = await axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/TaiKhoan/login', {
                 Username: username,
                 Password: password
             });

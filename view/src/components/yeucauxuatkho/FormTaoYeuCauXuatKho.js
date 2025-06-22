@@ -27,13 +27,13 @@ const FormTaoYeuCauXuatKho = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('https://localhost:5288/api/yeucauxuatkho/danhmuc').then(res => setDanhMucList(res.data));
-        axios.get('https://localhost:5288/api/yeucauxuatkho/donvitinh').then(res => setDonViTinhList(res.data));
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/danhmuc').then(res => setDanhMucList(res.data));
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/donvitinh').then(res => setDonViTinhList(res.data));
     }, []);
 
     useEffect(() => {
         if (danhMuc) {
-            axios.get(`https://localhost:5288/api/yeucauxuatkho/sanpham/danhmuc/${danhMuc}`).then(res => setSanPhamList(res.data));
+            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/sanpham/danhmuc/${danhMuc}`).then(res => setSanPhamList(res.data));
         } else {
             setSanPhamList([]);
         }
@@ -109,7 +109,7 @@ const FormTaoYeuCauXuatKho = () => {
 
         try {
             await axios.post(
-  `https://localhost:5288/api/yeucauxuatkho/tao?chucVu=${user.tenChucVu}`,
+  `https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tao?chucVu=${user.tenChucVu}`,
   payload
 );
 

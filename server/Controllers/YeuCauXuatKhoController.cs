@@ -27,47 +27,116 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             yc.NgayYeuCau = DateTime.Now;
 
             var nguoiTao = await _context.TaiKhoan
-     .Include(tk => tk.DaiLy)
-     .FirstOrDefaultAsync(tk => tk.idTaiKhoan == yc.idNguoiTao);
+                .Include(tk => tk.ChucVu)
+                .Include(tk => tk.DaiLy)
+                .FirstOrDefaultAsync(tk => tk.idTaiKhoan == yc.idNguoiTao);
+            Console.WriteLine("Người tạo: " + nguoiTao?.tenTaiKhoan + ", chức vụ: " + nguoiTao?.ChucVu?.tenChucVu);
 
             yc.NguoiYeuCau = nguoiTao?.DaiLy?.TenDaiLy ?? "Ẩn danh";
-            yc.IdDaiLy = nguoiTao?.idDaiLy ?? 0; // ✅ Gán idDaiLy đúng theo người tạo
+            yc.IdDaiLy = nguoiTao?.idDaiLy ?? 0;
 
-
-            // Tách ChiTietYeuCauXuatKhos tạm thời ra để không lưu cùng lúc
             var chiTietTam = yc.ChiTietYeuCauXuatKhos.ToList();
             yc.ChiTietYeuCauXuatKhos.Clear();
 
             _context.YeuCauXuatKho.Add(yc);
-            await _context.SaveChangesAsync(); // Bây giờ IdYeuCauXuatKho đã được sinh ra
+            await _context.SaveChangesAsync();
 
-            // Gán lại IdYeuCauXuatKho cho từng chi tiết và thêm lại vào context
             foreach (var ct in chiTietTam)
             {
                 ct.idYeuCauXuatKho = yc.IdYeuCauXuatKho;
                 _context.ChiTietYeuCauXuatKho.Add(ct);
             }
+            await _context.SaveChangesAsync();
 
-            await _context.SaveChangesAsync(); // Lưu chi tiết
-    
+            // 🚦 Xử lý phân quyền gửi thông báo
+            var tenChucVu = nguoiTao?.ChucVu?.tenChucVu?.Trim().ToLower();
 
-        // Gửi thông báo
-        var thuKhoList = await _context.TaiKhoan
+
+            if (tenChucVu == "đại lý bán hàng")
+            {
+                // 🧑‍💼 Gửi tới Giám đốc đại lý
+                var giamDoc = await _context.TaiKhoan
+    .Include(t => t.ChucVu)  // Bắt buộc phải có
+    .Where(t =>
+        t.idDaiLy == nguoiTao.idDaiLy &&
+        t.ChucVu != null &&
+        t.ChucVu.tenChucVu.Trim().ToLower() == "giám đốc đại lý".ToLower())
+    .FirstOrDefaultAsync();
+                if (giamDoc == null)
+                {
+                    Console.WriteLine($"Không tìm thấy giám đốc cho đại lý {nguoiTao.idDaiLy}");
+                }
+
+
+                if (giamDoc != null)
+                {
+                    var noiDung = $"📝 Nhân viên {nguoiTao.tenTaiKhoan} vừa tạo yêu cầu xuất kho #{yc.IdYeuCauXuatKho}. Vui lòng duyệt.";
+
+                    await _hubContext.Clients.User(giamDoc.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", new { idYeuCau = yc.IdYeuCauXuatKho, noiDung, ngayTao = DateTime.Now });
+
+                    _context.ThongBao.Add(new ThongBao
+                    {
+                        noiDung = noiDung,
+                        ngayTao = DateTime.Now,
+                        daXem = false,
+                        idNguoiNhan = giamDoc.idTaiKhoan
+                    });
+                }
+            }
+            else if (tenChucVu == "thủ kho" || tenChucVu == "nhân viên")
+            {
+                // 🏷 Nếu là nhân viên kho/thủ kho thì gửi trực tiếp tới Thủ kho
+                var thuKhoList = await _context.TaiKhoan
+                    .Include(t => t.ChucVu)
+                    .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
+                    .ToListAsync();
+
+                foreach (var tk in thuKhoList)
+                {
+                    var noiDung = $"📝 Đại lý {yc.NguoiYeuCau} vừa gửi yêu cầu xuất kho mới. (Mã yêu cầu: #{yc.IdYeuCauXuatKho})";
+
+                    await _hubContext.Clients.User(tk.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", new { idYeuCau = yc.IdYeuCauXuatKho, noiDung, ngayTao = DateTime.Now });
+
+                    _context.ThongBao.Add(new ThongBao
+                    {
+                        noiDung = noiDung,
+                        ngayTao = DateTime.Now,
+                        daXem = false,
+                        idNguoiNhan = tk.idTaiKhoan
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(yc);
+        }
+        [HttpPut("giamdocduyet/{id}")]
+        public async Task<IActionResult> GiamDocDuyetYeuCau(int id)
+        {
+            var yc = await _context.YeuCauXuatKho
+                .Include(y => y.NguoiTao)
+                .FirstOrDefaultAsync(y => y.IdYeuCauXuatKho == id);
+
+            if (yc == null)
+                return NotFound();
+
+            // ✅ Cập nhật trạng thái: đã duyệt bởi Giám đốc
+            yc.giamDocDuyet = true;
+
+            // 🧾 Gửi thông báo tới tất cả thủ kho
+            var thuKhoList = await _context.TaiKhoan
                 .Include(t => t.ChucVu)
-                .Where(t => t.ChucVu != null && t.ChucVu.tenChucVu == "Thủ kho")
+                .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
                 .ToListAsync();
 
             foreach (var tk in thuKhoList)
             {
-                var noiDung = $"📝 Đại lý {yc.NguoiYeuCau} vừa gửi yêu cầu xuất kho mới. (Mã yêu cầu: #{yc.IdYeuCauXuatKho})";
+                var noiDung = $"📝 Giám đốc đã duyệt yêu cầu xuất kho #{yc.IdYeuCauXuatKho}. Vui lòng kiểm tra và xử lý.";
 
                 await _hubContext.Clients.User(tk.idTaiKhoan.ToString())
-                    .SendAsync("NhanThongBao", new
-                    {
-                        idYeuCau = yc.IdYeuCauXuatKho,
-                        noiDung,
-                        ngayTao = DateTime.Now
-                    });
+                    .SendAsync("NhanThongBao", new { idYeuCau = yc.IdYeuCauXuatKho, noiDung, ngayTao = DateTime.Now });
 
                 _context.ThongBao.Add(new ThongBao
                 {
@@ -79,9 +148,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             }
 
             await _context.SaveChangesAsync();
-
-            return Ok(yc);
+            return Ok(new { message = "Giám đốc đã duyệt và thông báo đã được gửi tới Thủ kho." });
         }
+
 
         [HttpPut("capnhattrangthai/{id}")]
         public async Task<IActionResult> CapNhatTrangThaiDaXuat(int id)
@@ -206,6 +275,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 
                 yc.NgayYeuCau,
                 yc.IdTrangThaiXacNhan,
+                yc.giamDocDuyet,
                 daiLy = new
                 {
                     yc.DaiLy?.idDaiLy,

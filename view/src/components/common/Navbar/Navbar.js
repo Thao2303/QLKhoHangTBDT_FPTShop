@@ -29,7 +29,7 @@ const Navbar = () => {
     useEffect(() => {
         const nav = navigate;
         if (!user) return;
-        axios.get(`https://localhost:5288/api/thongbao/nguoi-nhan/${user.idTaiKhoan}`)
+        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/nguoi-nhan/${user.idTaiKhoan}`)
             .then(res => setThongBaoList(res.data))
             .catch(() => { });
 
@@ -55,7 +55,7 @@ const Navbar = () => {
 
     const markAsRead = async (idThongBao, noiDung, lienKet) => {
         if (idThongBao < 1000000000) {
-            await axios.put(`https://localhost:5288/api/thongbao/danh-dau-da-doc/${idThongBao}`);
+            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${idThongBao}`);
         }
 
         setThongBaoList(prev =>
@@ -108,7 +108,7 @@ const Navbar = () => {
 
     const markAllAsRead = async () => {
         const ids = thongBaoList.filter(tb => !tb.daXem && tb.idThongBao < 1000000000).map(tb => tb.idThongBao);
-        await Promise.all(ids.map(id => axios.put(`https://localhost:5288/api/thongbao/danh-dau-da-doc/${id}`)));
+        await Promise.all(ids.map(id => axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${id}`)));
         setThongBaoList(prev => prev.map(tb => ({ ...tb, daXem: true })));
     };
 

@@ -3,9 +3,13 @@ services:
     name: qlkhohang-backend
     env: docker
     plan: free
-    dockerfilePath: server/Dockerfile  # đường dẫn chính xác
-    rootDir: .                          # repo gốc
+    dockerfilePath: server/Dockerfile
+    rootDir: .   # hoặc đường dẫn chứa backend
     autoDeploy: true
-    buildCommand: ""
-    startCommand: ""
-    envVars: []
+
+  - type: static
+    name: qlkhohang-frontend
+    env: static
+    rootDir: .
+    buildCommand: npm run build
+    staticPublishPath: build

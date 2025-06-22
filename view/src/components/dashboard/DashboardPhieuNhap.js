@@ -28,18 +28,19 @@ const DashboardPhieuNhap = () => {
     const [sortOrder, setSortOrder] = useState('none');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
+ 
 
     const itemsPerPage = 5;
     const exportRef = useRef();
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get('https://localhost:5288/api/phieunhap');
+            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
             setPhieuNhaps(res.data || []);
 
             const map = {};
             for (const pn of res.data) {
-                const resCt = await axios.get(`https://localhost:5288/api/phieunhap/chitiet/${pn.idPhieuNhap}`);
+                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`);
                 map[pn.idPhieuNhap] = resCt.data || [];
             }
             setChiTietMap(map);
@@ -96,11 +97,30 @@ const DashboardPhieuNhap = () => {
         return acc;
     }, []);
 
-    const dataTheoThang = Array.from({ length: 12 }, (_, i) => {
+    const namHienTai = dayjs().year();
+    const thangHienTai = dayjs().month() + 1; // 1-12
+
+    const soThang = Number(filterYear) === namHienTai ? thangHienTai : 12;
+
+
+
+    const dataTheoThang = Array.from({ length: soThang }, (_, i) => {
         const thang = i + 1;
-        const soPhieu = filteredPhieuNhaps.filter(p => dayjs(p.ngayNhap).month() + 1 === thang).length;
-        const tongTienThang = filteredPhieuNhaps.filter(p => dayjs(p.ngayNhap).month() + 1 === thang)
-            .flatMap(p => chiTietMap[p.idPhieuNhap] || []).reduce((sum, ct) => sum + (ct.tongTien || 0), 0);
+        const soPhieu = filteredPhieuNhaps.filter(p => {
+            const date = dayjs(p.ngayNhap);
+            return date.year() === Number(filterYear) && date.month() + 1 === thang;
+
+        }).length;
+
+        const tongTienThang = filteredPhieuNhaps
+            .filter(p => {
+                const date = dayjs(p.ngayNhap);
+                return date.year() === Number(filterYear) && date.month() + 1 === thang;
+
+            })
+            .flatMap(p => chiTietMap[p.idPhieuNhap] || [])
+            .reduce((sum, ct) => sum + (ct.tongTien || 0), 0);
+
         return { thang: `Th${thang}`, soPhieu, tongTien: tongTienThang };
     });
 
@@ -216,7 +236,8 @@ const DashboardPhieuNhap = () => {
 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <h3 style={{ marginBottom: '10px' }}>💰 Tiền nhập theo tháng</h3>
-                        <LineChart width={680} height={300} margin={{ top: 20, right: 40, left: 60, bottom: 0 }} data={dataTheoThang}>
+                        <LineChart width={780} height={300} margin={{ top: 20, right: 40, left: 100, bottom: 0 }} data={dataTheoThang}>
+
                             <XAxis dataKey="thang" interval={0} />
                             <YAxis tickFormatter={(value) => value.toLocaleString('vi-VN')} />
                             <Tooltip />
