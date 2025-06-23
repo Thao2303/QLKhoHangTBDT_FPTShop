@@ -13,7 +13,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://qlkhohangtbdt-fptshop.onrender.com")
+        policy.WithOrigins("https://qlkhohangtbdt-fptshop.onrender.com", "https://qlkhohangtbdt-fptshop.onrender.com")
 
 
               .AllowAnyMethod()

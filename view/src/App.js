@@ -176,12 +176,12 @@ const App = () => {
                 <Route path="/dashboard-phieu-xuat" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><DashboardPhieuXuat /></PrivateRoute>} />
                 <Route path="/dashboard-yeu-cau-xuat-kho" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><DashboardYeuCauXuatKho /></PrivateRoute>} />
                 <Route path="/dashboard-san-pham" element={<PrivateRoute allowedRoles={["Đại lý bán hàng", "Giám đốc đại lý", "Nhân viên", "Thủ kho"]}><DashboardSanPham /></PrivateRoute>} />
-                <Route path="/dashboard" element={<><Navbar /><Sidebar /><Dashboard /></>} />
                 <Route path="/dashboard" element={
                     <RequireAuth>
-                        <Dashboard />
+                        <><Navbar /><Sidebar /><Dashboard /></>
                     </RequireAuth>
                 } />
+
             </Routes>
         </Router>
     );
