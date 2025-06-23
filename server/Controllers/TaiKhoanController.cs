@@ -7,6 +7,7 @@ using MailKit.Net.Smtp;
 using MimeKit;
 using Microsoft.AspNetCore.SignalR;
 using QuanLyKhoHangFPTShop.server.Hubs;
+using MailKit.Security;
 
 namespace QuanLyKhoHangFPTShop.server.Controllers
 {
@@ -63,6 +64,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         [HttpPost]
         public async Task<ActionResult<TaiKhoan>> PostTaiKhoan(TaiKhoanCreateDto dto)
         {
+            if (dto == null)
+                return BadRequest("Dữ liệu tài khoản không hợp lệ.");
+
             if (!await _context.ChucVu.AnyAsync(cv => cv.idChucVu == dto.idChucVu))
                 return BadRequest("❌ Chức vụ không tồn tại.");
 
@@ -103,11 +107,20 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 Text = $"Chào {taiKhoan.tenTaiKhoan},\n\nBạn đã được cấp tài khoản truy cập hệ thống quản lý kho FPT Shop. Dưới đây là thông tin:\n\n➤ Tên đăng nhập: {taiKhoan.tenTaiKhoan}\n➤ Mật khẩu tạm thời: {plainPassword}\n➤ Đăng nhập tại: {loginUrl}\n\n⚠️ Vui lòng đổi mật khẩu sau khi đăng nhập để bảo mật tài khoản."
             };
 
-            using var smtp = new SmtpClient();
-            await smtp.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
-            await smtp.AuthenticateAsync(_config["Mail:Username"], _config["Mail:Password"]);
-            await smtp.SendAsync(message);
-            await smtp.DisconnectAsync(true);
+            try
+            {
+                using var smtp = new SmtpClient();
+                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                await smtp.AuthenticateAsync(_config["Mail:Username"], _config["Mail:Password"]);
+                await smtp.SendAsync(message);
+                await smtp.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Gửi mail thất bại: {ex.Message}");
+                return StatusCode(500, "Lỗi khi gửi email: " + ex.Message);
+            }
+
 
             return CreatedAtAction(nameof(GetTaiKhoan), new { id = taiKhoan.idTaiKhoan }, taiKhoan);
         }
