@@ -13,7 +13,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://qlkhohangtbdt-fptshop.onrender.com", "https://qlkhohangtbdt-fptshop.onrender.com")
+        policy.WithOrigins("http://localhost:3000", "https://qlkhohangtbdt-fptshop.onrender.com")
 
 
               .AllowAnyMethod()
@@ -83,7 +83,9 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 app.MapHub<ThongBaoHub>("/hub/thongbao");
