@@ -92,7 +92,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             _context.TaiKhoan.Add(taiKhoan);
             await _context.SaveChangesAsync();
 
-            var domain = _config["FrontendDomain"] ?? "http://localhost:3000";
+            var domain = _config["FrontendDomain"] ?? "https://qlkhohangtbdt-fptshop.onrender.com";
             var loginUrl = $"{domain}/login";
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("FPT Shop", _config["Mail:Username"]));
@@ -185,7 +185,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             user.resetTokenExpiry = DateTime.Now.AddMinutes(15);
             await _context.SaveChangesAsync();
 
-            var domain = _config["FrontendDomain"] ?? "http://localhost:3000";
+            var domain = _config["FrontendDomain"] ?? "https://qlkhohangtbdt-fptshop.onrender.com";
             var senderEmail = _config["Mail:Username"];
             var senderPassword = _config["Mail:Password"];
 
