@@ -1,67 +1,64 @@
-﻿import React from "react";
+﻿import React, { useEffect, useState } from "react";
 import '../common/ModalPopup/popup-style.css';
+import axios from "axios";
 
-const ChiTietSanPhamViTri = ({ danhSach = [], viTri, onClose }) => {
-    // Gộp sản phẩm theo tên + SKU + màu sắc
-    const danhSachGop = Object.values(
-        (danhSach || []).reduce((acc, sp) => {
-            const key = `${sp.tenSanPham}_${sp.sku}_${sp.mauSac}`;
-            if (!acc[key]) {
-                acc[key] = { ...sp, soLuong: Number(sp.soLuong) };
-            } else {
-                acc[key].soLuong += Number(sp.soLuong);
-            }
-            return acc;
-        }, {})
-    ).filter(sp => sp.soLuong > 0); // 👈 Lọc bỏ sp hết hàng
+const ChiTietSanPhamViTri = ({ danhSach = [], idSanPham, onClose }) => {
+    const [spChiTiet, setSpChiTiet] = useState(null);
 
+    useEffect(() => {
+        if (idSanPham) {
+            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/SanPham/${idSanPham}`)
+                .then(res => setSpChiTiet(res.data))
+                .catch(() => console.warn("Không lấy được chi tiết sản phẩm"));
+        }
+    }, [idSanPham]);
+
+    const danhSachLoc = danhSach.filter(sp => sp.idSanPham === idSanPham);
 
     return (
         <div className="popup-inner">
- 
             <h1 className="title">✉️ THÔNG TIN VỊ TRÍ LƯU TRỮ</h1>
-            {viTri ? (
-                <div className="vi-tri-grid">
-                    <div><span>ID:</span> {viTri.idViTri}</div>
-                    <div><span>Dãy:</span> {viTri.day}</div>
-                    <div><span>Cột:</span> {viTri.cot}</div>
-                    <div><span>Tầng:</span> {viTri.tang}</div>
-                    <div><span>Chiều dài:</span> {viTri.chieuDai} mm</div>
-                    <div><span>Chiều rộng:</span> {viTri.chieuRong} mm</div>
-                    <div><span>Chiều cao:</span> {viTri.chieuCao} mm</div>
-                    <div><span>Sức chứa:</span> {viTri.sucChua?.toLocaleString()} mm³</div>
-                    <div><span>Đã dùng:</span> {viTri.daDung?.toLocaleString()} mm³</div>
+
+            {spChiTiet?.hinhAnh && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+                    <img
+                        src={spChiTiet.hinhAnh.startsWith('http') ? spChiTiet.hinhAnh : `https://localhost:5288${spChiTiet.hinhAnh}`}
+                        alt="Hình ảnh sản phẩm"
+                        style={{
+                            width: 160,
+                            height: 160,
+                            objectFit: 'cover',
+                            borderRadius: 12,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                        }}
+                    />
                 </div>
-            ) : (
-                <p className="no-data">Không tìm thấy thông tin vị trí.</p>
             )}
 
-            <h3 style={{ marginTop: 24 }}>📦 Danh sách sản phẩm</h3>
+            {spChiTiet?.tenSanPham && (
+                <h3 style={{ textAlign: "center", marginBottom: 20 }}>
+                    🏷️ {spChiTiet.tenSanPham}
+                </h3>
+            )}
 
-            {danhSachGop.length === 0 ? (
+            {danhSachLoc.length === 0 ? (
                 <p className="no-data">Không có sản phẩm nào trong vị trí này.</p>
             ) : (
                 <div className="table-wrapper scrollable">
                     <table className="nice-table">
                         <thead>
                             <tr>
-                                <th>Tên sản phẩm</th>
-                              
+                                <th>Vị trí</th>
                                 <th style={{ textAlign: "right" }}>Số lượng</th>
-                                <th>Thời gian lưu</th>
+                            
                             </tr>
                         </thead>
                         <tbody>
-                            {danhSachGop.map((sp, index) => (
-                                <tr key={`sp-${index}`}>
-                                    <td>{sp.tenSanPham}</td>
-                                
+                            {danhSachLoc.map((sp, index) => (
+                                <tr key={index}>
+                                    <td>Dãy {sp.day} - Cột {sp.cot} - Tầng {sp.tang}</td>
                                     <td style={{ textAlign: "right" }}>{sp.soLuong}</td>
-                                    <td>
-                                        {sp.thoiGianLuu
-                                            ? new Date(sp.thoiGianLuu).toLocaleString("vi-VN")
-                                            : "—"}
-                                    </td>
+                                   
                                 </tr>
                             ))}
                         </tbody>

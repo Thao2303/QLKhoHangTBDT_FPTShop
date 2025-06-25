@@ -11,7 +11,7 @@ const Navbar = () => {
     const [filter, setFilter] = useState("tatca");
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
-
+    const hasConnectedRef = useRef(false);
     const user = JSON.parse(localStorage.getItem("user"));
     const username = user ? user.tenTaiKhoan : "Người dùng";
     const [showUserMenu, setShowUserMenu] = useState(false);
@@ -26,41 +26,62 @@ const Navbar = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [showDropdown]);
 
+
+
     useEffect(() => {
-        const nav = navigate;
         if (!user) return;
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/nguoi-nhan/${user.idTaiKhoan}`)
-            .then(res => setThongBaoList(res.data))
-            .catch(() => { });
 
-        connectSignalR((message) => {
-            if (!message || !message.noiDung) return; // 💥 Bỏ qua nếu chưa có nội dung
+      
 
-            const newNoti = {
-                idThongBao: message.idThongBao || Date.now(),
-                noiDung: message.noiDung,
-                ngayTao: new Date(message.ngayTao || Date.now()),
-                lienKet: message.lienKet || "",
-                daXem: false
-            };
+        const fetchDataAndConnect = async () => {
+            try {
+                const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/nguoi-nhan/${user.idTaiKhoan}`);
+                setThongBaoList(res.data);
+            } catch (error) {
+                console.error("❌ Lỗi lấy thông báo:", error);
+            }
 
-            setThongBaoList(prev => {
-                const exists = prev.some(tb => tb.idThongBao === newNoti.idThongBao);
-                return exists ? prev : [newNoti, ...prev];
-            });
-        });
+            if (!hasConnectedRef.current) {
+                connectSignalR((message) => {
+                    if (!message || !message.noiDung) return;
 
-        return () => stopSignalR();
+                    const newNoti = {
+                        idThongBao: message.idThongBao || Date.now(),
+                        noiDung: message.noiDung,
+                        ngayTao: new Date(message.ngayTao || Date.now()),
+                        lienKet: message.lienKet || "",
+                        daXem: false
+                    };
+
+                    setThongBaoList(prev => {
+                        const exists = prev.some(tb => tb.idThongBao === newNoti.idThongBao);
+                        if (exists) return prev;
+                        const updated = [newNoti, ...prev];
+                        return [...updated];  // buộc tạo array mới
+                    });
+                });
+                hasConnectedRef.current = true;
+            }
+        };
+
+        fetchDataAndConnect();
+
+        return () => {
+            stopSignalR();
+            hasConnectedRef.current = false;
+        };
+
     }, []);
 
     const markAsRead = async (idThongBao, noiDung, lienKet) => {
-        if (idThongBao < 1000000000) {
-            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${idThongBao}`);
-        }
-
         setThongBaoList(prev =>
             prev.map(tb => tb.idThongBao === idThongBao ? { ...tb, daXem: true } : tb)
         );
+        if (idThongBao < 1000000000) {
+            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${idThongBao}`).catch(err => console.error(err));
+        }
+
+        
 
         // ⚠️ Ưu tiên dùng liên kết nếu có
         if (lienKet && typeof lienKet === "string") {

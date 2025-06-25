@@ -51,14 +51,16 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
         const { name, value } = e.target;
 
         if (name === 'idChucVu') {
-            const tenChucVu = chucVus.find(cv => cv.idChucVu === parseInt(value))?.tenChucVu;
+            const id = parseInt(value); // 👈 ép kiểu tại đây
+            const tenChucVu = chucVus.find(cv => cv.idChucVu === id)?.tenChucVu;
 
-            if (tenChucVu === 'Thủ kho') {
-                setFormData(prev => ({ ...prev, idChucVu: value, idDaiLy: 1 }));
+            if (tenChucVu === 'Nhân viên' || tenChucVu === 'Thủ kho' || tenChucVu === "Admin") {
+                setFormData(prev => ({ ...prev, idChucVu: id, idDaiLy: 1 }));
             } else {
-                setFormData(prev => ({ ...prev, idChucVu: value, idDaiLy: '' }));
+                setFormData(prev => ({ ...prev, idChucVu: id, idDaiLy: '' }));
             }
-        } else {
+        }
+ else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
     };
@@ -123,7 +125,7 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
                 <label>Email</label>
                 <input className="input" name="email" type="email" value={formData.email} onChange={handleChange} required />
 
-                
+
 
                 <label>Chức vụ</label>
                 <select className="input" name="idChucVu" value={formData.idChucVu} onChange={handleChange} required>

@@ -78,7 +78,7 @@ const XemPhieuKiemKe = () => {
                                 <tr>
                                     <th>Sản phẩm</th>
                                     <th>Vị trí</th>
-                                    <th>Số lượng tại vị trí</th>
+                                    
                                     <th>Tồn hệ thống</th>
                                     <th>Thực tế</th>
                                     <th>Chênh lệch</th>
@@ -91,7 +91,7 @@ const XemPhieuKiemKe = () => {
                                     <tr key={idx} style={ct.soLuongThucTe !== ct.soLuongTheoHeThong ? { backgroundColor: "#ffe6e6" } : {}}>
                                         <td>{ct.tenSanPham}</td>
                                         <td>{ct.viTri || "--"}</td>
-                                        <td>{ct.soLuongTaiViTri || "--"}</td>
+                                      
                                         <td>{ct.soLuongTheoHeThong}</td>
                                         <td>{ct.soLuongThucTe}</td>
                                         <td style={{ color: ct.soLuongThucTe !== ct.soLuongTheoHeThong ? "red" : undefined }}>

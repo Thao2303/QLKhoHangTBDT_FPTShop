@@ -21,10 +21,14 @@ const QuanLyViTriSanPham = () => {
     const [dayLoc, setDayLoc] = useState("");
     const [cotLoc, setCotLoc] = useState("");
     const [tangLoc, setTangLoc] = useState("");
-    const [popup, setPopup] = useState(null);
+  
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
     const navigate = useNavigate();
+    const [viTriSanPhamList, setViTriSanPhamList] = useState([]);
+    const [viTri, setViTri] = useState(null);
+    const [sanPhamDangChon, setSanPhamDangChon] = useState(null);
+    const [showChiTiet, setShowChiTiet] = useState(false); // dùng để toggle popup
 
     useEffect(() => {
         axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/ChiTietLuuTru")
@@ -62,11 +66,13 @@ const QuanLyViTriSanPham = () => {
         const matchDay = !dayLoc || item.day?.toString() === dayLoc;
         const matchCot = !cotLoc || item.cot?.toString() === cotLoc;
         const matchTang = !tangLoc || item.tang?.toString() === tangLoc;
+        const hasSoLuong = item.soLuong > 0;
 
-        return matchKeyword && matchMa && matchDay && matchCot && matchTang;
+        return matchKeyword && matchMa && matchDay && matchCot && matchTang && hasSoLuong;
     });
 
-    const handleXem = (item) => setPopup(item);
+
+    
 
     const handleXoa = async (idViTri, idSanPham) => {
         if (!window.confirm("Xoá sản phẩm khỏi vị trí này?")) return;
@@ -160,7 +166,16 @@ const QuanLyViTriSanPham = () => {
 
                                         <td>{group.reduce((sum, item) => sum + item.soLuong, 0)}</td>
                                         <td>
-                                            <button onClick={() => handleXem(firstItem)}>🔍</button>
+                                            <button onClick={() => {
+                                                setSanPhamDangChon(firstItem);
+                                                setViTriSanPhamList(group);
+                                                setViTri(group[0]);  // 👈 lấy vị trí đầu tiên để hiển thị
+                                                setShowChiTiet(true);
+                                            }}>
+                                                🔍
+                                            </button>
+
+
                                             <button onClick={() => handleChuyen(firstItem.idSanPham)}>✏️</button>
                                             {/*    <button onClick={() => handleXoa(firstItem.idViTri, firstItem.idSanPham)}>🗑</button> */}    
                                         </td>
@@ -175,15 +190,17 @@ const QuanLyViTriSanPham = () => {
 
                     <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
 
-                    {popup && (
+                    {showChiTiet && (
                         <div className="popup">
                             <ChiTietSanPhamViTri
-                                danhSach={danhSach.filter(d => d.idViTri === popup.idViTri)}
-                                viTri={popup}
-                                onClose={() => setPopup(null)}
+                                danhSach={viTriSanPhamList}
+                                idSanPham={sanPhamDangChon?.idSanPham}
+                                onClose={() => setShowChiTiet(false)}
                             />
+
                         </div>
                     )}
+
 
                 </div>
             </div>

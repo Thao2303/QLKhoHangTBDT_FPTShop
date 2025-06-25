@@ -28,7 +28,7 @@ const FormTaoYeuCauXuatKho = () => {
 
     useEffect(() => {
         axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/danhmuc').then(res => setDanhMucList(res.data));
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/donvitinh').then(res => setDonViTinhList(res.data));
+        setDonViTinh("cai");
     }, []);
 
     useEffect(() => {
@@ -91,7 +91,7 @@ const FormTaoYeuCauXuatKho = () => {
             idDaiLy: user?.idDaiLy || 1,
             idTrangThaiXacNhan: 1,
             idDanhMuc: parseInt(danhMuc),
-            idDonViTinh: parseInt(donViTinh),
+            idDonViTinh: 1,
             diaChi,
             lyDoXuat,
             hinhThucXuat,
@@ -109,7 +109,13 @@ const FormTaoYeuCauXuatKho = () => {
 
         try {
             await axios.post(
-  `https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tao?chucVu=${user.tenChucVu}`,
+                `
+
+
+
+
+
+                /api/yeucauxuatkho/tao?chucVu=${user.tenChucVu}`,
   payload
 );
 
@@ -166,15 +172,7 @@ const FormTaoYeuCauXuatKho = () => {
                             <label>Số lượng</label>
                             <input type="number" min={1} value={soLuong} onChange={(e) => setSoLuong(e.target.value)} />
                         </div>
-                        <div className="form-section">
-                            <label>Đơn vị tính</label>
-                            <select value={donViTinh} onChange={(e) => setDonViTinh(e.target.value)}>
-                                <option value="">-- Chọn đơn vị --</option>
-                                {donViTinhList.map(dvt => (
-                                    <option key={dvt.idDonViTinh} value={dvt.idDonViTinh}>{dvt.tenDonViTinh}</option>
-                                ))}
-                            </select>
-                        </div>
+                  
 
                         <div className="form-section">
                             <label>Địa chỉ giao</label>

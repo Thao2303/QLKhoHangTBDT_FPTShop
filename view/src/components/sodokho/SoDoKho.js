@@ -4,7 +4,7 @@ import { Tooltip } from "react-tooltip";
 import "./SoDoKho.css";
 import Sidebar from '../common/Sidebar/Sidebar';
 import Navbar from '../common/Navbar/Navbar';
-import ChiTietSanPhamViTri from "../sanpham/ChiTietSanPhamViTri";
+import ChiTietViTri from "./ChiTietViTri";
 
 const SoDoKho = ({ highlightedIds = [] }) => {
     const [vitri, setVitri] = useState([]);
@@ -83,12 +83,13 @@ const SoDoKho = ({ highlightedIds = [] }) => {
     };
 
     return (
+
         <div className="layout-wrapper">
             <Sidebar />
             <div className="content-area">
                 <div className="main-layout">
                     <div className="container" >
-
+                        <title>Sơ đồ kho</title>
                         <h1 className="title">SƠ ĐỒ KHO HÀNG FPT SHOP</h1>
                         <Navbar />
 
@@ -159,7 +160,7 @@ const SoDoKho = ({ highlightedIds = [] }) => {
                             <div className="popup-overlay">
                                 <div className="popup-box" >
                                     
-                                    <ChiTietSanPhamViTri danhSach={sanPhamPopup} viTri={popupViTri} onClose={() => setPopupViTri(null)} />
+                                    <ChiTietViTri danhSach={sanPhamPopup} viTri={popupViTri} onClose={() => setPopupViTri(null)} />
                                 </div>
                             </div>
                         )}

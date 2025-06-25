@@ -4,33 +4,17 @@ namespace QuanLyKhoHangFPTShop.server.Hubs
 {
     public class ThongBaoHub : Hub
     {
-        public async Task GuiThongBao(string userId, string message)
-        {
-            await Clients.User(userId).SendAsync("NhanThongBao", message);
-        }
-
         public override Task OnConnectedAsync()
         {
-            var httpContext = Context.GetHttpContext();
-            var id = httpContext?.Request.Query["userId"];
-
-            Console.WriteLine("📡 [SignalR] Client connected with userId = " + id); // ✅ Thêm dòng này để log
-
-            if (!string.IsNullOrEmpty(id))
-                Context.Items["userId"] = id;
-
+            var userId = Context.UserIdentifier;
+            Console.WriteLine($"📡 [SignalR] Connected: userId = {userId}");
             return base.OnConnectedAsync();
         }
 
-        public Task AddToGroup(string userId)
+        public Task GuiThongBao(string userId, string message)
         {
-            return Groups.AddToGroupAsync(Context.ConnectionId, userId);
+            return Clients.User(userId).SendAsync("NhanThongBao", message);
         }
-
-        public Task RemoveFromGroup(string userId)
-        {
-            return Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);
-        }
-
     }
+
 }

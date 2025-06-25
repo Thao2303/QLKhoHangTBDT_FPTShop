@@ -2,7 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLyKhoHangFPTShop.server.Data;
 using QuanLyKhoHangFPTShop.server.Models;
-
+using QuanLyKhoHangFPTShop.server.Hubs;
+using Microsoft.AspNetCore.SignalR;
 namespace QuanLyKhoHangFPTShop.server.Controllers
 {
     [ApiController]
@@ -10,10 +11,12 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
     public class ThongBaoController : ControllerBase
     {
         private readonly WarehouseContext _context;
+        private readonly IHubContext<ThongBaoHub> _hubContext;
 
-        public ThongBaoController(WarehouseContext context)
+        public ThongBaoController(WarehouseContext context, IHubContext<ThongBaoHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // Lấy tất cả thông báo của người dùng
@@ -47,10 +50,17 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         {
             tb.ngayTao = DateTime.Now;
             tb.daXem = false;
+
             _context.ThongBao.Add(tb);
             await _context.SaveChangesAsync();
+
+            // Gửi realtime qua SignalR
+            await _hubContext.Clients.User(tb.idNguoiNhan.ToString())
+                .SendAsync("NhanThongBao", tb);
+
             return Ok(tb);
         }
+
 
         [HttpGet("taikhoan/ten/{tenTaiKhoan}")]
         public async Task<IActionResult> LayIdTheoTen(string tenTaiKhoan)

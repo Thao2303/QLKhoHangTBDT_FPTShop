@@ -135,19 +135,22 @@ const TrangTimKiemSanPham = () => {
                                     <div className="kho-row" key={idx}>
                                         <div className="day-label">Dãy {day}</div>
                                         <div className="kho-row-items">
-                                            {items.map((vt, i) => {
-                                                const isHighlighted = highlightedIds.includes(vt.idViTri);
-                                                const tooltip = getTooltip(vt.idViTri);
-                                                return (
-                                                    <div
-                                                        key={i}
-                                                        className={`vitri-cell ${isHighlighted ? 'highlighted' : ''}`}
-                                                        title={tooltip}
-                                                    >
-                                                        {vt.day}-{vt.cot}-{vt.tang}
-                                                    </div>
-                                                );
-                                            })}
+                                            {items
+                                                .sort((a, b) => a.cot - b.cot || a.tang - b.tang)
+                                                .map((vt, i) => {
+                                                    const isHighlighted = highlightedIds.includes(vt.idViTri);
+                                                    const tooltip = getTooltip(vt.idViTri);
+                                                    return (
+                                                        <div
+                                                            key={i}
+                                                            className={`vitri-cell ${isHighlighted ? 'highlighted' : ''}`}
+                                                            title={tooltip}
+                                                        >
+                                                            {vt.day}-{vt.cot}-{vt.tang}
+                                                        </div>
+                                                    );
+                                                })}
+
                                         </div>
                                     </div>
                                 ))}
