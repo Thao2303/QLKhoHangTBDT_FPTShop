@@ -98,7 +98,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             _context.TaiKhoan.Add(taiKhoan);
             await _context.SaveChangesAsync();
-            var domain = _config["FrontendDomain"] ?? "http://localhost:3000";
+            var domain = _config["FrontendDomain"] ?? "https://quanlykho-fpt.site";
             var loginUrl = $"{domain}/login";
 
             var payload = new
@@ -206,7 +206,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             user.resetTokenExpiry = DateTime.Now.AddMinutes(15);
             await _context.SaveChangesAsync();
 
-            var domain = _config["FrontendDomain"] ?? "http://localhost:3000";
+            var domain = _config["FrontendDomain"] ?? "https://quanlykho-fpt.site";
       
 
    

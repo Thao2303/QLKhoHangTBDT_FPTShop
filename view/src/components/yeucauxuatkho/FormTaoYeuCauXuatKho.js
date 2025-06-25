@@ -108,16 +108,7 @@ const FormTaoYeuCauXuatKho = () => {
 
 
         try {
-            await axios.post(
-                `
-
-
-
-
-
-                /api/yeucauxuatkho/tao?chucVu=${user.tenChucVu}`,
-  payload
-);
+            await axios.post(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tao?chucVu=${user.tenChucVu}`,payload);
 
             alert('Gửi yêu cầu thành công');
             navigate('/quanlyyeucauxuat');
