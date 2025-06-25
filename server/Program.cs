@@ -5,6 +5,7 @@ using QuanLyKhoHangFPTShop.server.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using QuanLyKhoHangFPTShop.server.Data;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "https://qlkhohangtbdt-fptshop.onrender.com")
+        policy.WithOrigins("http://localhost:3000", "https://quanlykho-fpt.site")
 
 
               .AllowAnyMethod()
@@ -27,9 +28,15 @@ builder.Services.AddSignalR()
         options.EnableDetailedErrors = true;
     });
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
+//builder.Services.AddTransient<IEmailSender, ElasticEmailSender>();
 
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>(); // ✅ thêm vào đây
+builder.Services.AddSingleton<ResendEmailSender>();
 
 // ✅ Cấu hình DbContext
 builder.Services.AddDbContext<WarehouseContext>(options =>
@@ -53,11 +60,14 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 
+//builder.Services.AddScoped<MailjetService>();
+
 // ✅ Bỏ yêu cầu implicit [Required] với kiểu reference không nullable
 builder.Services.Configure<MvcOptions>(options =>
 {
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

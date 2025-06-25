@@ -141,29 +141,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     .ToListAsync();
 
 
-                foreach (var tk in thuKhos)
-                {
-                    var content = $"📥 Phiếu nhập mới #{phieuNhap.idPhieuNhap} từ người dùng {dto.idTaiKhoan}";
-
-                    await _hubContext.Clients.User(tk.idTaiKhoan.ToString())
-                        .SendAsync("NhanThongBao", new
-                        {
-                            phieuNhap.idPhieuNhap,
-                            noiDung = content,
-                            ngayTao = DateTime.Now,
-                            lienKet = $"/quanlyphieunhap?focus={phieuNhap.idPhieuNhap}"
-                        });
-
-                    _context.ThongBao.Add(new ThongBao
-                    {
-                        idNguoiNhan = tk.idTaiKhoan,
-                        noiDung = content,
-                        ngayTao = DateTime.Now,
-                        daXem = false,
-                        lienKet = $"/quanlyphieunhap?focus={phieuNhap.idPhieuNhap}" // ✅ Thêm đường dẫn
-                    });
-
-                }
+                
 
                 return Ok(new { message = "Tạo phiếu nhập thành công", id = phieuNhap.idPhieuNhap });
             }

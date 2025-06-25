@@ -3,7 +3,12 @@
 let connection = null;
 
 export const connectSignalR = (onMessage) => {
-    if (connection && connection.state === "Connected") return;
+    if (connection && connection.state !== "Disconnected") {
+        console.warn("⚠️ Kết nối SignalR đang tồn tại:", connection.state);
+        return;
+    }
+
+
 
     const userRaw = localStorage.getItem("user");
     if (!userRaw) return;
@@ -28,28 +33,7 @@ export const connectSignalR = (onMessage) => {
     connection.on("NhanThongBao", (data) => {
         if (onMessage) onMessage(data);
 
-        const item = document.createElement("div");
-        item.className = "noti-item";
-        item.innerHTML = `
-            <span>🔔 ${data.noiDung}</span><br/>
-            <small>${new Date(data.ngayTao).toLocaleString()}</small>
-        `;
-
-        item.onclick = async () => {
-            try {
-                await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${data.idThongBao}`, {
-                    method: "PUT",
-                });
-
-                if (data.lienKet) {
-                    window.location.href = data.lienKet;
-                }
-            } catch (error) {
-                console.error("Lỗi khi xử lý thông báo:", error);
-            }
-        };
-
-        document.getElementById("noti-container")?.prepend(item);
+        
     });
 
     connection.onclose(err => {
@@ -75,9 +59,13 @@ export const connectSignalR = (onMessage) => {
 
 export const stopSignalR = () => {
     if (connection && connection.state !== "Disconnected") {
-        connection.stop().then(() => {
-            console.log("🛑 SignalR stopped");
-            connection = null;
-        });
+        connection.stop()
+            .then(() => {
+                console.log("🛑 SignalR stopped");
+                connection = null;
+            })
+            .catch(err => {
+                console.warn("⚠️ Không thể stop SignalR:", err);
+            });
     }
 };
