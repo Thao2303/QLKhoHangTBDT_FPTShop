@@ -16,7 +16,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
      "http://localhost:3000",    // 👈 cần thêm dòng này
-     "https://localhost:3000",
+     "https://quanlykho-fpt.site",
      "https://quanlykho-fpt.site"
  )
 
@@ -85,7 +85,7 @@ builder.Services.AddSwaggerGen(c =>
     // c.IncludeXmlComments(xmlPath);
 });
 
-
+//QuanLyKhoHangFPTShop.server.Helpers.TrainModel.Train();
 var app = builder.Build();
 
 // ✅ Bật Swagger cho mọi môi trường
