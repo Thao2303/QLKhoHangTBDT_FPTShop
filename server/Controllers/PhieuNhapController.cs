@@ -411,6 +411,34 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { message = "✅ Đã lưu vị trí tạm thành công!" });
         }
+[HttpGet("dashboard")]
+public IActionResult GetDashboardData()
+{
+    var result = _context.PhieuNhap
+        .Include(p => p.NhaCungCap)
+        .Include(p => p.ChiTietPhieuNhap)
+            .ThenInclude(c => c.SanPham)
+        .Select(p => new
+        {
+            p.IdPhieuNhap,
+            p.NgayNhap,
+            p.TongTien,
+            NhaCungCap = new {
+                p.NhaCungCap.IdNhaCungCap,
+                p.NhaCungCap.TenNhaCungCap
+            },
+            ChiTiet = p.ChiTietPhieuNhap.Select(ct => new {
+                ct.SoLuong,
+                ct.GiaNhap,
+                ct.SanPham.TenSanPham
+            }).ToList()
+        })
+        .OrderByDescending(p => p.NgayNhap)
+        .Take(10) // 👉 Lấy 10 phiếu mới nhất
+        .ToList();
+
+    return Ok(result);
+}
 
 
         [HttpGet("luu-tru")]
