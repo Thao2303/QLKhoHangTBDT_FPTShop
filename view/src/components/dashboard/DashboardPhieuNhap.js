@@ -35,16 +35,26 @@ const DashboardPhieuNhap = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
-            setPhieuNhaps(res.data || []);
+    const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
+    const data = res.data || [];
+    setPhieuNhaps(data);
 
-            const map = {};
-            for (const pn of res.data) {
-                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`);
-                map[pn.idPhieuNhap] = resCt.data || [];
-            }
-            setChiTietMap(map);
-        };
+    const promises = data.map(pn =>
+        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`)
+            .then(resCt => ({ id: pn.idPhieuNhap, data: resCt.data }))
+            .catch(() => ({ id: pn.idPhieuNhap, data: [] }))
+    );
+
+    const results = await Promise.all(promises);
+
+    const map = {};
+    results.forEach(r => {
+        map[r.id] = r.data;
+    });
+
+    setChiTietMap(map);
+};
+
         fetchData();
     }, []);
 
