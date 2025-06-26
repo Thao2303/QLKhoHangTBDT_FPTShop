@@ -22,12 +22,12 @@ const QuanLyNhaCungCap = () => {
     const [selectedTinh, setSelectedTinh] = useState("");
     const [selectedHuyen, setSelectedHuyen] = useState("");
     const itemsPerPage = 10;
-    const API = "https://qlkhohangtbdt-fptshop-be2.onrender.com/api/nhacungcap";
+    const API = "https://localhost:5288/api/nhacungcap";
 
     useEffect(() => {
         fetch(API).then(res => res.json()).then(setDs);
 
-        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/tinhthanh")
+        fetch("https://localhost:5288/api/tinhthanh")
             .then(res => res.json())
             .then(data => {
                 setTinhList(data);
@@ -36,7 +36,7 @@ const QuanLyNhaCungCap = () => {
                 setTinhMap(map);
             });
 
-        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/quanhuyen")
+        fetch("https://localhost:5288/api/quanhuyen")
             .then(res => res.json())
             .then(data => {
                 const map = {};
@@ -44,7 +44,7 @@ const QuanLyNhaCungCap = () => {
                 setHuyenMap(map);
             });
 
-        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phuongxa")
+        fetch("https://localhost:5288/api/phuongxa")
             .then(res => res.json())
             .then(data => {
                 const map = {};
@@ -59,7 +59,7 @@ const QuanLyNhaCungCap = () => {
         setHuyenList([]);
         setXaList([]);
         setForm({ ...form, idPhuongXa: "" });
-        fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/quanhuyen?tinhId=${id}`)
+        fetch(`https://localhost:5288/api/quanhuyen?tinhId=${id}`)
             .then(res => res.json())
             .then(setHuyenList);
     };
@@ -68,7 +68,7 @@ const QuanLyNhaCungCap = () => {
         const id = e.target.value;
         setXaList([]);
         setForm({ ...form, idPhuongXa: "" });
-        fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phuongxa?huyenId=${id}`)
+        fetch(`https://localhost:5288/api/phuongxa?huyenId=${id}`)
             .then(res => res.json())
             .then(setXaList);
     };
@@ -121,7 +121,7 @@ const QuanLyNhaCungCap = () => {
         const tinhId = huyenId ? huyenMap[huyenId]?.idTinhThanh : null;
 
         if (tinhId) {
-            fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/quanhuyen?tinhId=${tinhId}`)
+            fetch(`https://localhost:5288/api/quanhuyen?tinhId=${tinhId}`)
                 .then(res => res.json())
                 .then(data => {
                     setHuyenList(data);
@@ -129,7 +129,7 @@ const QuanLyNhaCungCap = () => {
                 });
         }
         if (huyenId) {
-            fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phuongxa?huyenId=${huyenId}`)
+            fetch(`https://localhost:5288/api/phuongxa?huyenId=${huyenId}`)
                 .then(res => res.json())
                 .then(data => {
                     setXaList(data);

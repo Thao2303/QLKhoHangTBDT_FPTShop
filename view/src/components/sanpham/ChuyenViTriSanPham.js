@@ -23,11 +23,11 @@ const ChuyenViTriSanPham = () => {
     }, [location.state]);
 
     useEffect(() => {
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham")
+        axios.get("https://localhost:5288/api/sanpham")
             .then(res => setSanPhams(res.data))
             .catch(() => alert("❌ Lỗi tải sản phẩm"));
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
+        axios.get("https://localhost:5288/api/vitri")
             .then(res => setTatCaViTri(res.data))
             .catch(() => alert("❌ Lỗi tải tất cả vị trí"));
     }, []);
@@ -37,7 +37,7 @@ const ChuyenViTriSanPham = () => {
             const sp = sanPhams.find(s => s.idSanPham.toString() === idSanPham);
             setSanPhamChon(sp);
 
-            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham/${idSanPham}/vitri`)
+            axios.get(`https://localhost:5288/api/sanpham/${idSanPham}/vitri`)
                 .then(res => setViTriList(res.data))
                 .catch(() => alert("❌ Lỗi tải vị trí theo sản phẩm"));
         }
@@ -62,7 +62,7 @@ const ChuyenViTriSanPham = () => {
         }
 
         try {
-            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chuyenvitri", {
+            await axios.post("https://localhost:5288/api/chuyenvitri", {
                 idSanPham: parseInt(idSanPham),
                 idViTriCu: selectedFrom.idViTri,
                 idViTriMoi: selectedTo.idViTri,
@@ -73,8 +73,8 @@ const ChuyenViTriSanPham = () => {
 
             // ✅ Tải lại dữ liệu mới sau khi chuyển
             const [viTriSanPhamRes, tatCaViTriRes] = await Promise.all([
-                axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham/${idSanPham}/vitri`),
-                axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
+                axios.get(`https://localhost:5288/api/sanpham/${idSanPham}/vitri`),
+                axios.get("https://localhost:5288/api/vitri")
             ]);
 
             setViTriList(viTriSanPhamRes.data);

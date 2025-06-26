@@ -1,7 +1,9 @@
-﻿import React from "react";
+﻿import React, { useEffect } from "react";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; 
 import "./App.css";
 
+import { connectSignalR } from './components/common/signalrClient';
 import Navbar from './components/common/Navbar/Navbar';
 import Sidebar from "./components/common/Sidebar/Sidebar";
 
@@ -95,7 +97,12 @@ const App = () => {
         console.warn("Lỗi parse localStorage:", e);
     }
 
-
+    useEffect(() => {
+        connectSignalR((data) => {
+            alert(`🔔 ${data.noiDung}`);
+            // 👉 Có thể dispatch Redux hoặc gọi fetch lại ở từng trang nếu cần
+        });
+    }, []);
     return (
         <Router> 
             <AutoLogout />

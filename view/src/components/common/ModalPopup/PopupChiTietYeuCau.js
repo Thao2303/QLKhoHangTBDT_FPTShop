@@ -3,7 +3,7 @@ import React from "react";
 import { format } from "date-fns";
 import './popup-style.css';
 
-const PopupChiTietYeuCau = ({ data, onClose, onTaoPhieu, onDuyet, onTuChoi, isThuKho, tonKhoMap }) => {
+const PopupChiTietYeuCau = ({ data, onClose, onTaoPhieu, onDuyet, onTuChoi, isThuKho, isGiamDoc, tonKhoMap }) => {
 
     const daDuKienDu = data.chiTietYeuCauXuatKhos?.every(ct => {
         const ton = tonKhoMap?.[ct.idSanPham];
@@ -53,18 +53,24 @@ const PopupChiTietYeuCau = ({ data, onClose, onTaoPhieu, onDuyet, onTuChoi, isTh
                 </table>
 
                 <div className="popup-footer">
-                    {isThuKho && data.idTrangThaiXacNhan === 1 && (
+                    {isThuKho && data.idTrangThaiXacNhan === 2 && (
                         <>
                             {daDuKienDu && (
-                                <button className="approve-btn" onClick={() => onDuyet(data.idYeuCauXuatKho)}>✔️ Duyệt yêu cầu</button>
+                                <button className="export-btn" onClick={() => onTaoPhieu(data)}>📦 Tạo phiếu xuất</button>
                             )}
                             <button className="reject-btn" style={{ marginLeft: 8 }} onClick={() => onTuChoi(data.idYeuCauXuatKho)}>❌ Từ chối yêu cầu</button>
                         </>
                     )}
-
-                    {isThuKho && data.idTrangThaiXacNhan === 2 && (
-                        <button className="export-btn" onClick={() => onTaoPhieu(data)}>📦 Tạo phiếu xuất</button>
+                    {(isGiamDoc) && data.idTrangThaiXacNhan === 1 && (
+                        <>
+                           
+                                <button className="approve-btn" onClick={() => onDuyet(data.idYeuCauXuatKho)}>✔️ Duyệt yêu cầu</button>
+                           
+                            <button className="reject-btn" style={{ marginLeft: 8 }} onClick={() => onTuChoi(data.idYeuCauXuatKho)}>❌ Từ chối yêu cầu</button>
+                        </>
                     )}
+
+                 
                     <button className="cancel-button" onClick={onClose}>Đóng</button>
                 </div>
             </div>

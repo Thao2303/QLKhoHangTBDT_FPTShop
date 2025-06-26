@@ -12,7 +12,7 @@ const QuanLyPhieuKiemKe = () => {
 
     const fetchData = async () => {
         try {
-            const res = await axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke")
+            const res = await axios.get("https://localhost:5288/api/kiemke")
 
             setDsPhieu(res.data || []);
         } catch (err) {
@@ -39,7 +39,7 @@ const QuanLyPhieuKiemKe = () => {
     };
     const fetchChiTietPhieu = async (idKiemKe) => {
         try {
-            const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/${idKiemKe}`);
+            const res = await axios.get(`https://localhost:5288/api/kiemke/${idKiemKe}`);
             setPopupPhieu(res.data);
         } catch (err) {
             alert("Không thể tải chi tiết phiếu kiểm kê");

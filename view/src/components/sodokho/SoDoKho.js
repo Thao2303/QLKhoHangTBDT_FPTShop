@@ -16,7 +16,7 @@ const SoDoKho = ({ highlightedIds = [] }) => {
     const [sanPhamPopup, setSanPhamPopup] = useState([]);
 
     useEffect(() => {
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
+        axios.get("https://localhost:5288/api/vitri")
             .then(res => {
                 setVitri(res.data || []);
                 const group = {};
@@ -42,7 +42,7 @@ const SoDoKho = ({ highlightedIds = [] }) => {
     const handleOpenPopup = async (viTri) => {
         setPopupViTri(viTri);
         try {
-            const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chitietluutru/chitietluutru/vitri/${viTri.idViTri}`);
+            const res = await axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/vitri/${viTri.idViTri}`);
             setSanPhamPopup(res.data || []);
         } catch (err) {
             console.error("Lỗi khi tải chi tiết sản phẩm vị trí:", err);

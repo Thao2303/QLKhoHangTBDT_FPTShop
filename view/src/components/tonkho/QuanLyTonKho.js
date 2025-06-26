@@ -32,20 +32,20 @@ const QuanLyTonKho = () => {
 
 
     useEffect(() => {
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/tonkho")
+        axios.get("https://localhost:5288/api/tonkho")
             .then(res => setTonKhoList(res.data))
             .catch(() => alert("❌ Lỗi khi lấy dữ liệu tồn kho"));
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/danhmuc")
+        axios.get("https://localhost:5288/api/danhmuc")
             .then(res => setDanhMucs(res.data));
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thuonghieu")
+        axios.get("https://localhost:5288/api/thuonghieu")
             .then(res => setThuongHieus(res.data));
     }, []);
 
     const handleUpdateSoLuongToiThieu = async (idSanPham, newVal) => {
         try {
-            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham/update-toithieu/${idSanPham}`, {
+            await axios.put(`https://localhost:5288/api/sanpham/update-toithieu/${idSanPham}`, {
                 soLuongToiThieu: parseInt(newVal)
             });
             setTonKhoList(prev => prev.map(sp => sp.idSanPham === idSanPham ? { ...sp, soLuongToiThieu: parseInt(newVal) } : sp));
@@ -57,7 +57,7 @@ const QuanLyTonKho = () => {
 
     useEffect(() => {
         if (!daCanhBaoRef.current) {
-            fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/tonkho/canhbao-tonkho", { method: "POST" });
+            fetch("https://localhost:5288/api/tonkho/canhbao-tonkho", { method: "POST" });
             daCanhBaoRef.current = true;
         }
     }, []);

@@ -15,6 +15,8 @@ import { saveAs } from "file-saver";
 import { useRef } from "react";
 import PrintableYeuCauXuat from "./PrintableYeuCauXuat";
 import PopupChiTietYeuCau from "../common/ModalPopup/PopupChiTietYeuCau"
+import { connectSignalR } from "../common/signalrClient";
+
 const removeVietnameseTones = (str) => {
     return str.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 };
@@ -36,7 +38,7 @@ const QuanLyYeuCauXuatKho = () => {
     const location = useLocation();
     const user = JSON.parse(localStorage.getItem("user"));
     const isThuKho = user?.tenChucVu === "Thủ kho";
-
+    const isGiamDoc = user?.tenChucVu === "Giám đốc đại lý";
     const handleInputChange = (setter) => (e) => {
         setter(e.target.value);
         setCurrentPage(1);
@@ -44,14 +46,35 @@ const QuanLyYeuCauXuatKho = () => {
 
     const fetchData = async () => {
         try {
-            const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho");
+            const res = await fetch("https://localhost:5288/api/yeucauxuatkho");
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(`Lỗi server: ${res.status} - ${text}`);
             }
             const data = await res.json();
 
-            setDanhSachYeuCau(data);
+            let filteredData = data;
+
+            // Nhân viên chỉ xem yêu cầu của chính họ
+            if (user.tenChucVu === "Đại lý bán hàng") {
+                filteredData = data.filter(yc => yc.nguoiTao?.idTaiKhoan === user.idTaiKhoan);
+            }
+            // Giám đốc đại lý xem toàn bộ yêu cầu của đại lý mình
+            else if (user.tenChucVu === "Giám đốc đại lý") {
+                filteredData = data.filter(yc => yc.daiLy?.idDaiLy === user.idDaiLy);
+            }
+            // Thủ kho chỉ xem các yêu cầu đã được giám đốc duyệt (idTrangThaiXacNhan === 2)
+            else if (user.tenChucVu === "Thủ kho") {
+                filteredData = data.filter(yc =>
+                    yc.idTrangThaiXacNhan === 2 ||
+                    yc.idTrangThaiXacNhan === 3 ||
+                    yc.idTrangThaiXacNhan === 4
+                );
+            }
+
+
+
+            setDanhSachYeuCau(filteredData);
         } catch (error) {
             console.error("Lỗi khi lấy dữ liệu yêu cầu:", error);
         }
@@ -72,7 +95,7 @@ const QuanLyYeuCauXuatKho = () => {
         if (!xacNhan) return;
 
         try {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/${id}`, { method: "DELETE" });
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/${id}`, { method: "DELETE" });
             alert("✅ Đã xoá thành công!");
             setDanhSachYeuCau(prev => prev.filter(yc => yc.idYeuCauXuatKho !== id));
         } catch (err) {
@@ -86,7 +109,7 @@ const QuanLyYeuCauXuatKho = () => {
         if (!confirm) return;
 
         try {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/duyet/${id}?chucVu=${user.tenChucVu}`, {
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/duyet/${id}?chucVu=${user.tenChucVu}`, {
                 method: "PUT"
             });
             alert("✅ Đã duyệt yêu cầu!");
@@ -129,14 +152,14 @@ const QuanLyYeuCauXuatKho = () => {
 
     const handlePopup = async (yc) => {
         try {
-            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
             const chiTiet = await res.json();
             setPopupData({ ...yc, chiTietYeuCauXuatKhos: chiTiet });
 
             const tonMap = {};
             for (const ct of chiTiet) {
                 try {
-                    const resTon = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
+                    const resTon = await fetch(`https://localhost:5288/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
                     tonMap[ct.idSanPham] = await resTon.json();
                 } catch {
                     tonMap[ct.idSanPham] = "Lỗi";
@@ -152,7 +175,7 @@ const QuanLyYeuCauXuatKho = () => {
         if (!xacNhan) return;
 
         try {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tuchoi/${id}`, { method: "PUT" });
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/tuchoi/${id}`, { method: "PUT" });
             alert("❌ Đã từ chối yêu cầu!");
             setPopupData(null); // 👉 đóng popup
             fetchData();        // 👉 reload danh sách
@@ -162,6 +185,14 @@ const QuanLyYeuCauXuatKho = () => {
             console.error(error);
         }
     };
+
+    useEffect(() => {
+        connectSignalR((data) => {
+            alert(`🔔 ${data.noiDung || "Bạn có thông báo mới"}`);
+            fetchData(); // 👉 reload luôn danh sách
+        });
+    }, []);
+
 
     const exportPDF = async () => {
         const element = exportRef.current;
@@ -296,6 +327,8 @@ const QuanLyYeuCauXuatKho = () => {
                         >
                             <option value="">-- Trạng thái --</option>
                             <option value="1">⏳ Chờ duyệt</option>
+
+
                             <option value="2">✅ Đã duyệt</option>
                             <option value="3">❌ Đã từ chối</option>
                             <option value="4">🚚 Đã xuất kho</option>
@@ -375,10 +408,11 @@ const QuanLyYeuCauXuatKho = () => {
 
                                     <td>
                                         {yc.idTrangThaiXacNhan === 1 ? '⏳ Chờ duyệt' :
-                                            yc.idTrangThaiXacNhan === 2 ? '✅ Đã duyệt' :
+                                            yc.idTrangThaiXacNhan === 2 ? '👨‍💼 Giám đốc đã duyệt' :
                                                 yc.idTrangThaiXacNhan === 3 ? '❌ Từ chối' :
-                                                    yc.idTrangThaiXacNhan === 4 ? '🚚 Đã xuất kho' : '---'}
+                                                    yc.idTrangThaiXacNhan === 4 ? '✅ Đã xuất kho' : '---'}
                                     </td>
+
 
                                     <td>
                                         <button className="view-btn" onClick={() => handlePopup(yc)}>🔍</button>
@@ -408,6 +442,7 @@ const QuanLyYeuCauXuatKho = () => {
                             onTaoPhieu={handleTaoPhieuXuat}
                             onDuyet={handleDuyet}
                             isThuKho={isThuKho}
+                            isGiamDoc={isGiamDoc} 
                             onTuChoi={handleTuChoi}
                         />
                     )}

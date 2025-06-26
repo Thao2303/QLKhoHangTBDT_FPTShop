@@ -73,9 +73,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             foreach (var thuKho in thuKhoList)
             {
-                await _hubContext.Clients.User(thuKho.idTaiKhoan.ToString())
-                    .SendAsync("NhanThongBao", new { noiDung, ngayTao = DateTime.Now });
-
+               
                 var daTonTai = await _context.ThongBao.AnyAsync(tb =>
     tb.idNguoiNhan == thuKho.idTaiKhoan &&
     tb.noiDung == noiDung &&
@@ -83,14 +81,20 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
                 if (!daTonTai)
                 {
-                    _context.ThongBao.Add(new ThongBao
+                    var newThongBao = new ThongBao
                     {
                         idNguoiNhan = thuKho.idTaiKhoan,
                         noiDung = noiDung,
                         ngayTao = DateTime.Now,
                         daXem = false
-                    });
+                    };
+                    _context.ThongBao.Add(newThongBao);
+                    await _context.SaveChangesAsync();
+
+                    await _hubContext.Clients.User(thuKho.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", newThongBao);
                 }
+
 
             }
 

@@ -33,12 +33,12 @@ const DashboardPhieuXuat = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat');
+            const res = await axios.get('https://localhost:5288/api/phieuxuat');
             setPhieuXuats(res.data || []);
 
             const map = {};
             for (const px of res.data) {
-                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${px.idPhieuXuat}`);
+                const resCt = await axios.get(`https://localhost:5288/api/phieuxuat/${px.idPhieuXuat}`);
                 const chiTiet = resCt.data.chiTietPhieuXuats || [];
                 map[px.idPhieuXuat] = chiTiet.map(ct => ({
                     ...ct,
@@ -173,7 +173,7 @@ const DashboardPhieuXuat = () => {
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'right', margin: '16px 0' }}>
                         <Select options={daiLyOptions} value={filterDaiLy} onChange={setFilterDaiLy} placeholder="Lọc theo đại lý" isClearable />
-                        <Select options={nguoiXuatOptions} value={filterNguoiXuat} onChange={setFilterNguoiXuat} placeholder="Lọc theo người xuất" isClearable />
+                      
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '20px' }}>

@@ -33,8 +33,22 @@ const DashboardYeuCauXuatKho = () => {
     const trangThaiMap = { 1: 'Chờ duyệt', 2: 'Đã duyệt', 3: 'Từ chối', 4: 'Đã xuất kho' };
 
     useEffect(() => {
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho')
-            .then(res => setYeuCaus(res.data || []))
+        axios.get('https://localhost:5288/api/yeucauxuatkho')
+            .then(res => {
+                const all = res.data || [];
+                const user = JSON.parse(localStorage.getItem("user"));
+
+                let filtered = all;
+
+                if (user?.tenChucVu === "Đại lý bán hàng") {
+                    filtered = all.filter(yc => yc.nguoiTao?.idTaiKhoan === user.idTaiKhoan);
+                } else if (user?.tenChucVu === "Giám đốc đại lý") {
+                    filtered = all.filter(yc => yc.daiLy?.idDaiLy === user.idDaiLy);
+                }
+
+                setYeuCaus(filtered);
+            })
+
             .catch(err => console.error(err));
     }, []);
 
@@ -174,7 +188,7 @@ const DashboardYeuCauXuatKho = () => {
 
                     <div style={{ marginBottom: '16px', marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'right' }}>
                         <Select options={daiLyOptions} value={filterDaiLy} onChange={setFilterDaiLy} placeholder="Lọc theo đại lý" isClearable styles={{ container: base => ({ ...base, minWidth: '200px' }) }} />
-                        <Select options={nguoiTaoOptions} value={filterNguoiTao} onChange={setFilterNguoiTao} placeholder="Lọc theo người tạo" isClearable styles={{ container: base => ({ ...base, minWidth: '200px' }) }} />
+                       
                         <Select options={trangThaiOptions} value={filterTrangThai} onChange={setFilterTrangThai} placeholder="Trạng thái" isClearable styles={{ container: base => ({ ...base, minWidth: '200px' }) }} />
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginTop: '20px' }}>

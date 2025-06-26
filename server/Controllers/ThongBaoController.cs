@@ -56,7 +56,15 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             // Gửi realtime qua SignalR
             await _hubContext.Clients.User(tb.idNguoiNhan.ToString())
-                .SendAsync("NhanThongBao", tb);
+     .SendAsync("NhanThongBao", new
+     {
+         tb.idThongBao,
+         tb.noiDung,
+         tb.ngayTao,
+         tb.lienKet,
+         tb.daXem
+     });
+
 
             return Ok(tb);
         }

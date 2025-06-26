@@ -37,15 +37,15 @@ const FormTaoPhieuNhap = () => {
             setUsername(user.tenTaiKhoan);
         }
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/nhacungcap')
+        axios.get('https://localhost:5288/api/nhacungcap')
             .then(response => setSuppliersList(response.data))
             .catch(error => console.error("Lỗi khi lấy danh sách nhà cung cấp", error));
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham')
+        axios.get('https://localhost:5288/api/sanpham')
             .then(response => setProductsList(response.data))
             .catch(error => console.error("Lỗi khi lấy danh sách sản phẩm", error));
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/danhmuc')
+        axios.get('https://localhost:5288/api/danhmuc')
             .then(response => setCategoriesList(response.data))
             .catch(error => console.error("Lỗi khi lấy danh mục", error));
     }, []);
@@ -176,7 +176,7 @@ const FormTaoPhieuNhap = () => {
             }))
         };
 
-        axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap', phieuNhap)
+        axios.post('https://localhost:5288/api/phieunhap', phieuNhap)
             .then(res => {
                 alert(`✅ Đã tạo phiếu nhập\n👤 Người tạo: ${username}\n📦 Số lô: ${soLo}`);
                 const sanPhams = addedProducts.map(p => {
@@ -189,12 +189,12 @@ const FormTaoPhieuNhap = () => {
                         chieuCao: sp?.chieuCao || 1
                     };
                 });
-                axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan/thukho')
+                axios.get('https://localhost:5288/api/taikhoan/thukho')
                     .then(res2 => {
                         const thuKhoList = res2.data;
 
                         thuKhoList.forEach(nguoiNhan => {
-                            axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao', {
+                            axios.post('https://localhost:5288/api/thongbao', {
                                 tieuDe: "📥 Phiếu nhập mới",
                                 noiDung: `Phiếu nhập #${res.data.id} vừa được tạo bởi ${username}. Vui lòng kiểm tra và duyệt.`,
                                 idNguoiNhan: nguoiNhan.idTaiKhoan,

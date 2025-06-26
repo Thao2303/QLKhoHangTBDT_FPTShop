@@ -1,7 +1,24 @@
 ﻿.dashboard-container {
     display: flex;
     height: 100vh;
+  
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
+
+.dashboard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(255, 255, 255, 0.85); /* overlay để dễ đọc chữ */
+}
+
+.main-content {
+    flex: 1;
+    padding: 24px;
+}
+
 
 .sidebar {
     width: 16%;
@@ -14,13 +31,7 @@
     border-right: 1px solid #ddd;
 }
 
-.dashboard-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: #f8f9fa;
-    margin-left: 250px; /* Đảm bảo không bị che bởi Sidebar */
-}
+
 
 .main-content {
     padding: 20px;

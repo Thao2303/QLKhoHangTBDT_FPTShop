@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../common/Navbar/Navbar';
-import Sidebar from '../common/Sidebar/Sidebar';
+import { useNavigate } from "react-router-dom";
+import Navbar from "../common/Navbar/Navbar";
+import Sidebar from "../common/Sidebar/Sidebar";
 
-import "./Dashboard.css"; // Thêm file CSS mới
+import "./Dashboard.css"; // File CSS riêng
 
 const Dashboard = () => {
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem('user'));
+    const user = JSON.parse(localStorage.getItem("user"));
 
     useEffect(() => {
         if (!user) {
@@ -17,37 +17,35 @@ const Dashboard = () => {
 
     if (!user) return null;
 
-    const { role } = user;
+    const { role, tenTaiKhoan } = user;
+
+    const renderContent = () => {
+        switch (role) {
+            case "Nhân viên":
+                return <h2>👷 Xin chào Nhân viên kho {tenTaiKhoan}!</h2>;
+            case "Thủ kho":
+                return <h2>📦 Xin chào Thủ kho {tenTaiKhoan}!</h2>;
+            case "Admin":
+                return <h2>🛠️ Giao diện dành cho Admin hệ thống</h2>;
+            case "Đại lý bán hàng":
+                return <h2>🏪 Xin chào Đại lý bán hàng {tenTaiKhoan}!</h2>;
+            case "Giám đốc đại lý":
+                return <h2>📊 Xin chào Giám đốc đại lý {tenTaiKhoan}!</h2>;
+            default:
+                return <h2>👤 Chào mừng bạn đến với website quản lý kho tại FPT Shop!</h2>;
+        }
+    };
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-container" style={{
+            backgroundImage: `url(${process.env.PUBLIC_URL + "/img/background-login.webp"})`,
+           
+        }}>
             <Sidebar />
             <div className="dashboard-content">
                 <Navbar />
                 <div className="main-content">
-                    {role === 'Nhân viên' && (
-                        <div>
-                            <h2>Giao diện cho Nhân viên kho</h2>
-                        </div>
-                    )}
-
-                    {role === 'Thủ kho' && (
-                        <div>
-                            <h2>Giao diện cho Thủ kho</h2>
-                        </div>
-                    )}
-
-                    {role === 'Admin' && (
-                        <div>
-                            <h2>Giao diện cho Admin</h2>
-                        </div>
-                    )}
-
-                    {role === 'Đại lý bán hàng' && (
-                        <div>
-                            <h2>Giao diện cho Đại lý bán hàng</h2>
-                        </div>
-                    )}
+                    {renderContent()}
                 </div>
             </div>
         </div>
