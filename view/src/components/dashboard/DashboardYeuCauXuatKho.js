@@ -33,7 +33,7 @@ const DashboardYeuCauXuatKho = () => {
     const trangThaiMap = { 1: 'Chờ duyệt', 2: 'Đã duyệt', 3: 'Từ chối', 4: 'Đã xuất kho' };
 
     useEffect(() => {
-        axios.get('https://localhost:5288/api/yeucauxuatkho')
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho')
             .then(res => {
                 const all = res.data || [];
                 const user = JSON.parse(localStorage.getItem("user"));

@@ -33,12 +33,12 @@ const DashboardPhieuXuat = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get('https://localhost:5288/api/phieuxuat');
+            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat');
             setPhieuXuats(res.data || []);
 
             const map = {};
             for (const px of res.data) {
-                const resCt = await axios.get(`https://localhost:5288/api/phieuxuat/${px.idPhieuXuat}`);
+                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${px.idPhieuXuat}`);
                 const chiTiet = resCt.data.chiTietPhieuXuats || [];
                 map[px.idPhieuXuat] = chiTiet.map(ct => ({
                     ...ct,

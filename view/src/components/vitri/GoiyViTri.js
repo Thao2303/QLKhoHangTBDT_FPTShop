@@ -20,7 +20,7 @@ const GoiyViTri = () => {
         const { sanPhams } = location.state || { sanPhams: [] };
         setProducts(sanPhams);
 
-        axios.get("https://localhost:5288/api/vitri")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
             .then(res => setLocations(res.data || []))
             .catch(err => {
                 console.error("Lỗi lấy vị trí kho:", err);
@@ -33,7 +33,7 @@ const GoiyViTri = () => {
     useEffect(() => {
         const { sanPhams } = location.state || { sanPhams: [] };
 
-        axios.get("https://localhost:5288/api/sanpham")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham")
             .then(res => {
                 const mapFullSP = sanPhams.map(sp => {
                     const matched = res.data.find(p => p.idSanPham === sp.idSanPham);
@@ -47,7 +47,7 @@ const GoiyViTri = () => {
                
             });
 
-        axios.get("https://localhost:5288/api/vitri")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
             .then(res => setLocations(res.data || []))
             .catch(err => {
                 console.error("Lỗi lấy vị trí kho:", err);
@@ -63,7 +63,7 @@ const GoiyViTri = () => {
             try {
                 const oldPositions = {};
                 for (const sp of products) {
-                    const res = await axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
+                    const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
                     oldPositions[sp.idSanPham] = res.data.map(x => x.idViTri);
                 }
 
@@ -139,99 +139,116 @@ const GoiyViTri = () => {
         return loc.cot; // Ví dụ 1 (số dãy)
     };
 
-    const handleAddRow = (idSanPham) => {
+    const handleAddRow = async (idSanPham) => {
+        const sp = products.find(p => p.idSanPham === idSanPham);
+        const volPerItem = getVolumePerItem(sp);
+
+        const currentQty = (luuTruData[idSanPham] || []).reduce((sum, row) => sum + (parseInt(row.soLuong) || 0), 0);
+        const qtyLeft = sp.soLuong - currentQty;
+
+        if (qtyLeft <= 0) {
+            alert("✅ Đã đủ số lượng yêu cầu, không cần thêm nữa!");
+            return;
+        }
+       // const volPerItem = getVolumePerItem(sp);
+
         setLuuTruData(prev => {
             const updated = [...(prev[idSanPham] || [])];
-            const sp = products.find(p => p.idSanPham === idSanPham);
-            const volPerItem = getVolumePerItem(sp);
-
             const currentQty = updated.reduce((sum, row) => sum + (parseInt(row.soLuong) || 0), 0);
             const qtyLeft = sp.soLuong - currentQty;
             if (qtyLeft <= 0) {
                 alert("✅ Đã đủ số lượng yêu cầu, không cần thêm nữa!");
                 return prev;
             }
+            return prev;
+        });
 
-            const usedVolume = calculateFullUsedVolume(prev, products);
+        // Tính toán GA
+        const usedVolume = calculateFullUsedVolume(luuTruData, products);
+        const oldPositionIds = oldPositionsState[idSanPham] || [];
+        const oldLocs = locations.filter(loc => oldPositionIds.includes(loc.idViTri));
 
+        const getFreeQty = (loc) => Math.floor(getFreeVolume(loc, usedVolume) / volPerItem);
 
+        let gaLoc = null;
 
-            // Vị trí cũ đã lưu
-            const oldLocIds = (prev[idSanPham] || []).map(r => parseInt(r.viTri));
-            const oldPositionIds = oldPositionsState[idSanPham] || [];
-
-            const oldLocs = locations.filter(loc => oldPositionIds.includes(loc.idViTri));
-
-            let bestLoc = null;
-
-            // Bước 1: Ưu tiên vị trí cũ đang có
-            for (let loc of oldLocs) {
-                const freeVol = getFreeVolume(loc, usedVolume);
-                const freeQty = Math.floor(freeVol / volPerItem);
-                if (freeQty > 0) {
-                    bestLoc = loc;
-                    break;
-                }
+        // GA bước 1: vị trí cũ đang có
+        for (let loc of oldLocs) {
+            if (getFreeQty(loc) > 0) {
+                gaLoc = loc;
+                break;
             }
+        }
 
-            // Bước 2: Ưu tiên cùng Zone + cùng Row
-            if (!bestLoc && oldLocs.length > 0) {
-                const zone = getZoneFromLocation(oldLocs[0]);
-                const row = getRowFromLocation(oldLocs[0]);
+        // GA bước 2: cùng Zone + Row
+        if (!gaLoc && oldLocs.length > 0) {
+            const zone = getZoneFromLocation(oldLocs[0]);
+            const row = getRowFromLocation(oldLocs[0]);
+            const sameZoneRowLocs = locations.filter(loc =>
+                getZoneFromLocation(loc) === zone &&
+                getRowFromLocation(loc) === row &&
+                getFreeQty(loc) > 0
+            );
+            if (sameZoneRowLocs.length > 0) gaLoc = sameZoneRowLocs[0];
+        }
 
-                const sameZoneRowLocs = locations.filter(loc => {
-                    const freeVol = getFreeVolume(loc, usedVolume);
-                    const maxQty = Math.floor(freeVol / volPerItem);
-                    return getZoneFromLocation(loc) === zone && getRowFromLocation(loc) === row && maxQty > 0;
-                });
+        // GA bước 3: cùng Zone
+        if (!gaLoc && oldLocs.length > 0) {
+            const zone = getZoneFromLocation(oldLocs[0]);
+            const sameZoneLocs = locations.filter(loc =>
+                getZoneFromLocation(loc) === zone &&
+                getFreeQty(loc) > 0
+            );
+            if (sameZoneLocs.length > 0) gaLoc = sameZoneLocs[0];
+        }
 
-                if (sameZoneRowLocs.length > 0) {
-                    bestLoc = sameZoneRowLocs[0];
-                }
+        // GA bước 4: random toàn bộ
+        if (!gaLoc) {
+            const allLocs = locations.filter(loc => getFreeQty(loc) > 0);
+            if (allLocs.length > 0) gaLoc = allLocs[0];
+        }
+
+        if (!gaLoc) {
+            alert("❌ Không còn vị trí nào đủ chỗ trống!");
+            return;
+        }
+
+        // Dự phòng fallback ML.NET
+        let mlLoc = null;
+        try {
+            const mlRes = await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/MLGoiY/goi-y-vitri", {
+                idSanPham: sp.idSanPham,
+                soLuong: qtyLeft,
+                trongLuong: sp.trongLuong || 0,
+                idDanhMuc: sp.idDanhMuc || 0,
+                loaiKhuVuc: "nhap"
+            });
+            mlLoc = locations.find(loc => loc.idViTri === mlRes.data.idViTri);
+        } catch (err) {
+            console.warn("❌ ML fallback lỗi, dùng GA:", err);
+        }
+
+        let finalLoc = gaLoc;
+        let nguonGoiY = "GA";
+
+        if (mlLoc && mlLoc.idViTri !== gaLoc.idViTri) {
+            const ok = window.confirm(`🤖 GA đề xuất ${gaLoc.day}-${gaLoc.cot}-${gaLoc.tang}, còn ML gợi ý ${mlLoc.day}-${mlLoc.cot}-${mlLoc.tang}. Dùng ML không?`);
+            if (ok) {
+                finalLoc = mlLoc;
+                nguonGoiY = "ML";
             }
+        }
 
-            // Bước 3: Ưu tiên cùng Zone
-            if (!bestLoc && oldLocs.length > 0) {
-                const zone = getZoneFromLocation(oldLocs[0]);
+        const freeQty = getFreeQty(finalLoc);
+        const suggestedQty = Math.min(freeQty, qtyLeft);
 
-                const sameZoneLocs = locations.filter(loc => {
-                    const freeVol = getFreeVolume(loc, usedVolume);
-                    const maxQty = Math.floor(freeVol / volPerItem);
-                    return getZoneFromLocation(loc) === zone && maxQty > 0;
-                });
-
-                if (sameZoneLocs.length > 0) {
-                    bestLoc = sameZoneLocs[0];
-                }
-            }
-
-            // Bước 4: Random toàn bộ kho
-            if (!bestLoc) {
-                const allLocs = locations.filter(loc => {
-                    const freeVol = getFreeVolume(loc, usedVolume);
-                    const maxQty = Math.floor(freeVol / volPerItem);
-                    return maxQty > 0;
-                });
-                if (allLocs.length > 0) {
-                    bestLoc = allLocs[0];
-                }
-            }
-
-            if (!bestLoc) {
-                alert("❌ Không còn vị trí nào đủ chỗ trống!");
-                return prev;
-            }
-
-            const freeQty = Math.floor(getFreeVolume(bestLoc, usedVolume) / volPerItem);
-            const suggestedQty = Math.min(freeQty, qtyLeft);
-
-            updated.push({ viTri: bestLoc.idViTri, soLuong: suggestedQty });
-
+        // Ghi lại
+        setLuuTruData(prev => {
+            const updated = [...(prev[idSanPham] || [])];
+            updated.push({ viTri: finalLoc.idViTri, soLuong: suggestedQty, nguonGoiY });
             return { ...prev, [idSanPham]: updated };
         });
     };
-
-
 
 
     const handleRemoveRow = (idSanPham, index) => {
@@ -294,7 +311,7 @@ SL: ${vt.soLuong}`,
         }
 
         try {
-            const res = await axios.post("https://localhost:5288/api/phieunhap/luu-vi-tri", payload);
+            const res = await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/luu-vi-tri", payload);
             alert("✅ " + res.data.message);
             navigate("/quanlyphieunhap");
         } catch (err) {

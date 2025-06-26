@@ -25,7 +25,7 @@ export const connectSignalR = (onMessage) => {
     if (!userId) return;
 
     connection = new HubConnectionBuilder()
-        .withUrl(`https://localhost:5288/hub/thongbao?userId=${userId}`)
+        .withUrl(`https://qlkhohangtbdt-fptshop-be2.onrender.com/hub/thongbao?userId=${userId}`)
         .withAutomaticReconnect()
         .configureLogging(LogLevel.Information)
         .build();

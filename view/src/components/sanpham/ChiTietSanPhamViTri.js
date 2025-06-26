@@ -7,7 +7,7 @@ const ChiTietSanPhamViTri = ({ danhSach = [], idSanPham, onClose }) => {
 
     useEffect(() => {
         if (idSanPham) {
-            axios.get(`https://localhost:5288/api/SanPham/${idSanPham}`)
+            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/SanPham/${idSanPham}`)
                 .then(res => setSpChiTiet(res.data))
                 .catch(() => console.warn("Không lấy được chi tiết sản phẩm"));
         }

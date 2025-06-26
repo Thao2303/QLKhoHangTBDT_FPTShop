@@ -20,11 +20,11 @@ const FormYeuCauKiemKePopup = ({ visible, onClose, onSubmit, initialData = null 
     const idNguoiThucHien = nguoiDung?.idTaiKhoan;
 
     useEffect(() => {
-        axios.get("https://localhost:5288/api/kiemke/tonghop")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/tonghop")
             .then(res => setSanPhamList(res.data))
             .catch(() => alert("❌ Lỗi tải sản phẩm"));
 
-        axios.get("https://localhost:5288/api/yeucaukiemke/taikhoan")
+        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/taikhoan")
             .then(res => setDsTaiKhoan(res.data))
             .catch(() => alert("❌ Lỗi tải tài khoản"));
     }, []);
@@ -69,10 +69,10 @@ const FormYeuCauKiemKePopup = ({ visible, onClose, onSubmit, initialData = null 
 
         try {
             if (initialData) {
-                await axios.put(`https://localhost:5288/api/yeucaukiemke/${initialData.idYeuCauKiemKe}`, payload);
+                await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${initialData.idYeuCauKiemKe}`, payload);
                 alert("✅ Cập nhật yêu cầu thành công");
             } else {
-                await axios.post("https://localhost:5288/api/yeucaukiemke", payload);
+                await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke", payload);
                 alert("✅ Đã tạo yêu cầu");
             }
             onSubmit();
