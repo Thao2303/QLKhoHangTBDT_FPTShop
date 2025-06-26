@@ -1,4 +1,4 @@
-﻿// File: DashboardPhieuNhap.js
+// File: DashboardPhieuNhap.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
@@ -34,22 +34,17 @@ const DashboardPhieuNhap = () => {
     const exportRef = useRef();
 
     useEffect(() => {
-        const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/dashboard');
-const data = res.data || [];
-setPhieuNhaps(data);
+        const fetchData = async () => {
+            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
+            setPhieuNhaps(res.data || []);
 
-// map lại chi tiết
-const ctMap = {};
-data.forEach(p => {
-    ctMap[p.idPhieuNhap] = p.chiTiet.map(ct => ({
-        ...ct,
-        tongTien: ct.soLuong * ct.giaNhap
-    }));
-});
-setChiTietMap(ctMap);
-
-};
-
+            const map = {};
+            for (const pn of res.data) {
+                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`);
+                map[pn.idPhieuNhap] = resCt.data || [];
+            }
+            setChiTietMap(map);
+        };
         fetchData();
     }, []);
 
