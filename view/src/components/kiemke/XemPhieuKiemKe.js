@@ -13,7 +13,7 @@ const XemPhieuKiemKe = () => {
     const [data, setData] = useState(null);
 
     useEffect(() => {
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/theo-yeucau/${idYeuCauKiemKe}`)
+        axios.get(`https://localhost:5288/api/kiemke/theo-yeucau/${idYeuCauKiemKe}`)
             .then(res => {
                 const merged = res.data.chiTietPhieuKiemKes.map(ct => {
                     const vt = res.data.viTriSanPham.find(v => v.idSanPham === ct.idSanPham && v.idViTri === ct.idViTri);
@@ -46,6 +46,14 @@ const XemPhieuKiemKe = () => {
     };
 
     if (!data) return null;
+    const groupBy = (arr, key) =>
+        arr.reduce((acc, obj) => {
+            const groupKey = obj[key];
+            if (!acc[groupKey]) acc[groupKey] = [];
+            acc[groupKey].push(obj);
+            return acc;
+        }, {});
+
 
     return (
         <div className="layout-wrapper">
@@ -87,21 +95,38 @@ const XemPhieuKiemKe = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.chiTietPhieuKiemKes.map((ct, idx) => (
-                                    <tr key={idx} style={ct.soLuongThucTe !== ct.soLuongTheoHeThong ? { backgroundColor: "#ffe6e6" } : {}}>
-                                        <td>{ct.tenSanPham}</td>
-                                        <td>{ct.viTri || "--"}</td>
-                                      
-                                        <td>{ct.soLuongTheoHeThong}</td>
-                                        <td>{ct.soLuongThucTe}</td>
-                                        <td style={{ color: ct.soLuongThucTe !== ct.soLuongTheoHeThong ? "red" : undefined }}>
-                                            {ct.soLuongThucTe - ct.soLuongTheoHeThong}
-                                        </td>
-                                        <td>{ct.phamChat || "--"}</td>
-                                        <td>{ct.ghiChu || "--"}</td>
-                                    </tr>
-                                ))}
+                                {Object.entries(groupBy(data.chiTietPhieuKiemKes, 'tenSanPham')).map(([tenSanPham, items], groupIdx) => {
+                                    const rowSpan = items.length;
+                                    const phamChat = items[0].phamChat || "--";
+                                    const ghiChu = items[0].ghiChu || "--";
+
+                                    return items.map((item, i) => {
+                                        const chenhLech = item.soLuongThucTe - item.soLuongTheoHeThong;
+
+                                        return (
+                                            <tr key={`${tenSanPham}-${i}`} style={chenhLech !== 0 ? { backgroundColor: "#ffe6e6" } : {}}>
+                                                {i === 0 && (
+                                                    <td rowSpan={rowSpan} style={{ textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>
+                                                        {tenSanPham}
+                                                    </td>
+                                                )}
+                                                <td>{item.viTri}</td>
+                                                <td>{item.soLuongTheoHeThong}</td>
+                                                <td>{item.soLuongThucTe}</td>
+                                                <td style={{ color: chenhLech !== 0 ? 'red' : undefined }}>{chenhLech}</td>
+                                                {i === 0 && (
+                                                    <>
+                                                        <td rowSpan={rowSpan} style={{ textAlign: 'center', verticalAlign: 'middle' }}>{phamChat}</td>
+                                                        <td rowSpan={rowSpan} style={{ textAlign: 'center', verticalAlign: 'middle' }}>{ghiChu}</td>
+                                                    </>
+                                                )}
+                                            </tr>
+                                        );
+                                    });
+                                })}
                             </tbody>
+
+
                         </table>
                     </div>
 

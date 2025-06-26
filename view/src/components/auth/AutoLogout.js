@@ -12,7 +12,7 @@ const AutoLogout = () => {
                 localStorage.removeItem("user");
                 alert("🕒 Bạn đã bị đăng xuất do không hoạt động trong 15 phút.");
                 window.location.href = "/login";
-            }, 15 * 60 * 1000); // 15 phút
+            }, 30 * 60 * 1000); // 15 phút
         };
 
         // Gọi lần đầu

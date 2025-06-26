@@ -27,7 +27,7 @@ const QuanLyTonTheoLo = () => {
     const handlePrint = useReactToPrint({ content: () => printRef.current });
 
     useEffect(() => {
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/tonkho/lohang")
+        axios.get("https://localhost:5288/api/tonkho/lohang")
             .then(res => setTonLoList(res.data))
             .catch(() => alert("❌ Lỗi khi lấy tồn kho theo lô"));
     }, []);

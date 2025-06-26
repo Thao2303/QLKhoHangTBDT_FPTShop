@@ -14,10 +14,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://quanlykho-fpt.site", "https://quanlykho-fpt.site")
+        policy.WithOrigins(
+     "http://localhost:3000",    // 👈 cần thêm dòng này
+     "https://localhost:3000",
+     "https://quanlykho-fpt.site"
+ )
 
 
-              .AllowAnyMethod()
+               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
     });

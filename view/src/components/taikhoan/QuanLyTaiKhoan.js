@@ -26,7 +26,7 @@ const QuanLyTaiKhoan = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan");
+            const res = await fetch("https://localhost:5288/api/taikhoan");
             const data = await res.json();
             setDanhSach(data);
         } catch (error) {
@@ -62,7 +62,7 @@ const QuanLyTaiKhoan = () => {
         const msg = isActive ? "Bạn có chắc chắn muốn KHÓA tài khoản này?" : "Bạn có muốn MỞ lại tài khoản này?";
         if (!window.confirm(msg)) return;
         try {
-            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan/khoataikhoan/${id}`, { method: "PUT" });
+            const res = await fetch(`https://localhost:5288/api/taikhoan/khoataikhoan/${id}`, { method: "PUT" });
             res.ok ? alert("✅ Cập nhật thành công") : alert("❌ Thất bại");
             fetchData();
         } catch {
@@ -147,12 +147,12 @@ const QuanLyTaiKhoan = () => {
                                                 setShowDetail(true);
                                             }}>👁</button>
 
-                                            {currentUser.chucVu === 'Admin' && <>
+                                          
                                                 <button className="edit-btn" onClick={() => { setSelectedData(tk); setShowForm(true); }}>✏</button>
                                                 <button className="delete-btn" onClick={() => handleToggleTrangThai(tk.idTaiKhoan, tk.trangThai)}>
                                                     {tk.trangThai ? '🛑' : '✅'}
                                                 </button>
-                                            </>}
+                                         
                                         </td>
                                     </tr>
                                 ))}

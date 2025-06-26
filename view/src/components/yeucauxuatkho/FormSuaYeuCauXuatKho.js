@@ -29,7 +29,7 @@ function FormSuaYeuCauXuatKho() {
     const [editIndex, setEditIndex] = useState(null);
 
     useEffect(() => {
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/${id}`).then((res) => {
+        axios.get(`https://localhost:5288/api/yeucauxuatkho/${id}`).then((res) => {
             setYeuCau(res.data);
             setChiTiet(res.data.chiTietYeuCauXuatKhos);
             setGhiChu(res.data.ghiChu || "");
@@ -41,13 +41,13 @@ function FormSuaYeuCauXuatKho() {
             setPhuongThucVC(res.data.phuongThucVanChuyen || '');
         });
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/danhmuc').then(res => setDanhMucList(res.data));
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/donvitinh').then(res => setDonViTinhList(res.data));
+        axios.get('https://localhost:5288/api/yeucauxuatkho/danhmuc').then(res => setDanhMucList(res.data));
+        axios.get('https://localhost:5288/api/yeucauxuatkho/donvitinh').then(res => setDonViTinhList(res.data));
     }, [id]);
 
     useEffect(() => {
         if (danhMuc) {
-            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/sanpham/danhmuc/${danhMuc}`).then(res => setSanPhamList(res.data));
+            axios.get(`https://localhost:5288/api/yeucauxuatkho/sanpham/danhmuc/${danhMuc}`).then(res => setSanPhamList(res.data));
         } else {
             setSanPhamList([]);
         }
@@ -71,7 +71,7 @@ function FormSuaYeuCauXuatKho() {
 
         };
 
-        axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/${id}`, payload)
+        axios.put(`https://localhost:5288/api/yeucauxuatkho/${id}`, payload)
             .then(() => {
                 alert("✔️ Đã cập nhật yêu cầu xuất kho!");
                 navigate("/quanlyyeucauxuat");

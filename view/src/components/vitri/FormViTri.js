@@ -49,7 +49,7 @@ const FormViTri = ({ visible, onClose, onSubmit, initialData }) => {
         }
 
         // Gọi API lấy danh sách khu vực
-        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/khuvuc")
+        fetch("https://localhost:5288/api/khuvuc")
             .then((res) => res.json())
             .then((data) => setKhuVucList(data))
             .catch((err) => console.error("Lỗi load khu vực:", err));

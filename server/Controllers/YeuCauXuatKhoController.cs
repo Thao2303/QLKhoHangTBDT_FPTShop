@@ -30,11 +30,40 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Include(tk => tk.ChucVu)
                 .Include(tk => tk.DaiLy)
                 .FirstOrDefaultAsync(tk => tk.idTaiKhoan == yc.idNguoiTao);
+
             Console.WriteLine("Người tạo: " + nguoiTao?.tenTaiKhoan + ", chức vụ: " + nguoiTao?.ChucVu?.tenChucVu);
 
             yc.NguoiYeuCau = nguoiTao?.DaiLy?.TenDaiLy ?? "Ẩn danh";
             yc.IdDaiLy = nguoiTao?.idDaiLy ?? 0;
 
+            var tenChucVu = nguoiTao?.ChucVu?.tenChucVu?.Trim().ToLower();
+
+            // ✅ Xác định trạng thái yêu cầu ngay từ đầu
+            if (tenChucVu == "thủ kho" || tenChucVu == "nhân viên")
+            {
+                yc.IdTrangThaiXacNhan = 2; // Được xem như đã duyệt
+                if (yc.NguoiTao != null)
+                {
+                    var thongBaoNV = $"✅ Yêu cầu xuất kho #{yc.IdYeuCauXuatKho} đã được Giám đốc duyệt.";
+                    await _hubContext.Clients.User(yc.NguoiTao.idTaiKhoan.ToString())
+                        .SendAsync("NhanThongBao", new { noiDung = thongBaoNV, ngayTao = DateTime.Now });
+
+                    _context.ThongBao.Add(new ThongBao
+                    {
+                        idNguoiNhan = yc.NguoiTao.idTaiKhoan,
+                        noiDung = thongBaoNV,
+                        ngayTao = DateTime.Now,
+                        daXem = false
+                    });
+                }
+
+            }
+            else
+            {
+                yc.IdTrangThaiXacNhan = 1; // Cần giám đốc duyệt
+            }
+
+            // ⚠️ Phải gán trạng thái trước khi Add()
             var chiTietTam = yc.ChiTietYeuCauXuatKhos.ToList();
             yc.ChiTietYeuCauXuatKhos.Clear();
 
@@ -46,27 +75,18 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 ct.idYeuCauXuatKho = yc.IdYeuCauXuatKho;
                 _context.ChiTietYeuCauXuatKho.Add(ct);
             }
+
             await _context.SaveChangesAsync();
 
-            // 🚦 Xử lý phân quyền gửi thông báo
-            var tenChucVu = nguoiTao?.ChucVu?.tenChucVu?.Trim().ToLower();
-
-
+            // 🔔 Gửi thông báo tuỳ theo vai trò
             if (tenChucVu == "đại lý bán hàng")
             {
-                // 🧑‍💼 Gửi tới Giám đốc đại lý
                 var giamDoc = await _context.TaiKhoan
-    .Include(t => t.ChucVu)  // Bắt buộc phải có
-    .Where(t =>
-        t.idDaiLy == nguoiTao.idDaiLy &&
-        t.ChucVu != null &&
-        t.ChucVu.tenChucVu.Trim().ToLower() == "giám đốc đại lý".ToLower())
-    .FirstOrDefaultAsync();
-                if (giamDoc == null)
-                {
-                    Console.WriteLine($"Không tìm thấy giám đốc cho đại lý {nguoiTao.idDaiLy}");
-                }
-
+                    .Include(t => t.ChucVu)
+                    .Where(t =>
+                        t.idDaiLy == nguoiTao.idDaiLy &&
+                        t.ChucVu.tenChucVu.Trim().ToLower() == "giám đốc đại lý")
+                    .FirstOrDefaultAsync();
 
                 if (giamDoc != null)
                 {
@@ -83,10 +103,13 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         idNguoiNhan = giamDoc.idTaiKhoan
                     });
                 }
+                else
+                {
+                    Console.WriteLine($"⚠️ Không tìm thấy giám đốc cho đại lý {nguoiTao.idDaiLy}");
+                }
             }
             else if (tenChucVu == "thủ kho" || tenChucVu == "nhân viên")
             {
-                // 🏷 Nếu là nhân viên kho/thủ kho thì gửi trực tiếp tới Thủ kho
                 var thuKhoList = await _context.TaiKhoan
                     .Include(t => t.ChucVu)
                     .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
@@ -112,31 +135,39 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             await _context.SaveChangesAsync();
             return Ok(yc);
         }
+
         [HttpPut("giamdocduyet/{id}")]
         public async Task<IActionResult> GiamDocDuyetYeuCau(int id)
         {
             var yc = await _context.YeuCauXuatKho
                 .Include(y => y.NguoiTao)
+                .Include(y => y.DaiLy)
                 .FirstOrDefaultAsync(y => y.IdYeuCauXuatKho == id);
 
             if (yc == null)
                 return NotFound();
 
-            // ✅ Cập nhật trạng thái: đã duyệt bởi Giám đốc
+            // ✅ Cập nhật trạng thái duyệt của giám đốc
             yc.giamDocDuyet = true;
+            yc.IdTrangThaiXacNhan = 2;
 
-            // 🧾 Gửi thông báo tới tất cả thủ kho
+            // 🔔 Gửi thông báo tới tất cả Thủ kho
             var thuKhoList = await _context.TaiKhoan
                 .Include(t => t.ChucVu)
-                .Where(t => t.ChucVu.tenChucVu == "Thủ kho")
+                .Where(t => t.ChucVu.tenChucVu.Trim().ToLower() == "thủ kho")
                 .ToListAsync();
 
             foreach (var tk in thuKhoList)
             {
-                var noiDung = $"📝 Giám đốc đã duyệt yêu cầu xuất kho #{yc.IdYeuCauXuatKho}. Vui lòng kiểm tra và xử lý.";
+                var noiDung = $"👨‍💼 Giám đốc đã duyệt yêu cầu xuất kho #{yc.IdYeuCauXuatKho} từ đại lý {yc.DaiLy?.TenDaiLy}. Vui lòng kiểm tra và xử lý.";
 
                 await _hubContext.Clients.User(tk.idTaiKhoan.ToString())
-                    .SendAsync("NhanThongBao", new { idYeuCau = yc.IdYeuCauXuatKho, noiDung, ngayTao = DateTime.Now });
+                    .SendAsync("NhanThongBao", new
+                    {
+                        idYeuCau = yc.IdYeuCauXuatKho,
+                        noiDung,
+                        ngayTao = DateTime.Now
+                    });
 
                 _context.ThongBao.Add(new ThongBao
                 {
@@ -148,8 +179,10 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Giám đốc đã duyệt và thông báo đã được gửi tới Thủ kho." });
+
+            return Ok(new { message = "✅ Giám đốc đã duyệt và thông báo đã gửi tới Thủ kho." });
         }
+
 
 
         [HttpPut("capnhattrangthai/{id}")]
@@ -221,6 +254,32 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                     daXem = false
                 });
             }
+            // 🔔 Gửi thông báo tới tất cả Thủ kho
+            var thuKhoList = await _context.TaiKhoan
+                .Include(t => t.ChucVu)
+                .Where(t => t.ChucVu.tenChucVu.Trim().ToLower() == "thủ kho")
+                .ToListAsync();
+
+            foreach (var tk in thuKhoList)
+            {
+                var noiDung = $"👨‍💼 Giám đốc đã duyệt yêu cầu xuất kho #{yc.IdYeuCauXuatKho} từ đại lý {yc.DaiLy?.TenDaiLy}. Vui lòng kiểm tra.";
+
+                await _hubContext.Clients.User(tk.idTaiKhoan.ToString())
+                    .SendAsync("NhanThongBao", new
+                    {
+                        idYeuCau = yc.IdYeuCauXuatKho,
+                        noiDung,
+                        ngayTao = DateTime.Now
+                    });
+
+                _context.ThongBao.Add(new ThongBao
+                {
+                    noiDung = noiDung,
+                    ngayTao = DateTime.Now,
+                    daXem = false,
+                    idNguoiNhan = tk.idTaiKhoan
+                });
+            }
 
             await _context.SaveChangesAsync();
             return Ok(yc);
@@ -233,7 +292,25 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 return NotFound();
 
             yeuCau.IdTrangThaiXacNhan = 3;
+
+            var nguoiTao = await _context.TaiKhoan.FindAsync(yeuCau.idNguoiTao);
+            if (nguoiTao != null)
+            {
+                var thongBaoTuChoi = $"❌ Yêu cầu xuất kho #{yeuCau.IdYeuCauXuatKho} đã bị từ chối.";
+                await _hubContext.Clients.User(nguoiTao.idTaiKhoan.ToString())
+                    .SendAsync("NhanThongBao", new { noiDung = thongBaoTuChoi, ngayTao = DateTime.Now });
+
+                _context.ThongBao.Add(new ThongBao
+                {
+                    idNguoiNhan = nguoiTao.idTaiKhoan,
+                    noiDung = thongBaoTuChoi,
+                    ngayTao = DateTime.Now,
+                    daXem = false
+                });
+            }
+
             await _context.SaveChangesAsync();
+
             return Ok(new { message = "Đã từ chối yêu cầu!" });
         }
 

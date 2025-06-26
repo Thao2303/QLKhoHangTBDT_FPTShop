@@ -35,7 +35,7 @@ const Navbar = () => {
 
         const fetchDataAndConnect = async () => {
             try {
-                const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/nguoi-nhan/${user.idTaiKhoan}`);
+                const res = await axios.get(`https://localhost:5288/api/thongbao/nguoi-nhan/${user.idTaiKhoan}`);
                 setThongBaoList(res.data);
             } catch (error) {
                 console.error("❌ Lỗi lấy thông báo:", error);
@@ -45,13 +45,16 @@ const Navbar = () => {
                 connectSignalR((message) => {
                     if (!message || !message.noiDung) return;
 
+                    if (!message.idThongBao) return; // Bỏ qua nếu không có ID thật
+
                     const newNoti = {
-                        idThongBao: message.idThongBao || Date.now(),
+                        idThongBao: message.idThongBao,
                         noiDung: message.noiDung,
                         ngayTao: new Date(message.ngayTao || Date.now()),
                         lienKet: message.lienKet || "",
                         daXem: false
                     };
+
 
                     setThongBaoList(prev => {
                         const exists = prev.some(tb => tb.idThongBao === newNoti.idThongBao);
@@ -78,7 +81,7 @@ const Navbar = () => {
             prev.map(tb => tb.idThongBao === idThongBao ? { ...tb, daXem: true } : tb)
         );
         if (idThongBao < 1000000000) {
-            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${idThongBao}`).catch(err => console.error(err));
+            await axios.put(`https://localhost:5288/api/thongbao/danh-dau-da-doc/${idThongBao}`).catch(err => console.error(err));
         }
 
         
@@ -129,7 +132,7 @@ const Navbar = () => {
 
     const markAllAsRead = async () => {
         const ids = thongBaoList.filter(tb => !tb.daXem && tb.idThongBao < 1000000000).map(tb => tb.idThongBao);
-        await Promise.all(ids.map(id => axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/thongbao/danh-dau-da-doc/${id}`)));
+        await Promise.all(ids.map(id => axios.put(`https://localhost:5288/api/thongbao/danh-dau-da-doc/${id}`)));
         setThongBaoList(prev => prev.map(tb => ({ ...tb, daXem: true })));
     };
 
