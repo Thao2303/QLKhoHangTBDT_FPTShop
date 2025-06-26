@@ -34,25 +34,20 @@ const DashboardPhieuNhap = () => {
     const exportRef = useRef();
 
     useEffect(() => {
-        const fetchData = async () => {
-    const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
-    const data = res.data || [];
-    setPhieuNhaps(data);
+        const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/dashboard');
+const data = res.data || [];
+setPhieuNhaps(data);
 
-    const promises = data.map(pn =>
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`)
-            .then(resCt => ({ id: pn.idPhieuNhap, data: resCt.data }))
-            .catch(() => ({ id: pn.idPhieuNhap, data: [] }))
-    );
+// map lại chi tiết
+const ctMap = {};
+data.forEach(p => {
+    ctMap[p.idPhieuNhap] = p.chiTiet.map(ct => ({
+        ...ct,
+        tongTien: ct.soLuong * ct.giaNhap
+    }));
+});
+setChiTietMap(ctMap);
 
-    const results = await Promise.all(promises);
-
-    const map = {};
-    results.forEach(r => {
-        map[r.id] = r.data;
-    });
-
-    setChiTietMap(map);
 };
 
         fetchData();
