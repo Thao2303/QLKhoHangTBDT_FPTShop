@@ -4,12 +4,16 @@ services:
     env: docker
     plan: free
     dockerfilePath: server/Dockerfile
-    rootDir: .   # hoặc đường dẫn chứa backend
+    rootDir: .
     autoDeploy: true
 
-  - type: static
+  - type: web
     name: qlkhohang-frontend
-    env: static
+    env: node
     rootDir: .
-    buildCommand: npm run build
-    staticPublishPath: build
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s build
+    envVars:
+      - key: NODE_VERSION
+        value: 18
