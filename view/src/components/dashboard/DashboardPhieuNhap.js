@@ -1,4 +1,4 @@
-﻿// File: DashboardPhieuNhap.js
+// File: DashboardPhieuNhap.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
