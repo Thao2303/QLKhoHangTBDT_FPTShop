@@ -28,7 +28,6 @@ const DashboardPhieuNhap = () => {
     const [sortOrder, setSortOrder] = useState('none');
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
- 
 
     const itemsPerPage = 5;
     const exportRef = useRef();
@@ -38,12 +37,8 @@ const DashboardPhieuNhap = () => {
             const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
             setPhieuNhaps(res.data || []);
 
-            const map = {};
-            for (const pn of res.data) {
-                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`);
-                map[pn.idPhieuNhap] = resCt.data || [];
-            }
-            setChiTietMap(map);
+            const resCt = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/all');
+            setChiTietMap(resCt.data || {});
         };
         fetchData();
     }, []);
@@ -52,7 +47,7 @@ const DashboardPhieuNhap = () => {
     const trangThaiOptions = Object.entries(trangThaiMap).map(([k, v]) => ({ value: Number(k), label: v }));
     const uniqueYears = Array.from(
         new Set(phieuNhaps.map(p => dayjs(p.ngayNhap).year()))
-    ).sort((a, b) => b - a); // sort giảm dần
+    ).sort((a, b) => b - a);
 
     const filteredPhieuNhaps = phieuNhaps.filter(p => {
         const matchNCC = filterNCC ? p.nhaCungCap?.tenNhaCungCap === filterNCC.value : true;
@@ -98,25 +93,20 @@ const DashboardPhieuNhap = () => {
     }, []);
 
     const namHienTai = dayjs().year();
-    const thangHienTai = dayjs().month() + 1; // 1-12
-
+    const thangHienTai = dayjs().month() + 1;
     const soThang = Number(filterYear) === namHienTai ? thangHienTai : 12;
-
-
 
     const dataTheoThang = Array.from({ length: soThang }, (_, i) => {
         const thang = i + 1;
         const soPhieu = filteredPhieuNhaps.filter(p => {
             const date = dayjs(p.ngayNhap);
             return date.year() === Number(filterYear) && date.month() + 1 === thang;
-
         }).length;
 
         const tongTienThang = filteredPhieuNhaps
             .filter(p => {
                 const date = dayjs(p.ngayNhap);
                 return date.year() === Number(filterYear) && date.month() + 1 === thang;
-
             })
             .flatMap(p => chiTietMap[p.idPhieuNhap] || [])
             .reduce((sum, ct) => sum + (ct.tongTien || 0), 0);
