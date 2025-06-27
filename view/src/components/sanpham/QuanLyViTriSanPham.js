@@ -31,7 +31,7 @@ const QuanLyViTriSanPham = () => {
     const [showChiTiet, setShowChiTiet] = useState(false); // dùng để toggle popup
 
     useEffect(() => {
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/ChiTietLuuTru")
+        axios.get("https://localhost:5288/api/ChiTietLuuTru")
             .then(res => {
                 const gopViTri = {};
                 res.data.forEach(item => {
@@ -77,7 +77,7 @@ const QuanLyViTriSanPham = () => {
     const handleXoa = async (idViTri, idSanPham) => {
         if (!window.confirm("Xoá sản phẩm khỏi vị trí này?")) return;
         try {
-            await axios.delete(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/ChiTietLuuTru/${idViTri}/${idSanPham}`);
+            await axios.delete(`https://localhost:5288/api/ChiTietLuuTru/${idViTri}/${idSanPham}`);
             setDanhSach(prev => prev.filter(i => !(i.idViTri === idViTri && i.idSanPham === idSanPham)));
             alert("✅ Đã xoá khỏi vị trí");
         } catch (err) {

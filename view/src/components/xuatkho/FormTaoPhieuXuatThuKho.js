@@ -19,14 +19,14 @@ const FormTaoPhieuXuatThuKho = () => {
     const [dsSanPham, setDsSanPham] = useState([]);
 
     useEffect(() => {
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/danhmuc').then(res => {
+        axios.get('https://localhost:5288/api/phieuxuat/danhmuc').then(res => {
             setDanhMucList(res.data);
         });
     }, []);
 
     useEffect(() => {
         if (idDanhMuc)
-            axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/sanpham/danhmuc/${idDanhMuc}`).then(res => {
+            axios.get(`https://localhost:5288/api/phieuxuat/sanpham/danhmuc/${idDanhMuc}`).then(res => {
                 setSanPhamList(res.data);
             });
     }, [idDanhMuc]);
@@ -34,7 +34,7 @@ const FormTaoPhieuXuatThuKho = () => {
     useEffect(() => {
         if (!idSanPham) return;
 
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/vitri-sanpham/${idSanPham}`).then(res => {
+        axios.get(`https://localhost:5288/api/phieuxuat/vitri-sanpham/${idSanPham}`).then(res => {
             const viTris = res.data.sort((a, b) => new Date(a.thoiGianLuu) - new Date(b.thoiGianLuu));
             setViTriMap(prev => ({ ...prev, [idSanPham]: viTris }));
         });
@@ -83,8 +83,8 @@ const FormTaoPhieuXuatThuKho = () => {
         };
 
         try {
-            await axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/kiemtra-tonkho', chiTietPhieuXuats);
-            await axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat', payload);
+            await axios.post('https://localhost:5288/api/phieuxuat/kiemtra-tonkho', chiTietPhieuXuats);
+            await axios.post('https://localhost:5288/api/phieuxuat', payload);
             alert('✅ Đã tạo phiếu xuất thành công!');
             navigate('/quanlyphieuxuat');
         } catch (err) {

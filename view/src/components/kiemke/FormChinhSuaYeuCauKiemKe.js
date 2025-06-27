@@ -17,14 +17,14 @@ const FormChinhSuaYeuCauKiemKe = () => {
     const [dsSanPham, setDsSanPham] = useState([]);
 
     useEffect(() => {
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${id}`)
+        axios.get(`https://localhost:5288/api/yeucaukiemke/${id}`)
             .then(res => setForm({
                 ...res.data,
                 chiTietYeuCau: res.data.chiTietYeuCau.map(sp => sp.idSanPham)
             }))
             .catch(() => alert("Không tìm thấy yêu cầu."));
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham")
+        axios.get("https://localhost:5288/api/sanpham")
             .then(res => setDsSanPham(res.data))
             .catch(() => { });
     }, [id]);
@@ -54,7 +54,7 @@ const FormChinhSuaYeuCauKiemKe = () => {
         };
 
         try {
-            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${id}`, payload);
+            await axios.put(`https://localhost:5288/api/yeucaukiemke/${id}`, payload);
             alert("✅ Cập nhật yêu cầu thành công");
             navigate("/quan-ly-yeu-cau-kiem-ke");
         } catch {

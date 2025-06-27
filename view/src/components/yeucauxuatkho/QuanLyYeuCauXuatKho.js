@@ -46,7 +46,7 @@ const QuanLyYeuCauXuatKho = () => {
 
     const fetchData = async () => {
         try {
-            const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho");
+            const res = await fetch("https://localhost:5288/api/yeucauxuatkho");
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(`Lỗi server: ${res.status} - ${text}`);
@@ -95,7 +95,7 @@ const QuanLyYeuCauXuatKho = () => {
         if (!xacNhan) return;
 
         try {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/${id}`, { method: "DELETE" });
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/${id}`, { method: "DELETE" });
             alert("✅ Đã xoá thành công!");
             setDanhSachYeuCau(prev => prev.filter(yc => yc.idYeuCauXuatKho !== id));
         } catch (err) {
@@ -109,7 +109,7 @@ const QuanLyYeuCauXuatKho = () => {
         if (!confirm) return;
 
         try {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/duyet/${id}?chucVu=${user.tenChucVu}`, {
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/duyet/${id}?chucVu=${user.tenChucVu}`, {
                 method: "PUT"
             });
             alert("✅ Đã duyệt yêu cầu!");
@@ -152,14 +152,14 @@ const QuanLyYeuCauXuatKho = () => {
 
     const handlePopup = async (yc) => {
         try {
-            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
             const chiTiet = await res.json();
             setPopupData({ ...yc, chiTietYeuCauXuatKhos: chiTiet });
 
             const tonMap = {};
             for (const ct of chiTiet) {
                 try {
-                    const resTon = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
+                    const resTon = await fetch(`https://localhost:5288/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
                     tonMap[ct.idSanPham] = await resTon.json();
                 } catch {
                     tonMap[ct.idSanPham] = "Lỗi";
@@ -175,7 +175,7 @@ const QuanLyYeuCauXuatKho = () => {
         if (!xacNhan) return;
 
         try {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tuchoi/${id}`, { method: "PUT" });
+            await fetch(`https://localhost:5288/api/yeucauxuatkho/tuchoi/${id}`, { method: "PUT" });
             alert("❌ Đã từ chối yêu cầu!");
             setPopupData(null); // 👉 đóng popup
             fetchData();        // 👉 reload danh sách

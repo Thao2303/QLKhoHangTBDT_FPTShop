@@ -20,7 +20,7 @@ const GoiyViTri = () => {
         const { sanPhams } = location.state || { sanPhams: [] };
         setProducts(sanPhams);
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
+        axios.get("https://localhost:5288/api/vitri")
             .then(res => setLocations(res.data || []))
             .catch(err => {
                 console.error("Lỗi lấy vị trí kho:", err);
@@ -33,7 +33,7 @@ const GoiyViTri = () => {
     useEffect(() => {
         const { sanPhams } = location.state || { sanPhams: [] };
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham")
+        axios.get("https://localhost:5288/api/sanpham")
             .then(res => {
                 const mapFullSP = sanPhams.map(sp => {
                     const matched = res.data.find(p => p.idSanPham === sp.idSanPham);
@@ -47,7 +47,7 @@ const GoiyViTri = () => {
                
             });
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
+        axios.get("https://localhost:5288/api/vitri")
             .then(res => setLocations(res.data || []))
             .catch(err => {
                 console.error("Lỗi lấy vị trí kho:", err);
@@ -63,7 +63,7 @@ const GoiyViTri = () => {
             try {
                 const oldPositions = {};
                 for (const sp of products) {
-                    const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
+                    const res = await axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/sanpham/${sp.idSanPham}`);
                     oldPositions[sp.idSanPham] = res.data.map(x => x.idViTri);
                 }
 
@@ -216,7 +216,7 @@ const GoiyViTri = () => {
         // Dự phòng fallback ML.NET
         let mlLoc = null;
         try {
-            const mlRes = await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/MLGoiY/goi-y-vitri", {
+            const mlRes = await axios.post("https://localhost:5288/api/MLGoiY/goi-y-vitri", {
                 idSanPham: sp.idSanPham,
                 soLuong: qtyLeft,
                 trongLuong: sp.trongLuong || 0,
@@ -311,7 +311,7 @@ SL: ${vt.soLuong}`,
         }
 
         try {
-            const res = await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/luu-vi-tri", payload);
+            const res = await axios.post("https://localhost:5288/api/phieunhap/luu-vi-tri", payload);
             alert("✅ " + res.data.message);
             navigate("/quanlyphieunhap");
         } catch (err) {

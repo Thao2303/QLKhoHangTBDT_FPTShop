@@ -416,6 +416,27 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
 
             return Ok(sp.soLuongHienCon);
         }
+        [HttpGet("chitiet/all")]
+        public async Task<IActionResult> GetAllChiTietYeuCauXuatKho()
+        {
+            var list = await _context.ChiTietYeuCauXuatKho
+                .Include(c => c.SanPham)
+                .ToListAsync();
+
+            var grouped = list
+                .GroupBy(c => c.idYeuCauXuatKho)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(c => new {
+                        c.idYeuCauXuatKho,
+                        c.idSanPham,
+                        c.soLuong,
+                                         tenSanPham = c.SanPham.tenSanPham
+                    }).ToList()
+                );
+
+            return Ok(grouped);
+        }
 
     }
 }

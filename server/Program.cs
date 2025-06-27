@@ -17,7 +17,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
      "http://localhost:3000",    // 👈 cần thêm dòng này
      "https://localhost:3000",
-     "https://quanlykho-fpt.site"
+     "https://localhost:3000"
  )
 
 

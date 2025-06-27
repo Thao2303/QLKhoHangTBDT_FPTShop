@@ -35,26 +35,26 @@ const FormSuaPhieuNhap = () => {
             setUserId(user.idTaiKhoan);
         }
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/nhacungcap')
+        axios.get('https://localhost:5288/api/nhacungcap')
             .then(res => setSuppliersList(res.data));
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham')
+        axios.get('https://localhost:5288/api/sanpham')
             .then(res => {
                 setProductsList(res.data);
                 setFilteredProducts(res.data);
             });
 
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/danhmuc')
+        axios.get('https://localhost:5288/api/danhmuc')
             .then(res => setCategoriesList(res.data));
 
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/${id}`)
+        axios.get(`https://localhost:5288/api/phieunhap/${id}`)
             .then(res => {
                 const phieu = res.data;
                 setSupplier(phieu.idNhaCungCap);
                 setSupplierName(phieu.nhaCungCap?.tenNhaCungCap || '');
             });
 
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${id}`)
+        axios.get(`https://localhost:5288/api/phieunhap/chitiet/${id}`)
             .then(res => {
                 const details = res.data.map(item => ({
                     idSanPham: item.idSanPham,
@@ -78,7 +78,7 @@ const FormSuaPhieuNhap = () => {
         }
     }, [category, productsList]);
     useEffect(() => {
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${id}`)
+        axios.get(`https://localhost:5288/api/phieunhap/chitiet/${id}`)
             .then(res => setRawDetails(res.data));
     }, [id]);
 
@@ -167,7 +167,7 @@ const FormSuaPhieuNhap = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/update-full/${id}`, {
+            await axios.put(`https://localhost:5288/api/phieunhap/update-full/${id}`, {
                 idPhieuNhap: id,
                 ngayNhap: new Date().toISOString(),
                 chiTietPhieuNhaps: addedProducts.map(p => ({

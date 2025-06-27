@@ -24,7 +24,7 @@ const QuanLyDaiLy = () => {
     const [form, setForm] = useState({ tenDaiLy: "", diaChi: "", sdt: "" });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-    const API = "https://qlkhohangtbdt-fptshop-be2.onrender.com/api/daily";
+    const API = "https://localhost:5288/api/daily";
 
     useEffect(() => {
         fetch(API)

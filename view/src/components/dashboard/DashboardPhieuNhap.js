@@ -35,18 +35,15 @@ const DashboardPhieuNhap = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap');
+            const res = await axios.get(`https://localhost:5288/api/phieunhap`);
             setPhieuNhaps(res.data || []);
 
-            const map = {};
-            for (const pn of res.data) {
-                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/${pn.idPhieuNhap}`);
-                map[pn.idPhieuNhap] = resCt.data || [];
-            }
-            setChiTietMap(map);
+            const resCtAll = await axios.get(`https://localhost:5288/api/phieunhap/chitiet/all`);
+            setChiTietMap(resCtAll.data || {});
         };
         fetchData();
     }, []);
+
 
     const trangThaiMap = { 1: 'Chờ duyệt', 2: 'Đã duyệt', 3: 'Từ chối', 4: 'Hoàn hàng' };
     const trangThaiOptions = Object.entries(trangThaiMap).map(([k, v]) => ({ value: Number(k), label: v }));
