@@ -1,6 +1,7 @@
-﻿import React, { useEffect, useState, useRef } from 'react';
+﻿// File: DashboardPhieuXuat.js
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import dayjs from 'dayjs';
 import Navbar from '../common/Navbar/Navbar';
 import Sidebar from '../common/Sidebar/Sidebar';
@@ -12,14 +13,13 @@ import * as XLSX from 'xlsx';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import Pagination from "../common/Pagination/Pagination";
-import {    PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50'];
 
 const DashboardPhieuXuat = () => {
     const [phieuXuats, setPhieuXuats] = useState([]);
     const [chiTietMap, setChiTietMap] = useState({});
     const [filterDaiLy, setFilterDaiLy] = useState(null);
-    const [filterThang, setFilterThang] = useState('');
     const [filterNguoiXuat, setFilterNguoiXuat] = useState(null);
     const [searchKeyword, setSearchKeyword] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -36,16 +36,8 @@ const DashboardPhieuXuat = () => {
             const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat');
             setPhieuXuats(res.data || []);
 
-            const map = {};
-            for (const px of res.data) {
-                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${px.idPhieuXuat}`);
-                const chiTiet = resCt.data.chiTietPhieuXuats || [];
-                map[px.idPhieuXuat] = chiTiet.map(ct => ({
-                    ...ct,
-                    thanhTien: ct.tongTien || 0
-                }));
-            }
-            setChiTietMap(map);
+            const resCt = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/chitiet/all');
+            setChiTietMap(resCt.data || {});
         };
         fetchData();
     }, []);
@@ -54,18 +46,13 @@ const DashboardPhieuXuat = () => {
         new Set(phieuXuats.map(p => dayjs(p.ngayXuat).year()))
     ).sort((a, b) => b - a);
 
-
     const filteredPhieuXuats = phieuXuats.filter(p => {
         const matchDaiLy = filterDaiLy ? p.yeuCauXuatKho?.daiLy?.tenDaiLy === filterDaiLy.value : true;
         const matchNguoiXuat = filterNguoiXuat ? p.nguoiXuat === filterNguoiXuat.value : true;
-        const matchThang = filterThang ? dayjs(p.ngayXuat).format('YYYY-MM') === filterThang : true;
         const matchKeyword = searchKeyword ? p.idPhieuXuat.toString().includes(searchKeyword) || p.nguoiXuat?.toLowerCase().includes(searchKeyword.toLowerCase()) : true;
-        const matchDate =
-            (!startDate || new Date(p.ngayXuat) >= startDate) &&
-            (!endDate || new Date(p.ngayXuat) <= endDate);
-
+        const matchDate = (!startDate || new Date(p.ngayXuat) >= startDate) && (!endDate || new Date(p.ngayXuat) <= endDate);
         const matchYear = p.ngayXuat && dayjs(p.ngayXuat).year().toString() === filterYear.toString();
-        return matchDaiLy && matchNguoiXuat && matchKeyword && matchDate && matchYear && matchThang;
+        return matchDaiLy && matchNguoiXuat && matchKeyword && matchDate && matchYear;
     });
 
     const sortedPhieuXuats = [...filteredPhieuXuats].sort((a, b) => {
@@ -78,7 +65,7 @@ const DashboardPhieuXuat = () => {
     const totalPages = Math.ceil(filteredPhieuXuats.length / itemsPerPage);
 
     const tongPhieuXuat = filteredPhieuXuats.length;
-    const tongTien = filteredPhieuXuats.flatMap(p => chiTietMap[p.idPhieuXuat] || []).reduce((sum, ct) => sum + (ct.thanhTien || 0), 0);
+    const tongTien = filteredPhieuXuats.flatMap(p => chiTietMap[p.idPhieuXuat] || []).reduce((sum, ct) => sum + (ct.tongTien || 0), 0);
     const now = dayjs();
     const thangNayCount = filteredPhieuXuats.filter(p => dayjs(p.ngayXuat).isSame(now, 'month')).length;
 
@@ -95,22 +82,13 @@ const DashboardPhieuXuat = () => {
 
     const dataTheoThang = Array.from({ length: soThang }, (_, i) => {
         const thang = i + 1;
-        const soPhieu = filteredPhieuXuats.filter(p => {
-            const date = dayjs(p.ngayXuat);
-            return date.year() === Number(filterYear) && date.month() + 1 === thang;
-        }).length;
-
+        const soPhieu = filteredPhieuXuats.filter(p => dayjs(p.ngayXuat).year() === Number(filterYear) && dayjs(p.ngayXuat).month() + 1 === thang).length;
         const tongTienThang = filteredPhieuXuats
-            .filter(p => {
-                const date = dayjs(p.ngayXuat);
-                return date.year() === Number(filterYear) && date.month() + 1 === thang;
-            })
+            .filter(p => dayjs(p.ngayXuat).year() === Number(filterYear) && dayjs(p.ngayXuat).month() + 1 === thang)
             .flatMap(p => chiTietMap[p.idPhieuXuat] || [])
-            .reduce((sum, ct) => sum + (ct.thanhTien || 0), 0);
-
+            .reduce((sum, ct) => sum + (ct.tongTien || 0), 0);
         return { thang: `Th${thang}`, soPhieu, tongTien: tongTienThang };
     });
-
 
     const exportPDF = async () => {
         const element = exportRef.current;

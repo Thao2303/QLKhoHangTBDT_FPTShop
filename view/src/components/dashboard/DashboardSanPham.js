@@ -182,7 +182,8 @@ const DashboardSanPham = () => {
                             <h3>📊 Top 10 tồn kho cao nhất</h3>
                             <BarChart width={500} height={300} data={topTonKho} layout="vertical">
                                 <XAxis type="number" />
-                                <YAxis type="category" dataKey="ten" width={200} />
+                                <YAxis type="category" dataKey="ten" width={280} />
+
                                 <Tooltip />
                                 <Bar dataKey="soLuong" fill="#8884d8" />
                             </BarChart>
@@ -191,7 +192,8 @@ const DashboardSanPham = () => {
                             <h3>💰 Top 10 giá trị tồn kho</h3>
                             <BarChart width={500} height={300} data={topGiaTriTon} layout="vertical">
                                 <XAxis type="number" tickFormatter={v => v.toLocaleString('vi-VN')} />
-                                <YAxis type="category" dataKey="ten" width={200} />
+                                <YAxis type="category" dataKey="ten" width={280} />
+
                                 <Tooltip formatter={v => v.toLocaleString('vi-VN')} />
                                 <Bar dataKey="giaTri" fill="#82ca9d" />
                             </BarChart>
