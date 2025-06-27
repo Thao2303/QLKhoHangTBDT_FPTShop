@@ -15,9 +15,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-     "http://localhost:3000",    // 👈 cần thêm dòng này
+     "http://localhost:3000",    
      "https://localhost:3000",
-     "https://quanlykho-fpt.site"
+     "https://quanlykho-fpt.site",
+    "https://qlkhohangtbdt-fptshop-be2.onrender.com"
  )
 
 
