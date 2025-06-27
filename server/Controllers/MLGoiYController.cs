@@ -15,7 +15,9 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         public MLGoiYController()
         {
             _mlContext = new MLContext();
-            var model = _mlContext.Model.Load("MLModels/mlmodel.zip", out _);
+            var modelPath = Path.Combine(Directory.GetCurrentDirectory(), "MLModels", "mlmodel.zip");
+            var model = _mlContext.Model.Load(modelPath, out _);
+
             _predEngine = _mlContext.Model.CreatePredictionEngine<ViTriInput, ViTriPrediction>(model);
         }
 
