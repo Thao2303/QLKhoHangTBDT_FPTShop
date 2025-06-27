@@ -14,7 +14,7 @@ const ForgotPassword = () => {
         setLoading(true);
         try {
             const res = await axios.post(
-                'https://localhost:5288/api/TaiKhoan/yeu-cau-reset-mat-khau',
+                'https://qlkhohangtbdt-fptshop-be2.onrender.com/api/TaiKhoan/yeu-cau-reset-mat-khau',
                 email,
                 { headers: { 'Content-Type': 'application/json' } }
             );

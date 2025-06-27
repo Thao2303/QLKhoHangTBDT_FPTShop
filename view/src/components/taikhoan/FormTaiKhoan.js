@@ -16,11 +16,11 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        fetch("https://localhost:5288/api/daily")
+        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/daily")
             .then(res => res.json())
             .then(data => setDaiLys(data))
             .catch(err => console.error("Lỗi lấy đại lý:", err));
-        fetch("https://localhost:5288/api/chucvu")
+        fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chucvu")
             .then((res) => res.json())
             .then((data) => setChucVus(data))
             .catch((err) => console.error("Lỗi lấy chức vụ:", err));
@@ -85,7 +85,7 @@ const FormTaiKhoan = ({ visible, onClose, onSubmit, initialData }) => {
             doiMatKhau: isEdit ? (initialData.doiMatKhau || false) : true
         };
 
-        const url = `https://localhost:5288/api/taikhoan${isEdit ? '/' + initialData.idTaiKhoan : ''}`;
+        const url = `https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan${isEdit ? '/' + initialData.idTaiKhoan : ''}`;
         const method = isEdit ? 'PUT' : 'POST';
 
         try {

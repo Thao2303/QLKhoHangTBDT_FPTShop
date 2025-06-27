@@ -25,7 +25,7 @@ const DoiMatKhauPage = ({ userId }) => {
 
         setSubmitting(true);
         try {
-            const res = await axios.post('https://localhost:5288/api/taikhoan/doi-mat-khau', {
+            const res = await axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan/doi-mat-khau', {
                 idTaiKhoan: userId,
                 oldPassword,
                 newPassword
