@@ -33,26 +33,22 @@ const DashboardPhieuXuat = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat`);
+            const res = await axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat');
             setPhieuXuats(res.data || []);
 
-            const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/chitiet/all`);
-            const map = resCt.data || {};
-
-            // map lại thành format cũ (thanhTien = tongTien)
-            const newMap = {};
-            for (const [id, list] of Object.entries(map)) {
-                newMap[id] = list.map(ct => ({
+            const map = {};
+            for (const px of res.data) {
+                const resCt = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${px.idPhieuXuat}`);
+                const chiTiet = resCt.data.chiTietPhieuXuats || [];
+                map[px.idPhieuXuat] = chiTiet.map(ct => ({
                     ...ct,
                     thanhTien: ct.tongTien || 0
                 }));
             }
-
-            setChiTietMap(newMap);
+            setChiTietMap(map);
         };
         fetchData();
     }, []);
-
 
     const uniqueYears = Array.from(
         new Set(phieuXuats.map(p => dayjs(p.ngayXuat).year()))

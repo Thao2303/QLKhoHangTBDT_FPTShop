@@ -47,14 +47,6 @@ const DashboardYeuCauXuatKho = () => {
                 }
 
                 setYeuCaus(filtered);
-                axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/all')
-                    .then(res => {
-                        const allChiTiet = res.data || {};
-                        // Lưu vào state nếu sau này bạn cần dùng
-                        localStorage.setItem('chiTietYeuCauXuatKho', JSON.stringify(allChiTiet));
-                    })
-                    .catch(err => console.error(err));
-
             })
 
             .catch(err => console.error(err));
