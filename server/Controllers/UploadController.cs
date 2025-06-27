@@ -1,34 +1,64 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using QuanLyKhoHangFPTShop.server.Services;
+﻿// ✅ 1. API nhận ảnh và lưu vào wwwroot/images
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace QuanLyKhoHangFPTShop.server.Controllers
 {
+    [Route("api/upload")]
     [ApiController]
-    [Route("api/[controller]")]
     public class UploadController : ControllerBase
     {
-        private readonly CloudinaryService _cloudinaryService;
+        private readonly IWebHostEnvironment _env;
 
-        public UploadController(CloudinaryService cloudinaryService)
+        public UploadController(IWebHostEnvironment env)
         {
-            _cloudinaryService = cloudinaryService;
+            _env = env;
         }
 
         [HttpPost("image")]
-        public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
+        public async Task<IActionResult> UploadImage(IFormFile file)
         {
             if (file == null || file.Length == 0)
-                return BadRequest("Không có ảnh được gửi lên.");
+                return BadRequest("No file uploaded.");
 
-            try
+            // Tạo tên file duy nhất
+            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+            var savePath = Path.Combine(_env.WebRootPath, "images", fileName);
+
+            // Tạo thư mục nếu chưa có
+            var folder = Path.GetDirectoryName(savePath);
+            if (!string.IsNullOrEmpty(folder))
             {
-                var imageUrl = await _cloudinaryService.UploadImageAsync(file);
-                return Ok(new { url = imageUrl });
+                Directory.CreateDirectory(folder);
             }
-            catch (Exception ex)
+
+
+            using (var stream = new FileStream(savePath, FileMode.Create))
             {
-                return StatusCode(500, new { error = ex.Message });
+                await file.CopyToAsync(stream);
             }
+
+            // Trả về đường dẫn ảnh
+            var imageUrl = $"/images/{fileName}";
+            return Ok(new { url = imageUrl });
         }
+
+        [HttpDelete("delete")]
+        public IActionResult DeleteImage([FromQuery] string fileName)
+        {
+            var path = Path.Combine(_env.WebRootPath, "images", fileName);
+            if (System.IO.File.Exists(path))
+            {
+                System.IO.File.Delete(path);
+                return Ok(new { message = "Đã xoá ảnh." });
+            }
+            return NotFound();
+        }
+
     }
 }

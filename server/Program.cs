@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.SignalR;
 using QuanLyKhoHangFPTShop.server.Data;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using QuanLyKhoHangFPTShop.server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,8 +15,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-     "http://localhost:3000",
-     "https://localhost:3000",
+     "http://localhost:3000",    
+     "https://quanlykho-fpt.site",
      "https://quanlykho-fpt.site",
     "https://qlkhohangtbdt-fptshop-be2.onrender.com"
  )
@@ -74,7 +73,6 @@ builder.Services.Configure<MvcOptions>(options =>
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
 });
 builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-builder.Services.AddSingleton<CloudinaryService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
