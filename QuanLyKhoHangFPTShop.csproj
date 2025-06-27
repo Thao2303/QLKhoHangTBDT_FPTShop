@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="view\Dockerfile" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="server\wwwroot\images\3bb6bc1c-60f5-4a65-87ef-c4b97fd191df.jpg" />
     <Content Include="server\wwwroot\images\77aaceaf-ddb6-40d6-b6c7-3df2cafad6d4.png" />
     <Content Include="server\wwwroot\images\c7471894-4fe6-4cb2-8c7c-604980ef9ec7.png" />
