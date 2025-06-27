@@ -2,20 +2,25 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
-# Copy everything (bao gồm cả MLModels trước khi restore để đảm bảo có sẵn)
+# Copy toàn bộ source code (bao gồm MLModels + wwwroot)
 COPY . ./
 
-# Restore and publish
+# Restore và build
 RUN dotnet restore
 RUN dotnet publish -c Release -o /app/out
 
-# Runtime image
+# Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 
-# Copy output + MLModels folder từ build stage
+# Copy build output
 COPY --from=build /app/out ./
+
+# ✅ Copy thư mục MLModels nếu dùng ML.NET
 COPY --from=build /app/MLModels ./MLModels
+
+# ✅ Copy static files như ảnh
+COPY --from=build /app/wwwroot ./wwwroot
 
 EXPOSE 5000
 ENTRYPOINT ["dotnet", "QuanLyKhoHangFPTShop.dll"]
