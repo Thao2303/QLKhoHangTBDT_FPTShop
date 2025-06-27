@@ -26,7 +26,7 @@ const DashboardSanPham = () => {
     const exportRef = useRef();
 
     useEffect(() => {
-        axios.get('https://localhost:5288/api/sanpham')
+        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham')
             .then(res => {
                 const data = res.data || [];
                 setSanPhams(data);

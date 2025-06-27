@@ -35,10 +35,10 @@ const DashboardPhieuNhap = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res = await axios.get(`https://localhost:5288/api/phieunhap`);
+            const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap`);
             setPhieuNhaps(res.data || []);
 
-            const resCtAll = await axios.get(`https://localhost:5288/api/phieunhap/chitiet/all`);
+            const resCtAll = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieunhap/chitiet/all`);
             setChiTietMap(resCtAll.data || {});
         };
         fetchData();

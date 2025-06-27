@@ -19,11 +19,11 @@ const FormThucHienKiemKe = () => {
     useEffect(() => {
         const fetchAll = async () => {
             try {
-                const res = await axios.get(`https://localhost:5288/api/yeucaukiemke/${idYeuCauKiemKe}`);
+                const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucaukiemke/${idYeuCauKiemKe}`);
                 const ycData = res.data;
 
                 try {
-                    const res2 = await axios.get(`https://localhost:5288/api/kiemke/theo-yeucau/${idYeuCauKiemKe}`);
+                    const res2 = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/theo-yeucau/${idYeuCauKiemKe}`);
                     const chiTiet = res2.data?.chiTietPhieuKiemKes || [];
                     const viTri = res2.data?.viTriSanPham || [];
 
@@ -138,7 +138,7 @@ const FormThucHienKiemKe = () => {
 
         if (!window.confirm("Bạn có chắc chắn muốn gửi phiếu kiểm kê?")) return;
         try {
-            await axios.post("https://localhost:5288/api/kiemke/tao", payload);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/tao", payload);
             alert("✅ Gửi phiếu kiểm kê thành công");
             navigate("/quan-ly-yeu-cau-kiem-ke");
         } catch (err) {
@@ -171,7 +171,7 @@ const FormThucHienKiemKe = () => {
         };
 
         try {
-            await axios.post("https://localhost:5288/api/kiemke/luu-nhap", payload);
+            await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/kiemke/luu-nhap", payload);
             alert("💾 Đã lưu nháp kiểm kê");
             navigate("/quan-ly-yeu-cau-kiem-ke");
         } catch (err) {
