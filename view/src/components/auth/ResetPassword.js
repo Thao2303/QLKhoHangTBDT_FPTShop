@@ -26,7 +26,7 @@ const ResetPassword = () => {
 
         setSubmitting(true);
         try {
-            const res = await axios.post('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/taikhoan/dat-lai-mat-khau', {
+            const res = await axios.post('https://localhost:5288/api/taikhoan/dat-lai-mat-khau', {
                 token,
                 newPassword: password
             });

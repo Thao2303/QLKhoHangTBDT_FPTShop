@@ -490,6 +490,30 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         }
 
 
+        [HttpGet("chitiet/all")]
+        public async Task<IActionResult> GetAllChiTietPhieuNhap()
+        {
+            var chiTiet = await _context.ChiTietPhieuNhap
+                .Include(ct => ct.SanPham)
+                .ToListAsync();
+
+            var grouped = chiTiet.GroupBy(ct => ct.idPhieuNhap)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(ct => new {
+                        ct.idPhieuNhap,
+                        ct.idSanPham,
+                        ct.nguoiGiaoHang,
+                        ct.soLuongTheoChungTu,
+                        ct.soLuongThucNhap,
+                        ct.donGia,
+                        ct.tongTien,
+                        tenSanPham = ct.SanPham.tenSanPham
+                    }).ToList()
+                );
+
+            return Ok(grouped);
+        }
 
     }
 }

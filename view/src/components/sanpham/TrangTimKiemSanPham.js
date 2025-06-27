@@ -23,11 +23,11 @@ const TrangTimKiemSanPham = () => {
     const [suggestions, setSuggestions] = useState([]);
 
     useEffect(() => {
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/sanpham")
+        axios.get("https://localhost:5288/api/sanpham")
             .then(res => setSanPhamList(res.data))
             .catch(err => console.error("Lỗi tải sản phẩm:", err));
 
-        axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri")
+        axios.get("https://localhost:5288/api/vitri")
             .then(res => {
                 const group = {};
                 (res.data || []).forEach(v => {
@@ -56,7 +56,7 @@ const TrangTimKiemSanPham = () => {
 
     const handleSearch = () => {
         if (!selectedSanPham) return;
-        axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/ChiTietLuuTru/chitietluutru/sanpham/${selectedSanPham}`)
+        axios.get(`https://localhost:5288/api/ChiTietLuuTru/chitietluutru/sanpham/${selectedSanPham}`)
             .then(res => {
                 const validItems = res.data.filter(item => item.soLuong > 0);
                 setViTriCoSanPham(validItems);

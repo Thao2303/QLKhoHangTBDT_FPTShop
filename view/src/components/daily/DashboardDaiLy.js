@@ -39,13 +39,13 @@ const DashboardDaiLy = ({ currentUser }) => {
 
 
     useEffect(() => {
-        axios.get('https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho')
+        axios.get('https://localhost:5288/api/yeucauxuatkho')
             .then(async res => {
                 const allData = res.data.filter(y => parseInt(y.daiLy?.idDaiLy) === parseInt(currentUser.idDaiLy));
 
                 // Gọi chi tiết sản phẩm cho mỗi yêu cầu
                 const enriched = await Promise.all(allData.map(async yc => {
-                    const ct = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+                    const ct = await axios.get(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
                     yc.chiTietYeuCauXuatKhos = ct.data || [];
                     return yc;
                 }));

@@ -34,11 +34,11 @@ const QuanLyPhieuXuat = () => {
     const user = JSON.parse(localStorage.getItem("user"));
 
     const fetchData = async () => {
-        const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat");
+        const res = await fetch("https://localhost:5288/api/phieuxuat");
         const data = await res.json();
         setList(data);
 
-        const resDaiLy = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/daily");
+        const resDaiLy = await fetch("https://localhost:5288/api/daily");
         const daiLys = await resDaiLy.json();
         setDaiLyList(daiLys);
     };
@@ -67,14 +67,14 @@ const QuanLyPhieuXuat = () => {
 
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc muốn xóa phiếu xuất này không?")) {
-            await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/phieuxuat/${id}`, {
+            await fetch(`https://localhost:5288/api/phieuxuat/${id}`, {
                 method: "DELETE",
             });
             fetchData();
         }
     };
     const fetchViTriById = async (idViTri) => {
-        const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri/${idViTri}`);
+        const res = await fetch(`https://localhost:5288/api/vitri/${idViTri}`);
         return res.json();
     };
 
@@ -94,7 +94,7 @@ const QuanLyPhieuXuat = () => {
         try {
             // Nếu đã có sẵn chi tiết thì không cần gọi lại
             if (!yc.chiTietYeuCauXuatKhos || yc.chiTietYeuCauXuatKhos.length === 0) {
-                const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+                const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
                 yc.chiTietYeuCauXuatKhos = await res.json();
             }
 

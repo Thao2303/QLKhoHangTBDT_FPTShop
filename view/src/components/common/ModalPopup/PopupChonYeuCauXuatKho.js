@@ -15,7 +15,7 @@ const PopupChonYeuCau = ({ onChon, onClose }) => {
     useEffect(() => {
         const fetchYeuCau = async () => {
             try {
-                const res = await fetch("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho");
+                const res = await fetch("https://localhost:5288/api/yeucauxuatkho");
                 const all = await res.json();
                 const chuaDuyet = all.filter(yc => yc.idTrangThaiXacNhan === 2);
                 setDanhSach(chuaDuyet);
@@ -30,14 +30,14 @@ const PopupChonYeuCau = ({ onChon, onClose }) => {
 
     const handleXemChiTiet = async (yc) => {
         try {
-            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
             const chiTiet = await res.json();
             yc.chiTietYeuCauXuatKhos = chiTiet;
 
             const tonMap = {};
             for (const ct of chiTiet) {
                 try {
-                    const resTon = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
+                    const resTon = await fetch(`https://localhost:5288/api/yeucauxuatkho/tonkho/${ct.idSanPham}`);
                     tonMap[ct.idSanPham] = await resTon.json();
                 } catch {
                     tonMap[ct.idSanPham] = "Lỗi";
@@ -53,7 +53,7 @@ const PopupChonYeuCau = ({ onChon, onClose }) => {
 
     const handleXemChiTietAndChon = async (yc) => {
         try {
-            const res = await fetch(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
+            const res = await fetch(`https://localhost:5288/api/yeucauxuatkho/chitiet/${yc.idYeuCauXuatKho}`);
             const chiTiet = await res.json();
 
             if (!chiTiet || chiTiet.length === 0) {

@@ -29,7 +29,7 @@ const QuanLyViTri = () => {
     const fetchData = async () => {
         setIsLoading(true);
         try {
-            const res = await axios.get("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri");
+            const res = await axios.get("https://localhost:5288/api/vitri");
             const processed = res.data.map(vt => ({
                 ...vt,
                 idKhuVuc: vt.khuVuc?.idKhuVuc || ""
@@ -46,9 +46,9 @@ const QuanLyViTri = () => {
     const handleLuu = async (data) => {
         try {
             if (data.idViTri) {
-                await axios.put(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri/${data.idViTri}`, data);
+                await axios.put(`https://localhost:5288/api/vitri/${data.idViTri}`, data);
             } else {
-                await axios.post("https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri", data);
+                await axios.post("https://localhost:5288/api/vitri", data);
             }
             setIsFormOpen(false);
             setSelectedViTri(null);
@@ -60,7 +60,7 @@ const QuanLyViTri = () => {
 
     const handleXoa = async () => {
         try {
-            await axios.delete(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri/${confirmDelete.idViTri}`);
+            await axios.delete(`https://localhost:5288/api/vitri/${confirmDelete.idViTri}`);
             setConfirmDelete(null);
             fetchData();
         } catch (err) {
@@ -73,8 +73,8 @@ const QuanLyViTri = () => {
         setIsChiTietOpen(true);
         try {
             const [spRes, vtRes] = await Promise.all([
-                axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/chitietluutru/chitietluutru/vitri/${idViTri}`),
-                axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri/${idViTri}`)
+                axios.get(`https://localhost:5288/api/chitietluutru/chitietluutru/vitri/${idViTri}`),
+                axios.get(`https://localhost:5288/api/vitri/${idViTri}`)
             ]);
             setSanPhamChiTiet(spRes.data);
             setViTriChiTiet(vtRes.data);
@@ -144,7 +144,7 @@ const QuanLyViTri = () => {
                             danhSach={currentData}
                             handleEdit={async (vt) => {
                                 try {
-                                    const res = await axios.get(`https://qlkhohangtbdt-fptshop-be2.onrender.com/api/vitri/${vt.idViTri}`);
+                                    const res = await axios.get(`https://localhost:5288/api/vitri/${vt.idViTri}`);
                                     const full = res.data;
                                     const idKhuVuc = full.khuVuc?.idKhuVuc || "";
                                     setSelectedViTri({ ...full, idKhuVuc });
