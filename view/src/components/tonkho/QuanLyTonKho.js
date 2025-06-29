@@ -199,7 +199,7 @@ const QuanLyTonKho = () => {
                                         <td>
                                             {sp.hinhAnh ? (
                                                 <img
-                                                    src={sp.hinhAnh.startsWith("http") ? sp.hinhAnh : `https://localhost:5288${sp.hinhAnh}`}
+                                                    src={sp.hinhAnh.startsWith("http") ? sp.hinhAnh : `https://qlkhohangtbdt-fptshop-be2.onrender.com${sp.hinhAnh}`}
                                                     alt="ảnh"
                                                     style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6 }}
                                                 />
