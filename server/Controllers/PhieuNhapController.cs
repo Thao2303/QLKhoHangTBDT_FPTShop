@@ -228,6 +228,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                         };
 
                         _context.ChiTietLuuTru.Add(chiTietLuu);
+
                     }
 
                 }
@@ -309,58 +310,60 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
         public async Task<ActionResult<IEnumerable<object>>> GetChiTietPhieuNhap(int id)
         {
             var chiTiet = await _context.ChiTietPhieuNhap
-     .Where(ct => ct.idPhieuNhap == id)
-     .Include(ct => ct.SanPham)
-     .Select(ct => new
-     {
-         ct.idPhieuNhap,
-         ct.idSanPham,
-         sanPham = new
-         {
-             ct.SanPham.tenSanPham,
-             ct.SanPham.idSanPham,
-             ct.SanPham.DanhMuc,
-             ct.SanPham.hinhAnh
-         },
-         nguoiGiao = ct.nguoiGiaoHang,
-         ct.soLuongTheoChungTu,
-         ct.soLuongThucNhap,
-         ct.donGia,
-         ct.tongTien,
+                .Where(ct => ct.idPhieuNhap == id)
+                .Include(ct => ct.SanPham)
+                .ToListAsync();
 
-         viTri = (
-    from vt in _context.ChiTietLuuTru
-    where vt.idPhieuNhap == id && vt.idSanPham == ct.idSanPham
-    join v in _context.ViTri on vt.idViTri equals v.idViTri
-    select new
-    {
-        v.idViTri,
-        v.day,
-        v.cot,
-        v.tang,
-        soLuong = vt.soLuong
-    }
-).Union(
-    from vt in _context.ViTriLuuTam
-    where vt.idPhieuNhap == id && vt.idSanPham == ct.idSanPham
-    join v in _context.ViTri on vt.idViTri equals v.idViTri
-    select new
-    {
-        v.idViTri,
-        v.day,
-        v.cot,
-        v.tang,
-        soLuong = vt.soLuong
-    }
-).ToList()
+            // Lấy tất cả vị trí lưu tạm cho phiếu này
+            var viTriLuuTam = await (
+                from vt in _context.ViTriLuuTam
+                where vt.idPhieuNhap == id
+                join v in _context.ViTri on vt.idViTri equals v.idViTri
+                select new
+                {
+                    vt.idPhieuNhap,
+                    vt.idSanPham,
+                    v.idViTri,
+                    v.day,
+                    v.cot,
+                    v.tang,
+                    vt.soLuong
+                }
+            ).ToListAsync();
 
-     })
-     .ToListAsync();
+            // Gắn vị trí vào chi tiết
+            var result = chiTiet.Select(ct => new
+            {
+                ct.idPhieuNhap,
+                ct.idSanPham,
+                sanPham = new
+                {
+                    ct.SanPham.tenSanPham,
+                    ct.SanPham.idSanPham,
+                    ct.SanPham.DanhMuc,
+                    ct.SanPham.hinhAnh
+                },
+                nguoiGiao = ct.nguoiGiaoHang,
+                ct.soLuongTheoChungTu,
+                ct.soLuongThucNhap,
+                ct.donGia,
+                ct.tongTien,
 
+                viTri = viTriLuuTam
+                    .Where(vt => vt.idSanPham == ct.idSanPham)
+                    .Select(vt => new
+                    {
+                        vt.idViTri,
+                        vt.day,
+                        vt.cot,
+                        vt.tang,
+                        soLuong = vt.soLuong
+                    })
+                    .ToList()
+            });
 
-            return Ok(chiTiet);
+            return Ok(result);
         }
-
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePhieuNhap(int id)
@@ -497,7 +500,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Include(ct => ct.SanPham)
                 .ToListAsync();
 
-    }
+            var grouped = chiTiet.GroupBy(ct => ct.idPhieuNhap)
                 .ToDictionary(
                     g => g.Key,
                     g => g.Select(ct => new {

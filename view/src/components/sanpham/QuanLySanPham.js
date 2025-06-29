@@ -330,7 +330,7 @@ const QuanLySanPham = () => {
                                     <td>
                                         {sp.hinhAnh ? (
                                             <img
-                                                src={sp.hinhAnh.startsWith("http") ? sp.hinhAnh : `https://localhost:5288${sp.hinhAnh}`}
+                                                src={sp.hinhAnh.startsWith("http") ? sp.hinhAnh : `https://qlkhohangtbdt-fptshop-be2.onrender.com${sp.hinhAnh}`}
                                                 alt="ảnh"
                                                 style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 6 }}
                                             />
@@ -445,7 +445,7 @@ const QuanLySanPham = () => {
                                     {form.hinhAnh && (
                                         <div style={{ marginBottom: 12 }}>
                                             <img
-                                                src={form.hinhAnh.startsWith("http") ? form.hinhAnh : `https://localhost:5288${form.hinhAnh}`}
+                                                src={form.hinhAnh.startsWith("http") ? form.hinhAnh : `https://qlkhohangtbdt-fptshop-be2.onrender.com${form.hinhAnh}`}
                                                 alt="preview"
                                                 style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8, border: "1px solid #ccc" }}
                                             />
@@ -534,7 +534,7 @@ const QuanLySanPham = () => {
                                 {spChiTiet.hinhAnh && (
                                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
                                         <img
-                                            src={spChiTiet.hinhAnh.startsWith('http') ? spChiTiet.hinhAnh : `https://localhost:5288${spChiTiet.hinhAnh}`}
+                                            src={spChiTiet.hinhAnh.startsWith('http') ? spChiTiet.hinhAnh : `https://qlkhohangtbdt-fptshop-be2.onrender.com${spChiTiet.hinhAnh}`}
                                             alt="Hình ảnh sản phẩm"
                                             style={{
                                                 width: 160,
