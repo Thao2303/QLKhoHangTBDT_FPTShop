@@ -497,7 +497,7 @@ namespace QuanLyKhoHangFPTShop.server.Controllers
                 .Include(ct => ct.SanPham)
                 .ToListAsync();
 
-            var grouped = chiTiet.GroupBy(ct => ct.idPhieuNhap)
+    }
                 .ToDictionary(
                     g => g.Key,
                     g => g.Select(ct => new {
