@@ -361,7 +361,7 @@ SL: ${vt.soLuong}`,
                                 }}>
                                     {sp.hinhAnh && (
                                         <img
-                                            src={sp.hinhAnh.startsWith('http') ? sp.hinhAnh : `https://localhost:5288${sp.hinhAnh}`}
+                                            src={sp.hinhAnh.startsWith('http') ? sp.hinhAnh : `https://qlkhohangtbdt-fptshop-be2.onrender.com${sp.hinhAnh}`}
                                             alt={sp.tenSanPham}
                                             style={{
                                                 width: 100,
